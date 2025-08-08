@@ -50,7 +50,7 @@ uv run mkdocs serve
 
 To release and publish a new version, follow these steps:
 
-1. Update the version in `fastapi_backend/pyproject.toml`, `nextjs-frontend/package.json`.
+1. Update the version in `backend/pyproject.toml`, `frontend/package.json`.
 2. Update the changelog in `CHANGELOG.md`.
 3. Open a PR with the changes.
 4. Once the PR is merged, run the [Release GitHub Action](https://github.com/vintasoftware/nextjs-fastapi-template/actions/workflows/release.yml) to create a draft release.

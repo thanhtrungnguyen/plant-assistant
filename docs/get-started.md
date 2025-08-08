@@ -32,11 +32,11 @@ Ensure `docker-compose` is installed. Refer to the [Docker Compose installation 
 
 ### Setting Up Environment Variables
 
-**Backend (`fastapi_backend/.env`):**
+**Backend (`backend/.env`):**
 
 Copy the `.env.example` files to `.env` and update the variables with your own values.
    ```bash
-   cd fastapi_backend && cp .env.example .env
+   cd backend && cp .env.example .env
    ```
 You will only need to update the secret keys. You can use the following command to generate a new secret key:
    ```bash
@@ -51,11 +51,11 @@ You will only need to update the secret keys. You can use the following command 
 
 You can check the .env.example file for more information about the variables.
 
-**Frontend (`nextjs-frontend/.env.local`):**
+**Frontend (`frontend/.env.local`):**
 
 Copy the `.env.example` files to `.env`. These values are unlikely to change, so you can leave them as they are.
    ```bash
-   cd nextjs-frontend && cp .env.example .env
+   cd frontend && cp .env.example .env
    ```
 
 ### Running the Database
@@ -74,13 +74,13 @@ To set the project environment locally, use the following commands:
 
 #### Backend
 
-Navigate to the `fastapi_backend` directory and run:
+Navigate to the `backend` directory and run:
    ```bash
    uv sync
    ```
 
 #### Frontend
-Navigate to the `nextjs-frontend` directory and run:
+Navigate to the `frontend` directory and run:
    ```bash
    pnpm install
    ```
@@ -117,7 +117,7 @@ Start the Next.js development server container:
    make docker-start-frontend
    ```
 
-- **Backend**: Access the API at `http://localhost:8000`.
+- **Backend**: Access the API at `http://localhost:5000`.
 - **Frontend**: Access the web application at `http://localhost:3000`.
 
 ## Important Considerations

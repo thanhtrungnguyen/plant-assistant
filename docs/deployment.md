@@ -6,7 +6,7 @@
 
 ### Frontend Deployment
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvintasoftware%2Fnextjs-fastapi-template%2Ftree%2Fmain%2Fnextjs-frontend&env=API_BASE_URL&envDescription=The%20API_BASE_URL%20is%20the%20backend%20URL%20where%20the%20frontend%20sends%20requests.)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvintasoftware%2Fnextjs-fastapi-template%2Ftree%2Fmain%2Ffrontend&env=API_BASE_URL&envDescription=The%20API_BASE_URL%20is%20the%20backend%20URL%20where%20the%20frontend%20sends%20requests.)
 
 - Click the **Frontend** button above to start the deployment process.  
 - During deployment, you will be prompted to set the `API_BASE_URL`. Use a placeholder value (e.g., `https://`) for now, as this will be updated with the backend URL later.  
@@ -14,7 +14,7 @@
 
 ### Backend Deployment
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvintasoftware%2Fnextjs-fastapi-template%2Ftree%2Fmain%2Ffastapi_backend&env=CORS_ORIGINS,ACCESS_SECRET_KEY,RESET_PASSWORD_SECRET_KEY,VERIFICATION_SECRET_KEY&stores=%5B%7B%22type%22%3A%22postgres%22%7D%5D)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvintasoftware%2Fnextjs-fastapi-template%2Ftree%2Fmain%2Fbackend&env=CORS_ORIGINS,ACCESS_SECRET_KEY,RESET_PASSWORD_SECRET_KEY,VERIFICATION_SECRET_KEY&stores=%5B%7B%22type%22%3A%22postgres%22%7D%5D)
 
 - Click the **Backend** button above to begin deployment.
 - First, set up the database. The connection is automatically configured, so follow the steps, and it should work by default.
@@ -69,11 +69,11 @@ You can do it with the following commands:
       - The database migration will happen automatically during the GitHub action deployment, setting up the necessary tables and schema.
 ### Frontend Setup
 
-1. Link the nextjs-frontend Project
+1. Link the frontend Project
 
-2. Navigate to the nextjs-frontend directory and run:
+2. Navigate to the frontend directory and run:
    ```bash
-   cd nextjs-frontend
+   cd frontend
    vercel link
    ```
 3. Follow the prompts:
@@ -81,17 +81,17 @@ You can do it with the following commands:
    - Modify settings? No
 
 4. Save Project IDs and Add GitHub Secrets:
-  - Open `nextjs-frontend/.vercel/project.json` and add the following to your GitHub repository secrets:
+  - Open `frontend/.vercel/project.json` and add the following to your GitHub repository secrets:
     - `projectId` → `VERCEL_PROJECT_ID_FRONTEND`
     - `orgId` → `VERCEL_ORG_ID`
 
 ### Backend Setup
 
-1. Link the fastapi_backend Project
+1. Link the backend Project
 
-2. Navigate to the fastapi_backend directory and run:
+2. Navigate to the backend directory and run:
    ```bash
-   cd fastapi_backend
+   cd backend
    vercel link --local-config=vercel.prod.json
    ```
    - We use a specific configuration file to set the --local-config value.
@@ -100,13 +100,13 @@ You can do it with the following commands:
    - Modify settings? No
 
 4. Save Project IDs and Add GitHub Secrets:
-  - Open `fastapi_backend/.vercel/project.json` and add the following to your GitHub repository secrets:
+  - Open `backend/.vercel/project.json` and add the following to your GitHub repository secrets:
     - `projectId` → `VERCEL_PROJECT_ID_BACKEND`
     - `orgId` → `VERCEL_ORG_ID` (Only in case you haven't added that before)
 
 5. Update requirements.txt file:
       ```bash
-      cd fastapi_backend
+      cd backend
       uv export > requirements.txt
       ```
   - Export a new requirements.txt file is required to vercel deploy when the uv.lock is modified.
