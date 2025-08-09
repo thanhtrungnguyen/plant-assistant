@@ -3,7 +3,7 @@
 # Variables
 BACKEND_DIR=backend
 FRONTEND_DIR=frontend
-DOCKER_COMPOSE=docker-compose
+DOCKER_COMPOSE=docker compose
 
 # Help
 .PHONY: help

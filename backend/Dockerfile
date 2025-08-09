@@ -18,8 +18,13 @@ ENV PATH="/root/.local/bin/:$PATH"
 # Copy dependency files first to leverage Docker caching
 COPY pyproject.toml uv.lock ./
 
+# Add UV_NO_CACHE=1 to avoid serving a cached broken 404
+ENV UV_NO_CACHE=1
+
 # Install dependencies using uv
-RUN uv sync --frozen
+# RUN uv sync --frozen
+# RUN uv sync\
+RUN uv sync --frozen || (echo "Frozen sync failed, retrying unlocked..." && uv sync --upgrade)
 
 ENV PATH="/app/.venv/bin:$PATH"
 
@@ -29,5 +34,9 @@ COPY . .
 # Expose the application port
 EXPOSE 5000
 
+# Ensure the start script is executable
+RUN chmod +x start.sh
+
 # Command to run the application
-CMD ["./start.sh"]
+# CMD ["./start.sh"]
+CMD ["bash", "start.sh"]
