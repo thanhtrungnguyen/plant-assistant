@@ -4,7 +4,7 @@ services:
       context: backend
     environment:
       - OPENAPI_OUTPUT_FILE=./shared-data/openapi.json
-      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/mydatabase
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/plant_assistant
       - TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@db:5433/testdatabase
       - MAIL_SERVER=mailhog
     ports:
@@ -22,7 +22,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydatabase
+      POSTGRES_DB: plant_assistant
     ports:
       - "5432:5432"
     networks:

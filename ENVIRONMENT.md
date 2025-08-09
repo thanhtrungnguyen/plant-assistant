@@ -69,8 +69,8 @@ Example `.env` file:
 
 ```bash
 # Database
-DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/plantassistant
-TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/plantassistant_test
+DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/plant_assistant
+TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/plant_assistant_test
 
 # Security
 SECRET_KEY=your-super-secret-development-key-change-in-production
@@ -169,7 +169,7 @@ services:
 ```bash
 ENVIRONMENT=development
 DEBUG=true
-DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/plantassistant_dev
+DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/plant_assistant_dev
 CORS_ORIGINS=["http://localhost:3000", "http://127.0.0.1:3000"]
 MAIL_SERVER=localhost
 MAIL_PORT=1025
@@ -179,7 +179,7 @@ MAIL_PORT=1025
 ```bash
 ENVIRONMENT=testing
 DEBUG=false
-DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/plantassistant_test
+DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/plant_assistant_test
 CORS_ORIGINS=["http://localhost:3000"]
 SECRET_KEY=test-secret-key-not-for-production
 ```
@@ -188,7 +188,7 @@ SECRET_KEY=test-secret-key-not-for-production
 ```bash
 ENVIRONMENT=staging
 DEBUG=false
-DATABASE_URL=postgresql+asyncpg://user:pass@staging-db:5432/plantassistant_staging
+DATABASE_URL=postgresql+asyncpg://user:pass@staging-db:5432/plant_assistant_staging
 CORS_ORIGINS=["https://staging.yourapp.com"]
 SECRET_KEY=staging-secret-key
 ```
@@ -197,7 +197,7 @@ SECRET_KEY=staging-secret-key
 ```bash
 ENVIRONMENT=production
 DEBUG=false
-DATABASE_URL=postgresql+asyncpg://user:pass@prod-db:5432/plantassistant
+DATABASE_URL=postgresql+asyncpg://user:pass@prod-db:5432/plant_assistant
 CORS_ORIGINS=["https://yourapp.com", "https://www.yourapp.com"]
 SECRET_KEY=super-secure-production-secret-key
 ```
