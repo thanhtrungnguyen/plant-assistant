@@ -1,0 +1,43 @@
+{
+	"recommendations": [
+		// Python development
+		"ms-python.python",
+		"ms-python.vscode-pylance",
+		"charliermarsh.ruff",
+		
+		// JavaScript/TypeScript development
+		"esbenp.prettier-vscode",
+		"dbaeumer.vscode-eslint",
+		"bradlc.vscode-tailwindcss",
+		
+		// Build tools
+		"ms-vscode.makefile-tools",
+		
+		// General development
+		"editorconfig.editorconfig",
+		"eamodio.gitlens",
+		"ms-vscode.vscode-json",
+		"redhat.vscode-yaml",
+		
+		// Markdown
+		"yzhang.markdown-all-in-one",
+		
+		// Docker
+		"ms-azuretools.vscode-docker",
+		
+		// Utilities
+		"PKief.material-icon-theme",
+		"oderwat.indent-rainbow",
+		"christian-kohler.path-intellisense",
+		
+		// GitHub integration
+		"GitHub.vscode-pull-request-github",
+		"github.vscode-github-actions",
+		
+		// Testing
+		"ms-python.pytest",
+		
+		// Environment files
+		"mikestead.dotenv"
+	]
+}
