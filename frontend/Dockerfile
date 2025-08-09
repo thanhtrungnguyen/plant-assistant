@@ -7,16 +7,19 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy package files and install dependencies
-COPY package*.json ./
+COPY package*.json pnpm-lock.yaml ./
 
-# Install dependencies as root (or myappuser, depending on your structure)
-RUN pnpm install
-
-## Switch to the non-root user
-USER node
+# Install dependencies as root
+RUN pnpm install --frozen-lockfile
 
 # Copy the rest of your application code
 COPY . .
+
+# Make start.sh executable while still root
+RUN chmod +x start.sh
+
+# Switch to the non-root user
+USER node
 
 EXPOSE 3000
 
