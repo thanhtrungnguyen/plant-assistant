@@ -203,6 +203,8 @@ export type DeleteItemData = {
   };
 };
 
-export type DeleteItemResponse = unknown;
+export type DeleteItemResponse = {
+  [key: string]: unknown;
+};
 
 export type DeleteItemError = HTTPValidationError;

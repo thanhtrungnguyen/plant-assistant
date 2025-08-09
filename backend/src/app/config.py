@@ -9,14 +9,14 @@ class Settings(BaseSettings):
     OPENAPI_URL: str = "/openapi.json"
 
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost/dbname"
     TEST_DATABASE_URL: str | None = None
     EXPIRE_ON_COMMIT: bool = False
 
     # User
-    ACCESS_SECRET_KEY: str
-    RESET_PASSWORD_SECRET_KEY: str
-    VERIFICATION_SECRET_KEY: str
+    ACCESS_SECRET_KEY: str = "your-secret-key"
+    RESET_PASSWORD_SECRET_KEY: str = "your-reset-secret-key"
+    VERIFICATION_SECRET_KEY: str = "your-verification-secret-key"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_SECONDS: int = 3600
 
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:3000"
 
     # CORS
-    CORS_ORIGINS: Set[str]
+    CORS_ORIGINS: Set[str] = {"http://localhost:3000"}
 
     model_config = SettingsConfigDict(
         env_file=Path(__file__).parent.parent.parent / ".env",
