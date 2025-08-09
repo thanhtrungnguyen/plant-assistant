@@ -1,0 +1,88 @@
+name: 📝 Documentation Issue
+description: Report an issue with documentation or suggest improvements
+title: "[Docs]: "
+labels: ["documentation", "needs-triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our documentation! Please provide details about the issue or improvement.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation issue is this?
+      options:
+        - Error/Mistake in documentation
+        - Missing documentation
+        - Unclear/Confusing content
+        - Outdated information
+        - Improvement suggestion
+        - New documentation request
+    validations:
+      required: true
+
+  - type: dropdown
+    id: location
+    attributes:
+      label: Documentation Location
+      description: Where is the documentation issue?
+      options:
+        - README.md (Root)
+        - Backend README
+        - Frontend README
+        - API Documentation
+        - Setup/Installation Guide
+        - Contributing Guidelines
+        - Code Comments
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Describe the documentation issue
+      placeholder: |
+        Please describe:
+        - What is wrong or missing?
+        - What section/page is affected?
+        - What specific content needs attention?
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current Content
+      description: What does the current documentation say? (if applicable)
+      placeholder: Quote the current content that needs to be changed...
+
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested Content
+      description: What should it say instead?
+      placeholder: Provide your suggested improvement...
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other context about this documentation issue
+      placeholder: |
+        - Why is this important?
+        - Who would benefit from this change?
+        - Any relevant links or resources?
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you willing to help with this documentation?
+      options:
+        - label: I'd be willing to write/update this documentation
+        - label: I'd be willing to review proposed changes

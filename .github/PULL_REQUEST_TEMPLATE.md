@@ -1,26 +1,140 @@
-<!--- Provide a general summary of your changes in the Title above -->
+# Plant Assistant Pull Request
 
-## Description
-<!--- Describe your changes in detail -->
+## 📋 Summary
+<!-- Provide a clear and concise description of what this PR does -->
 
-## Motivation and Context
-<!--- Why is this change required? What problem does it solve? -->
+**What does this PR do?**
 
-## Screenshots (if appropriate):
 
-## Steps to reproduce (if appropriate):
+**Related Issue(s):** <!-- Link to GitHub issues, e.g., "Fixes #123" or "Closes #456" -->
 
-## Types of changes
-<!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to change)
 
-## Checklist:
-<!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
-<!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
-- [ ] My code follows the code style of this project.
-- [ ] My change requires documentation updates.
-- [ ] I have updated the documentation accordingly.
-- [ ] My change requires dependencies updates.
-- [ ] I have updated the dependencies accordingly.
+## 🧠 Context and Motivation
+<!-- Why is this change needed? What problem does it solve? -->
+
+
+## 🔧 Changes Made
+<!-- List the main changes in this PR -->
+
+### Backend Changes
+- [ ] API endpoints modified/added
+- [ ] Database models updated
+- [ ] Authentication/authorization changes
+- [ ] New dependencies added
+- [ ] Configuration changes
+
+### Frontend Changes
+- [ ] UI components modified/added
+- [ ] Pages or routing changes
+- [ ] API client updates
+- [ ] Styling updates
+- [ ] New dependencies added
+
+### Infrastructure Changes
+- [ ] Docker configuration
+- [ ] CI/CD pipeline updates
+- [ ] Environment variables
+- [ ] Database migrations
+
+## 🧪 Testing
+<!-- Describe how you tested your changes -->
+
+**Test Coverage:**
+- [ ] Unit tests added/updated
+- [ ] Integration tests added/updated
+- [ ] End-to-end tests added/updated
+- [ ] Manual testing performed
+
+**Test Commands Run:**
+```bash
+# Backend tests
+make test-backend
+
+# Frontend tests
+make test-frontend
+
+# Full test suite
+make test
+```
+
+## 📱 Screenshots/Recordings
+<!-- If this PR includes UI changes, provide screenshots or recordings -->
+
+### Before
+<!-- Screenshot of the UI before your changes -->
+
+### After
+<!-- Screenshot of the UI after your changes -->
+
+## 🚀 Deployment Notes
+<!-- Any special deployment considerations -->
+
+**Database Changes:**
+- [ ] Requires database migration
+- [ ] Migration command: `make migrate-db`
+- [ ] Data migration required
+
+**Environment Variables:**
+- [ ] New environment variables added (document in ENVIRONMENT.md)
+- [ ] Environment variables removed/changed
+
+**Breaking Changes:**
+- [ ] API breaking changes (increment version)
+- [ ] Frontend breaking changes
+- [ ] Database schema breaking changes
+
+## 📝 Checklist
+
+### Code Quality
+- [ ] Code follows project style guidelines
+- [ ] Code is properly formatted (`make lint`)
+- [ ] No linting errors (`make lint`)
+- [ ] TypeScript compilation passes (frontend)
+- [ ] Python type checking passes (backend)
+
+### Testing
+- [ ] All existing tests pass
+- [ ] New tests added for new functionality
+- [ ] Test coverage maintained/improved
+- [ ] Manual testing completed
+
+### Documentation
+- [ ] README updated (if needed)
+- [ ] API documentation updated (if endpoints changed)
+- [ ] Code comments added for complex logic
+- [ ] CHANGELOG.md updated (for significant changes)
+
+### Security
+- [ ] No sensitive data exposed
+- [ ] Input validation implemented
+- [ ] Authentication/authorization properly handled
+- [ ] Dependencies checked for vulnerabilities
+
+### Performance
+- [ ] No performance regressions introduced
+- [ ] Database queries optimized (if applicable)
+- [ ] Frontend bundle size considered
+- [ ] API response times acceptable
+
+## 🔍 Review Focus
+<!-- Guide reviewers on what to focus on -->
+
+**Areas that need special attention:**
+
+
+**Known limitations/trade-offs:**
+
+
+## 📚 Additional Notes
+<!-- Any other context, concerns, or notes for reviewers -->
+
+
+---
+
+## 🏷️ Labels
+<!-- These will be added automatically based on changed files -->
+- Backend: `backend`, `python`, `fastapi`
+- Frontend: `frontend`, `nextjs`, `typescript`
+- Infrastructure: `docker`, `ci/cd`, `database`
+- Documentation: `documentation`
+- Dependencies: `dependencies`

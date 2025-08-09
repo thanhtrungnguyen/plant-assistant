@@ -1,13 +1,21 @@
-name: pre-commit
+name: Pre-commit Checks
 
 on:
   push:
+    branches: [ main, develop ]
   pull_request:
+    branches: [ main, develop ]
+
+# Cancel previous runs on new pushes
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   pre-commit:
-
+    name: 🔍 Pre-commit Hooks
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -18,37 +26,58 @@ jobs:
       OPENAPI_OUTPUT_FILE: ${{ secrets.OPENAPI_OUTPUT_FILE }}
       CORS_ORIGINS: ${{ secrets.CORS_ORIGINS }}
 
-
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for better diffs
 
-      - name: Set up Python
+      - name: 🐍 Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install uv
+      - name: ⚡ Install uv
         uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
 
-      - name: Install the project
+      - name: 🔧 Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('backend/pyproject.toml', 'backend/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: 📦 Install backend dependencies
         working-directory: ./backend
-        run: uv sync --all-extras --dev
+        run: uv sync --dev --frozen
 
-      - name: Install pnpm
+      - name: 📦 Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
           run_install: false
 
-      - name: Set up Node.js
+      - name: 🟢 Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
 
-      - name: Install Node dependencies
+      - name: 📦 Install frontend dependencies
         working-directory: ./frontend
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Run pre-commit
+      - name: 🔍 Run pre-commit hooks
         uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --verbose --all-files
+
+      - name: 📝 Show pre-commit results
+        if: failure()
+        run: |
+          echo "Pre-commit checks failed. Please run 'make pre-commit' locally to fix issues."
+          echo "Or run 'pre-commit run --all-files' to see specific failures."

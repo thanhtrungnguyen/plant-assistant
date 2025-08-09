@@ -1,111 +1,288 @@
-name: CI
+name: Plant Assistant CI
 
 on:
   push:
+    branches: [ main, develop ]
   pull_request:
+    branches: [ main, develop ]
+
+# Cancel previous runs on new pushes
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Environment variables from secrets (fallback to defaults for CI)
+  DDATABASE_URL: ${{ secrets.DATABASE_URL }}
+  TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+  ACCESS_SECRET_KEY: ${{ secrets.ACCESS_SECRET_KEY }}
+  RESET_PASSWORD_SECRET_KEY: ${{ secrets.RESET_PASSWORD_SECRET_KEY }}
+  VERIFICATION_SECRET_KEY: ${{ secrets.VERIFICATION_SECRET_KEY }}
+  CORS_ORIGINS: ${{ secrets.CORS_ORIGINS }}
+  # Additional security settings
+  ENVIRONMENT: ${{ secrets.ENVIRONMENT || 'testing' }}
+  API_PREFIX: ${{ secrets.API_PREFIX || '/api/v1' }}
 
 jobs:
-  build-fastapi:
-    name: FastAPI CI
-
+  # Backend Testing and Quality Checks
+  backend-tests:
+    name: 🐍 Backend Tests & Quality
     runs-on: ubuntu-latest
-
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-      ACCESS_SECRET_KEY: ${{ secrets.ACCESS_SECRET_KEY }}
-      RESET_PASSWORD_SECRET_KEY: ${{ secrets.RESET_PASSWORD_SECRET_KEY }}
-      VERIFICATION_SECRET_KEY: ${{ secrets.VERIFICATION_SECRET_KEY }}
-      CORS_ORIGINS: ${{ secrets.CORS_ORIGINS }}
+    timeout-minutes: 15
 
     services:
       postgres:
         image: postgres:17
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'password' }}
           POSTGRES_DB: testdatabase
         ports:
           - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: 🐍 Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install uv
+      - name: ⚡ Install uv
         uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
 
-      - name: Install the project
+      - name: 🔧 Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('backend/pyproject.toml', 'backend/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: 📦 Install dependencies
         working-directory: ./backend
-        run: uv sync --all-extras --dev
+        run: uv sync --dev --frozen
 
-      - name: Run tests
+      - name: 🔍 Lint with Ruff
         working-directory: ./backend
-        run: uv run coverage run -m pytest
+        run: uv run ruff check --output-format=github
 
-      - name: Generate XML coverage report
+      - name: 🎨 Check formatting with Ruff
         working-directory: ./backend
-        run: uv run coverage xml -o coverage.xml
+        run: uv run ruff format --check
 
-      - name: Coveralls GitHub Action
+      - name: 📝 Type check with MyPy
+        working-directory: ./backend
+        run: uv run mypy src/ --show-error-codes
+
+      - name: 🧪 Run tests with coverage
+        working-directory: ./backend
+        run: |
+          uv run coverage run -m pytest -v --tb=short
+          uv run coverage report --show-missing
+          uv run coverage xml -o coverage.xml
+
+      - name: 📊 Upload coverage to Coveralls
         uses: coverallsapp/github-action@v2.3.4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          flag-name: python-coverage
+          flag-name: backend-coverage
           parallel: true
           path-to-lcov: backend/coverage.xml
 
-  build-frontend:
-    name: Next.js CI
-
+  # Frontend Testing and Quality Checks
+  frontend-tests:
+    name: ⚛️ Frontend Tests & Quality
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Install pnpm
+      - name: 📦 Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
           run_install: false
 
-      - name: Set up Node.js
+      - name: 🟢 Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
 
-      - name: Install Node dependencies
+      - name: 📦 Install dependencies
         working-directory: ./frontend
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Run tests
+      - name: 🔍 Lint with ESLint
+        working-directory: ./frontend
+        run: pnpm run lint
+
+      - name: 📝 Type check with TypeScript
+        working-directory: ./frontend
+        run: pnpm run tsc
+
+      - name: 🎨 Check formatting with Prettier
+        working-directory: ./frontend
+        run: pnpm run prettier --check
+
+      - name: 🏗️ Build application
+        working-directory: ./frontend
+        run: pnpm run build
+
+      - name: 🧪 Run tests with coverage
         working-directory: ./frontend
         run: pnpm run coverage
 
-      - name: Coveralls GitHub Action
+      - name: 📊 Upload coverage to Coveralls
         uses: coverallsapp/github-action@v2.3.4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          flag-name: node-coverage
+          flag-name: frontend-coverage
           parallel: true
 
-  finish:
-
-    name: Coveralls
-
-    needs: [ build-fastapi, build-frontend ]
-
+  # Docker Build Tests
+  docker-build:
+    name: 🐳 Docker Build Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'pull_request'
 
     steps:
-      - name: Close parallel build
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🏗️ Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 🏗️ Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Security Scanning
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      security-events: write
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: 📤 Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # Finish Coverage Reporting
+  finish-coverage:
+    name: 📊 Finish Coverage Report
+    needs: [ backend-tests, frontend-tests ]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: 📊 Close parallel coverage build
         uses: coverallsapp/github-action@v2.3.4
         with:
           parallel-finished: true
-          carryforward: "python-coverage,node-coverage"
+          carryforward: "backend-coverage,frontend-coverage"
+
+  # Integration Tests (optional - runs on main branch)
+  integration-tests:
+    name: 🔗 Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    if: github.ref == 'refs/heads/main'
+    needs: [ backend-tests, frontend-tests ]
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'password' }}
+          POSTGRES_DB: testdatabase
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      mailhog:
+        image: mailhog/mailhog
+        ports:
+          - 1025:1025
+          - 8025:8025
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Compose
+        run: |
+          docker compose --version
+          docker compose config
+
+      - name: 🚀 Start services with Docker Compose
+        run: |
+          docker compose up -d --build
+          sleep 30  # Wait for services to be ready
+
+      - name: 🔍 Check service health
+        run: |
+          curl -f http://localhost:5000/docs || exit 1
+          curl -f http://localhost:3000 || exit 1
+
+      - name: 🧪 Run integration tests (if they exist)
+        run: |
+          # Add integration test commands here when implemented
+          echo "Integration tests would run here"
+
+      - name: 📋 Show service logs on failure
+        if: failure()
+        run: |
+          docker compose logs backend
+          docker compose logs frontend
+
+      - name: 🧹 Cleanup
+        if: always()
+        run: docker compose down -v

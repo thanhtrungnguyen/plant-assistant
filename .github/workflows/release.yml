@@ -1,61 +1,229 @@
-name: Release draft creation
+name: Release Management
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version of the release"
+        description: "Release version (e.g., v1.0.0)"
         required: true
-        type: number
+        type: string
+      release_type:
+        description: "Type of release"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      prerelease:
+        description: "Mark as pre-release"
+        required: false
+        type: boolean
+        default: false
+
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+  issues: write
+  pull-requests: write
 
 jobs:
-  release:
-    name: Release
-
+  # Validate release preparation
+  validate:
+    name: 🔍 Validate Release
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
+    if: github.event_name == 'workflow_dispatch'
 
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Extract changelog for version
+      - name: 🔍 Validate version format
         run: |
-          VERSION=${{ github.event.inputs.version }}
-
-          # Extract changelog for version
-          CHANGELOG=$(awk -v version="$VERSION" 'BEGIN{RS="## "; FS="\n"} $0 ~ version {print "## "$0}' CHANGELOG.md)
-
-          # Remove the first line (version title)
-          CHANGELOG=$(echo "$CHANGELOG" | sed '1d')
-
-          # Verify if changelog was found
-          if [ -z "$CHANGELOG" ]; then
-            echo "Changelog for version $VERSION not found"
+          VERSION="${{ github.event.inputs.version }}"
+          if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "❌ Invalid version format: $VERSION"
+            echo "Expected format: v1.0.0 or v1.0.0-beta.1"
             exit 1
           fi
+          echo "✅ Version format is valid: $VERSION"
 
-          # Set output
+      - name: 📝 Check if changelog exists
+        run: |
+          if [ ! -f CHANGELOG.md ]; then
+            echo "❌ CHANGELOG.md not found"
+            exit 1
+          fi
+          echo "✅ CHANGELOG.md found"
+
+      - name: 🏷️ Check if tag already exists
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "❌ Tag $VERSION already exists"
+            exit 1
+          fi
+          echo "✅ Tag $VERSION is available"
+
+  # Run full test suite before release
+  test:
+    name: 🧪 Full Test Suite
+    needs: validate
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/ci.yml
+
+  # Create release draft
+  create-release:
+    name: 🚀 Create Release
+    runs-on: ubuntu-latest
+    needs: [validate, test]
+    if: github.event_name == 'workflow_dispatch'
+
+    outputs:
+      release-id: ${{ steps.create-draft.outputs.id }}
+      upload-url: ${{ steps.create-draft.outputs.upload_url }}
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📝 Extract changelog for version
+        id: changelog
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          VERSION_NUMBER=$(echo $VERSION | sed 's/^v//')
+          
+          # Extract changelog section for this version
+          CHANGELOG=$(awk -v version="$VERSION_NUMBER" '
+            BEGIN { RS="## "; FS="\n"; found=0 }
+            $0 ~ version && !found { 
+              found=1;
+              # Skip the version line and print the rest
+              for(i=2; i<=NF; i++) {
+                if($i ~ /^## / || $i ~ /^# /) break;
+                print $i
+              }
+            }
+          ' CHANGELOG.md)
+
+          if [ -z "$CHANGELOG" ]; then
+            echo "⚠️ No changelog found for version $VERSION_NUMBER, using placeholder"
+            CHANGELOG="Release $VERSION
+
+Changes:
+- See commit history for detailed changes
+
+Migration Notes:
+- No breaking changes in this release"
+          fi
+
+          # Save changelog to GitHub environment
           echo "CHANGELOG<<EOF" >> $GITHUB_ENV
           echo "$CHANGELOG" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Create GitHub Release Draft
+      - name: 📊 Generate release notes
+        id: release-notes
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          RELEASE_TYPE="${{ github.event.inputs.release_type }}"
+          
+          # Get previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+          
+          # Generate commit list since last tag
+          if [ -n "$PREVIOUS_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --max-count=20)
+          fi
+
+          # Create full release notes
+          cat > release_notes.md << EOF
+          # Plant Assistant $VERSION
+
+          ## Release Information
+          - **Release Type**: $RELEASE_TYPE
+          - **Previous Version**: ${PREVIOUS_TAG:-"Initial release"}
+          - **Release Date**: $(date -u +"%Y-%m-%d")
+
+          ## Changelog
+          $CHANGELOG
+
+          ## Recent Commits
+          $COMMITS
+
+          ## Deployment
+          This release can be deployed using:
+          \`\`\`bash
+          git checkout $VERSION
+          make docker-up
+          \`\`\`
+
+          ## Documentation
+          - [Setup Guide](https://github.com/thanhtrungnguyen/plant-assistant#quick-start)
+          - [API Documentation](https://github.com/thanhtrungnguyen/plant-assistant/blob/main/backend/README.md)
+          - [Frontend Guide](https://github.com/thanhtrungnguyen/plant-assistant/blob/main/frontend/README.md)
+          EOF
+
+      - name: 🏷️ Create GitHub Release
+        id: create-draft
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version }}
-          name: ${{ github.event.inputs.version }}
-          body: ${{ env.CHANGELOG }}
+          name: "Plant Assistant ${{ github.event.inputs.version }}"
+          body_path: release_notes.md
           draft: true
-          prerelease: false
+          prerelease: ${{ github.event.inputs.prerelease }}
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Summary
+      - name: 📊 Release Summary
         run: |
-          echo "## 🚀 Release Summary" >> $GITHUB_STEP_SUMMARY
-          echo "Release draft created for version ${{ github.event.inputs.version }}." >> $GITHUB_STEP_SUMMARY
-          echo "Visit the [Releases section](https://github.com/vintasoftware/nextjs-fastapi-template/releases) to review and publish the release." >> $GITHUB_STEP_SUMMARY
-          echo "Once the draft is published, another action will automatically be triggered to publish the packages." >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Release Draft Created" >> $GITHUB_STEP_SUMMARY
+          echo "**Version**: ${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Type**: ${{ github.event.inputs.release_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Pre-release**: ${{ github.event.inputs.prerelease }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review the [release draft](https://github.com/thanhtrungnguyen/plant-assistant/releases)" >> $GITHUB_STEP_SUMMARY
+          echo "2. Test the release if needed" >> $GITHUB_STEP_SUMMARY
+          echo "3. Publish the release when ready" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Deployment:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "git checkout ${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "make docker-up" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # Auto-publish workflow for tags pushed directly
+  auto-publish:
+    name: 📦 Auto-publish Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🚀 Create Release from Tag
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Plant Assistant ${{ github.ref_name }}"
+          body: |
+            Release ${{ github.ref_name }} of Plant Assistant.
+            
+            See [CHANGELOG.md](https://github.com/thanhtrungnguyen/plant-assistant/blob/main/CHANGELOG.md) for details.
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/thanhtrungnguyen/plant-assistant/discussions
+    about: For general questions, ideas, and community discussions
+  - name: 📧 Security Issues
+    url: https://github.com/thanhtrungnguyen/plant-assistant/security/advisories/new
+    about: For reporting security vulnerabilities (private reporting)
+  - name: 📚 Documentation
+    url: https://github.com/thanhtrungnguyen/plant-assistant#readme
+    about: Check our documentation for setup and usage guides

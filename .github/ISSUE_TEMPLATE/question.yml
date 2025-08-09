@@ -1,0 +1,88 @@
+name: ❓ Question/Support
+description: Ask a question or request support
+title: "[Question]: "
+labels: ["question", "support"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reaching out! Please provide as much context as possible so we can help you effectively.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please check these first
+      options:
+        - label: I have searched existing issues and discussions
+          required: true
+        - label: I have checked the documentation
+          required: true
+        - label: This is not a bug report (use the bug template instead)
+          required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      description: What is your question about?
+      options:
+        - Setup/Installation
+        - Configuration
+        - Usage/How-to
+        - API Usage
+        - Development
+        - Deployment
+        - Troubleshooting
+        - Best Practices
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+      placeholder: Please describe your question in detail...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide any relevant context
+      placeholder: |
+        - What are you trying to achieve?
+        - What have you tried so far?
+        - Any relevant background information?
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment (if relevant)
+      description: Your setup details
+      placeholder: |
+        - OS: [e.g. Windows 11, macOS 13, Ubuntu 22.04]
+        - Node.js version: [if applicable]
+        - Python version: [if applicable]
+        - Docker version: [if applicable]
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What You've Tried
+      description: What solutions have you already attempted?
+      placeholder: |
+        Please describe:
+        - What steps you've taken
+        - What you expected to happen
+        - What actually happened
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Any other relevant information
