@@ -50,7 +50,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         password: str,
         user: Any,
     ) -> None:
-        errors = []
+        errors: list[str] = []
 
         if len(password) < 8:
             errors.append("Password should be at least 8 characters.")
