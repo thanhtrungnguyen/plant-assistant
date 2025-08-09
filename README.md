@@ -111,11 +111,30 @@ Key commands:
 - `make clean` - Clean build artifacts
 - `make docs` - Start documentation server
 
+## 📖 Documentation
+
+- **[Backend Documentation](./backend/README.md)** - FastAPI setup, API endpoints, database management
+- **[Frontend Documentation](./frontend/README.md)** - Next.js setup, UI components, styling guide
+- **[Contributing Guidelines](./CONTRIBUTING.md)** - How to contribute to the project
+- **[Environment Setup](./ENVIRONMENT.md)** - Environment variables and configuration
+- **[Project Structure](./STRUCTURE.md)** - Detailed project architecture overview
+
 ### Access the Application
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5000
 - **API Documentation**: http://localhost:5000/docs
 - **MailHog (Email testing)**: http://localhost:8025
+
+## 📁 Project Structure
+
+This is a monorepo containing:
+
+- **[`backend/`](./backend/README.md)** - FastAPI backend service with comprehensive API documentation
+- **[`frontend/`](./frontend/README.md)** - Next.js frontend application with modern UI components
+- **`docs/`** - Project documentation and guides
+- **`local-shared-data/`** - Development data sharing between services
+
+Each service has its own detailed README with specific setup instructions and architecture documentation.
 
 ## Using the template? Let's talk!
 
