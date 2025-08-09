@@ -1,61 +1,121 @@
-## Next.js FastAPI Template
+# Plant Assistant
 
-<a href="https://www.vintasoftware.com/blog/next-js-fastapi-template"><img src="images/banner.png" alt="Next.js FastAPI Template" width="auto"></a>
 <p align="center">
-    <em>Next.js FastAPI Template: Python + Modern TypeScript stack with Zod validation.</em>
+    <em>Plant Assistant: AI-powered plant care an## Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes
+4. Run tests: `pytest` (backend) and `pnpm test` (frontend)
+5. Commit your changes: `git commit -m 'Add amazing feature'`
+6. Push to the branch: `git push origin feature/amazing-feature`
+7. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.txt) file for details.
+
+## Support
+
+- 📧 **Issues**: [GitHub Issues](https://github.com/thanhtrungnguyen/plant-assistant/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/thanhtrungnguyen/plant-assistant/discussions)
+- 📖 **Documentation**: Check the `docs/` directory for detailed guidest system built with Next.js and FastAPI.</em>
 </p>
 <p align="center">
-<a href="https://github.com/vintasoftware/nextjs-fastapi-template/actions/workflows/ci.yml" target="_blank">
-    <img src="https://github.com/vintasoftware/nextjs-fastapi-template/actions/workflows/ci.yml/badge.svg" alt="CI">
+<a href="https://github.com/thanhtrungnguyen/plant-assistant/actions/workflows/ci.yml" target="_blank">
+    <img src="https://github.com/thanhtrungnguyen/plant-assistant/actions/workflows/ci.yml/badge.svg" alt="CI">
 </a>
-<a href="https://coveralls.io/github/vintasoftware/nextjs-fastapi-template" target="_blank">
-    <img src="https://coveralls.io/repos/github/vintasoftware/nextjs-fastapi-template/badge.svg" alt="Coverage">
+<a href="https://coveralls.io/github/thanhtrungnguyen/plant-assistant" target="_blank">
+    <img src="https://coveralls.io/repos/github/thanhtrungnguyen/plant-assistant/badge.svg" alt="Coverage">
 </a>
 </p>
 
 ---
 
-**Documentation**: <a href="https://vintasoftware.github.io/nextjs-fastapi-template/" target="_blank">https://vintasoftware.github.io/nextjs-fastapi-template/</a>
-
-**Source Code**: <a href="https://github.com/vintasoftware/nextjs-fastapi-template/" target="_blank">https://github.com/vintasoftware/nextjs-fastapi-template/</a>
+**Repository**: <a href="https://github.com/thanhtrungnguyen/plant-assistant/" target="_blank">https://github.com/thanhtrungnguyen/plant-assistant/</a>
 
 ---
 
-The Next.js FastAPI Template provides a solid foundation for scalable, high-performance web applications, following clean architecture and best practices. It simplifies development by integrating FastAPI, Pydantic, and Next.js with TypeScript and Zod, ensuring end-to-end type safety and schema validation between frontend and backend.
+Plant Assistant is a comprehensive plant care and management application that helps users track, monitor, and care for their plants. Built with modern technologies including FastAPI, Next.js, and TypeScript, it provides a scalable foundation for plant enthusiasts and professionals.
 
-The FastAPI backend supports fully asynchronous operations, optimizing database queries, API routes, and test execution for better performance. Deployment is seamless, with both backend and frontend fully deployable to Vercel, enabling quick product releases with minimal configuration.
+### Key Features
+✔ **Plant Management** – Track and organize your plant collection with detailed profiles
 
-### Key features
-✔ End-to-end type safety – Automatically generated typed clients from the OpenAPI schema ensure seamless API contracts between frontend and backend.
+✔ **Care Scheduling** – Automated reminders for watering, fertilizing, and maintenance tasks
 
-✔ Hot-reload updates – The client updates automatically when backend routes change, keeping FastAPI and Next.js in sync.
+✔ **Health Monitoring** – Visual tracking of plant health and growth progress
 
-✔ Versatile foundation – Designed for MVPs and production-ready applications, with a pre-configured authentication system and API layer.
+✔ **User Authentication** – Secure user accounts with email verification and password recovery
 
-✔ Quick deployment – Deploys a full-stack application—including authentication flow and a dashboard—on Vercel in just a few steps.
+✔ **Responsive Design** – Modern UI built with shadcn/ui and Tailwind CSS
 
-✔ Production-ready authentication – Includes a pre-configured authentication system and dashboard interface, allowing you to immediately start development with user management features.
+✔ **Type Safety** – End-to-end type safety with TypeScript and Zod validation
 
-## Technology stack
-This template features a carefully selected set of technologies to ensure efficiency, scalability, and ease of use:
+## Technology Stack
+This application uses modern, production-ready technologies:
 
-- Zod + TypeScript – Type safety and schema validation across the stack.
-- fastapi-users – Complete authentication system with:
-    - Secure password hashing
-    - JWT authentication
-- Email-based password recovery
-- shadcn/ui – Prebuilt React components with Tailwind CSS.
-- OpenAPI-fetch – Fully typed client generation from the OpenAPI schema.
-- UV – Simplified dependency management and packaging.
-- Docker Compose – Consistent environments for development and production.
-- Pre-commit hooks – Automated code linting, formatting, and validation before commits.
-- Vercel Deployment – Serverless backend and scalable frontend, deployable with minimal configuration.
+- **Frontend**: Next.js 15 + TypeScript + Tailwind CSS + shadcn/ui
+- **Backend**: FastAPI + Python 3.12 + UV package manager
+- **Database**: PostgreSQL 17 with asyncpg
+- **Authentication**: fastapi-users with JWT tokens
+- **Validation**: Zod (frontend) + Pydantic (backend)
+- **Development**: Docker Compose + Hot reload
+- **Code Quality**: Pre-commit hooks + Ruff + ESLint
+- **Deployment**: Vercel-ready configuration
 
-This is a partial list of the technologies included in the template. For a complete overview, visit our [Technology selection](https://vintasoftware.github.io/nextjs-fastapi-template/technology-selection/) page.
+## Quick Start
 
-## Get Started
+### Prerequisites
+- Python 3.12+
+- Node.js 20+
+- pnpm
+- Docker & Docker Compose
 
-To use this template, visit our [Get Started](https://vintasoftware.github.io/nextjs-fastapi-template/get-started/) and follow the steps.
+### Development Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/thanhtrungnguyen/plant-assistant.git
+   cd plant-assistant
+   ```
+
+2. **Quick setup for new developers**
+   ```bash
+   make setup
+   ```
+
+3. **Start development environment**
+   ```bash
+   # With Docker (recommended)
+   make dev
+
+   # Or locally (requires Python 3.12+ and Node.js 20+)
+   make dev-local
+   ```
+
+### Available Commands
+
+Run `make help` to see all available commands:
+
+```bash
+make help
+```
+
+Key commands:
+- `make dev` - Start full development environment
+- `make test` - Run all tests
+- `make lint` - Check code quality
+- `make clean` - Clean build artifacts
+- `make docs` - Start documentation server
+
+### Access the Application
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000
+- **API Documentation**: http://localhost:5000/docs
+- **MailHog (Email testing)**: http://localhost:8025
 
 ## Using the template? Let's talk!
 
