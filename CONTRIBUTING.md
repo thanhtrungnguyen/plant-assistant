@@ -49,6 +49,30 @@ cd frontend
 pnpm test
 ```
 
+## Pre-commit Hooks
+
+This project uses pre-commit hooks with dual platform support:
+
+### Setup for Your Platform
+```bash
+# For Windows local development
+make precommit-setup-windows
+
+# For Linux/CI (GitHub Actions)  
+make precommit-setup-linux
+```
+
+### Install and Run
+```bash
+# Install hooks (one time)
+pre-commit install
+
+# Run on all files
+make pre-commit
+```
+
+See [docs/precommit-setup.md](docs/precommit-setup.md) for detailed configuration guide.
+
 ## Pull Request Process
 
 1. Create a feature branch from `main`

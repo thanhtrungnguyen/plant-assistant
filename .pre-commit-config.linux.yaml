@@ -31,35 +31,35 @@ repos:
     hooks:
       - id: frontend-lint
         name: run frontend lint
-        entry: powershell.exe -Command "cd frontend; pnpm run lint"
+        entry: sh -c 'cd frontend && pnpm run lint'
         language: system
         types: [ file ]
         files: ^frontend/.*\.(js|jsx|ts|tsx)$
         pass_filenames: false
       - id: frontend-prettier
         name: Run Prettier on frontend files
-        entry: powershell.exe -Command "cd frontend; pnpm run prettier"
+        entry: sh -c 'cd frontend && pnpm run prettier'
         language: system
         types: [ file ]
         files: ^frontend/.*\.(js|jsx|ts|tsx)$
         pass_filenames: false
       - id: frontend-tsc
         name: run frontend tsc
-        entry: powershell.exe -Command "cd frontend; pnpm run tsc"
+        entry: sh -c 'cd frontend && pnpm run tsc'
         language: system
         types: [ file ]
         files: ^frontend/.*\.(ts|tsx)$
         pass_filenames: false
       - id: generate-openapi-schema
         name: generate OpenAPI schema
-        entry: powershell.exe -Command "Set-Location -Path 'backend/src'; $env:PYTHONPATH='D:\\Projects\\plant-assistant\\backend\\src'; uv run python -m commands.generate_openapi_schema"
+        entry: sh -c 'cd backend/src && uv run python -m commands.generate_openapi_schema'
         language: system
         # Only run OpenAPI schema generation if schemas.py, main.py or package version have changed:
         files: (main\.py$|schemas\.py$|pyproject\.toml)
         pass_filenames: false
       - id: generate-frontend-client
         name: generate frontend client
-        entry: powershell.exe -Command "cd frontend; pnpm run generate-client"
+        entry: sh -c 'cd frontend && pnpm run generate-client'
         language: system
         # Only run frontend client generation if frontend files have changed:
         files: openapi\.json$

@@ -5,7 +5,8 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load .env from the backend directory (parent of src)
+load_dotenv(Path(__file__).parent.parent.parent / ".env")
 
 OUTPUT_FILE = os.getenv("OPENAPI_OUTPUT_FILE")
 

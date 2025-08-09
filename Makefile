@@ -26,7 +26,9 @@ help:
 	@echo "  lint                 Run linting for both backend and frontend"
 	@echo "  lint-fix             Fix linting issues"
 	@echo "  format               Format code"
-	@echo "  pre-commit           Run pre-commit hooks"
+	@echo "  pre-commit                Run pre-commit hooks"
+	@echo "  precommit-setup-windows   Setup pre-commit for Windows development"
+	@echo "  precommit-setup-linux     Setup pre-commit for Linux/CI"
 	@echo ""
 	@echo "Docker:"
 	@echo "  docker-up            Start all services with Docker"
@@ -182,7 +184,7 @@ docker-test-frontend: ## Run tests for the frontend
 	$(DOCKER_COMPOSE) run --rm frontend pnpm run test
 
 # Utility commands
-.PHONY: check-deps update-deps format pre-commit docs
+.PHONY: check-deps update-deps format pre-commit precommit-setup-windows precommit-setup-linux docs
 
 check-deps: ## Check for dependency updates
 	@echo "Checking backend dependencies..."
@@ -204,6 +206,20 @@ format: ## Format code (backend and frontend)
 
 pre-commit: ## Run pre-commit hooks
 	pre-commit run --all-files
+
+precommit-setup-windows: ## Setup pre-commit for Windows development
+ifeq ($(OS),Windows_NT)
+	powershell -ExecutionPolicy Bypass -File "./scripts/setup-precommit.ps1" -Windows
+else
+	./scripts/setup-precommit.sh windows
+endif
+
+precommit-setup-linux: ## Setup pre-commit for Linux/CI
+ifeq ($(OS),Windows_NT)
+	powershell -ExecutionPolicy Bypass -File "./scripts/setup-precommit.ps1" -Linux
+else
+	./scripts/setup-precommit.sh linux
+endif
 
 docs: ## Start documentation server
 	mkdocs serve
