@@ -3,7 +3,7 @@ import os
 import pytest
 from pathlib import Path
 
-from commands.generate_openapi_schema import (
+from src.commands.generate_openapi_schema import (
     generate_openapi_schema,
     remove_operation_id_tag,
 )

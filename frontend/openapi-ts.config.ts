@@ -11,6 +11,6 @@ export default defineConfig({
   output: {
     format: "prettier",
     lint: "eslint",
-    path: "app/openapi-client",
+    path: "src/app/openapi-client",
   },
 });
