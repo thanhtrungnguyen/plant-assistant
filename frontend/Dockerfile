@@ -1,4 +1,4 @@
-FROM node:20-bookworm
+FROM node:22-bookworm
 
 # Set the working directory
 WORKDIR /app

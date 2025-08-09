@@ -70,7 +70,7 @@ This application uses modern, production-ready technologies:
 
 ### Prerequisites
 - Python 3.12+
-- Node.js 20+
+- Node.js 22+
 - pnpm
 - Docker & Docker Compose
 
@@ -92,7 +92,7 @@ This application uses modern, production-ready technologies:
    # With Docker (recommended)
    make dev
 
-   # Or locally (requires Python 3.12+ and Node.js 20+)
+   # Or locally (requires Python 3.12+ and Node.js 22+)
    make dev-local
    ```
 

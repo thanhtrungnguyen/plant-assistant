@@ -5,7 +5,7 @@ Modern Next.js frontend application for the Plant Assistant platform, providing 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 20+
+- Node.js 22+
 - pnpm (recommended) or npm
 - Backend API running on http://localhost:5000
 
