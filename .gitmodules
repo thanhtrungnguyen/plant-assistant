@@ -1,4 +1,4 @@
 [submodule "docs/fastapi-best-practices"]
 	path = docs/fastapi-best-practices
 	url = https://github.com/zhanymkanov/fastapi-best-practices
-	branch = main
+	branch = master
