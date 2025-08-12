@@ -37,7 +37,7 @@ def diagnose_plant(image_path: str, api_url: str = "http://localhost:5001") -> O
         print(f"❌ Error: Image file not found: {image_path}")
         return None
     
-    if not img_file.suffix.lower() in ['.jpg', '.jpeg', '.png', '.webp']:
+    if img_file.suffix.lower() not in ['.jpg', '.jpeg', '.png', '.webp']:
         print(f"❌ Error: Unsupported image format: {img_file.suffix}")
         return None
     
@@ -77,20 +77,20 @@ def print_diagnosis_results(result: Dict[Any, Any]) -> None:
     
     # Check if it's an error response
     if 'error' in result:
-        print(f"\n❌ Diagnosis Failed")
+        print("\n❌ Diagnosis Failed")
         print(f"Error: {result['error']}")
         print(f"Message: {result['message']}")
         return
     
     # Success response
-    print(f"\n✅ Diagnosis Complete!")
+    print("\n✅ Diagnosis Complete!")
     print("=" * 50)
     print(f"🌱 Plant Species: {result['plant_name']}")
     print(f"🏥 Health Condition: {result['condition']}")
-    print(f"\n📝 Detailed Diagnosis:")
+    print("\n📝 Detailed Diagnosis:")
     print(f"   {result['detail_diagnosis']}")
     
-    print(f"\n📋 Recommended Actions:")
+    print("\n📋 Recommended Actions:")
     for action in result['action_plan']:
         print(f"   {action['id']}. {action['action']}")
     
