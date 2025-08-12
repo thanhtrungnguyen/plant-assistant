@@ -1,1 +1,5 @@
 .vercel
+
+# Logs
+logs/
+*.log

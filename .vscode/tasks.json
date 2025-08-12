@@ -5,7 +5,7 @@
       "label": "Backend: Start Server",
       "type": "shell",
       "command": "uv",
-      "args": ["run", "fastapi", "dev", "src/app/main.py", "--host", "0.0.0.0", "--port", "5000"],
+      "args": ["run", "fastapi", "dev", "src/main.py", "--host", "0.0.0.0", "--port", "5000"],
       "options": {
         "cwd": "${workspaceFolder}/backend"
       },

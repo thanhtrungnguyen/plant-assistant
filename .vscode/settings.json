@@ -22,7 +22,7 @@
   "python.linting.pylintEnabled": false,
   "python.linting.flake8Enabled": false,
   "python.formatting.provider": "none",
-  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.typeCheckingMode": "standard",
   "python.analysis.autoImportCompletions": true,
   "python.analysis.completeFunctionParens": true,
 

@@ -11,8 +11,8 @@ export default function Home() {
           Welcome to the Next.js & FastAPI Boilerplate
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-          A simple and powerful template to get started with full-stack
-          development using Next.js and FastAPI.
+          A simple and powerful template to get started with full-stack development using Next.js
+          and FastAPI.
         </p>
 
         {/* Link to Dashboard */}
