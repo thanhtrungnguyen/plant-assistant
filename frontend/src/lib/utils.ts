@@ -1,4 +1,4 @@
-import { AuthJwtLoginError, RegisterRegisterError } from "@/app/clientService";
+import { LoginError, RegisterError } from "@/app/clientService";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -6,10 +6,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function getErrorMessage(
-  error: RegisterRegisterError | AuthJwtLoginError,
-): string {
-  let errorMessage = "An unknown error occurred";
+export function getErrorMessage(error: RegisterError | LoginError): string | unknown {
+  let errorMessage: string | unknown = "An unknown error occurred";
 
   if (typeof error.detail === "string") {
     // If detail is a string, use it directly

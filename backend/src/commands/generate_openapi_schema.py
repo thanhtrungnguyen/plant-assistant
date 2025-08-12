@@ -1,10 +1,17 @@
 import json
-from pathlib import Path
-from app.main import app
 import os
-from typing import Dict, Any
+import sys
+from pathlib import Path
+from typing import Any, Dict
 
 from dotenv import load_dotenv
+
+# Add the backend directory to Python path
+backend_dir = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(backend_dir))
+
+# Now import the app (after path setup)
+from src.main import app  # noqa: E402
 
 # Load .env from the backend directory (parent of src)
 load_dotenv(Path(__file__).parent.parent.parent / ".env")
