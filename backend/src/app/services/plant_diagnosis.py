@@ -12,7 +12,7 @@ This module implements a multi-agent system for plant diagnosis with the followi
 
 import base64
 import json
-from typing import Dict, List, Optional, TypedDict, Annotated, Any
+from typing import Dict, List, Optional, TypedDict, Any
 from PIL import Image
 import io
 

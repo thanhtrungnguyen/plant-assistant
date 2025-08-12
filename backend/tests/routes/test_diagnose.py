@@ -6,7 +6,6 @@ from unittest.mock import patch, AsyncMock, Mock
 from fastapi.testclient import TestClient
 from io import BytesIO
 from PIL import Image
-import base64
 
 from app.main import app
 from app.services.plant_diagnosis import PlantDiagnosisService
