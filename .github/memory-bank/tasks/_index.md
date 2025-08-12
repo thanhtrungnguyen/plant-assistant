@@ -4,7 +4,7 @@
 - [TASK002] Implement Plant Diagnosis API - LangGraph multi-agent system for plant health diagnosis
 
 ## Pending
-- [TASK003] Set up Vector Database Integration - Chroma database for plant knowledge embeddings
+- [TASK003] Set up Vector Database Integration - Pinecone database for plant knowledge embeddings
 - [TASK004] Create Care Advice System - AI-powered personalized plant care recommendations
 - [TASK005] Build Plant Tracking UI - Visual progress monitoring and photo timeline
 - [TASK006] Implement Smart Reminders - Background task scheduling for care notifications

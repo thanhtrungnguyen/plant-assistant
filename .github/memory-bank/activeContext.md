@@ -73,8 +73,8 @@ From analyzing the existing codebase and documentation, I've identified:
 
 **Database Strategy:**
 - **Current**: PostgreSQL for structured data
-- **Future**: Adding Chroma vector database for AI embeddings
-- **Decision**: Implement as separate service or integrate directly
+- **Future**: Adding Pinecone vector database for AI embeddings
+- **Decision**: Implement as managed cloud service with API integration
 
 **Feature Prioritization:**
 - **High Priority**: Plant identification (core feature, user validation)

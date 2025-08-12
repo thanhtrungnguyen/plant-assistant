@@ -20,11 +20,11 @@
 - **Usage**: Primary data store for users, plants, care logs, and structured data
 - **Features utilized**: JSONB columns for flexible plant attributes, full-text search
 
-**Chroma Vector Database**
-- **Why chosen**: Lightweight vector DB optimized for embeddings and semantic search
+**Pinecone Vector Database**
+- **Why chosen**: Fully managed vector database with excellent performance and scalability
 - **Usage**: Store plant care knowledge embeddings for AI-powered recommendations
-- **Integration**: OpenAI embeddings for plant data semantic search
-- **Persistence**: Docker volumes for development, managed storage for production
+- **Integration**: OpenAI embeddings for plant data semantic search and retrieval
+- **Benefits**: Cloud-native with automatic scaling, built-in metadata filtering, production-ready
 
 **Redis (Future)**
 - **Planned usage**: Session storage, caching, background task queuing
@@ -46,8 +46,8 @@
 
 **Embeddings Pipeline**
 - **Strategy**: OpenAI text-embedding-3-small for plant care knowledge vectorization
-- **Storage**: Chroma collections with metadata filtering
-- **Query**: Semantic search for relevant plant care information
+- **Storage**: Pinecone index with namespace organization and metadata filtering
+- **Query**: Semantic search for relevant plant care information with similarity scoring
 
 ### Frontend Technologies
 **Next.js 15**

@@ -133,7 +133,7 @@
 **Vector Database Integration**
 - **Status**: Planned, not implemented
 - **Components needed**:
-  - Chroma database setup and configuration
+  - Pinecone database setup and configuration
   - Plant care knowledge vectorization
   - Embedding generation pipeline
   - Semantic search capabilities

@@ -25,7 +25,7 @@ The application follows a modern **monolithic-first approach** with clear servic
                        │   Data Layer       │
                        │                    │
                        │ • PostgreSQL       │
-                       │ • Chroma Vector DB │
+                       │ • Pinecone Vector  │
                        │ • Redis Cache      │
                        └────────────────────┘
 ```
