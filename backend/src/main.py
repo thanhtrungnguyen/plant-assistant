@@ -6,6 +6,7 @@ from src.auth.routes.auth_local import router as auth_local
 from src.auth.routes.auth_oauth import router as auth_oauth
 from src.auth.routes.auth_recovery import router as auth_recovery
 from src.auth.routes.auth_tokens import router as auth_tokens
+from src.auth.providers import oauth  # Import to trigger OAuth initialization
 from src.core.config import settings
 from src.core.routes.health import router as health_router
 from src.core.logging import setup_logging, get_logger
@@ -23,6 +24,27 @@ app = FastAPI(
 
 logger.info(f"Starting {settings.APP_NAME} application")
 logger.info(f"CORS origins: {settings.CORS_ORIGINS}")
+
+# Log OAuth configuration status
+try:
+    google_client = oauth.create_client("google")
+    logger.info("[OAUTH] OAuth providers loaded successfully")
+    logger.info(
+        f"   Google OAuth: {'CONFIGURED' if google_client else 'NOT CONFIGURED'}"
+    )
+except Exception as e:
+    logger.error(f"[OAUTH] OAuth configuration error: {e}")
+
+# Log other important settings
+logger.info(f"Frontend URL: {settings.FRONTEND_URL}")
+logger.info(
+    f"Database URL: {settings.DATABASE_URL.split('@')[1] if '@' in settings.DATABASE_URL else 'configured'}"
+)
+logger.info(
+    f"JWT Secret: {'CONFIGURED' if settings.JWT_SECRET != 'change-me' else 'WARNING - Using default (change in production)'}"
+)
+logger.info(f"Access token expiry: {settings.ACCESS_MIN} minutes")
+logger.info(f"Refresh token expiry: {settings.REFRESH_DAYS} days")
 
 
 # Request logging middleware

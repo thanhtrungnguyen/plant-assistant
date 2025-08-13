@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import DateTime, ForeignKey, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from database.base import Base  # unified Base with timestamps
+from src.database.base import Base  # unified Base with timestamps
 
 
 class User(Base):

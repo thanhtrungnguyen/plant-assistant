@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL!;
+const API = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,6 +34,15 @@ export default function LoginPage() {
       setError(err.message || "Login failed");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function onGoogleLogin() {
+    try {
+      // Redirect to Google OAuth endpoint
+      window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login/google`;
+    } catch (err: any) {
+      setError(err.message || "Google login failed");
     }
   }
 
@@ -78,11 +87,9 @@ export default function LoginPage() {
           <div className="h-px flex-1 bg-border" />
         </div>
 
-        <a href={`${API}/auth/login/google`}>
-          <Button variant="secondary" className="w-full">
-            Continue with Google
-          </Button>
-        </a>
+        <Button variant="secondary" className="w-full" onClick={onGoogleLogin}>
+          Continue with Google
+        </Button>
 
         <p className="text-center text-sm">
           No account?{" "}
