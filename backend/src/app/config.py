@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: Set[str] = {"http://localhost:3000"}
 
+    OPENAI_API_KEY: str = "your-open-api-key"
+    WEATHER_API_KEY: str = "66ae9620c64d4036a01131409251208"
+
     model_config = SettingsConfigDict(
         env_file=Path(__file__).parent.parent.parent / ".env",
         env_file_encoding="utf-8",

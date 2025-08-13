@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .utils import simple_generate_unique_route_id
 from app.routes.items import router as items_router
 from app.config import settings
+from .routes import podcast
 
 app = FastAPI(
     generate_unique_id_function=simple_generate_unique_route_id,
@@ -46,6 +47,9 @@ app.include_router(
     prefix="/users",
     tags=["users"],
 )
+
+app.include_router(podcast.router, prefix="/podcast", tags=["podcast"])
+
 
 # Include items routes
 app.include_router(items_router, prefix="/items")
