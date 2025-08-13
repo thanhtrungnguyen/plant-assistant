@@ -6,7 +6,7 @@ FastAPI backend service for the Plant Assistant application, providing a robust 
 
 ### Prerequisites
 - Python 3.12+
-- UV package manager
+- UV package manager (install with: pip install uv)
 - PostgreSQL (or use Docker Compose)
 
 ### Development Setup
@@ -17,8 +17,14 @@ FastAPI backend service for the Plant Assistant application, providing a robust 
    ```
 
 2. **Set up environment variables:**
+   Linux/macOS:
    ```bash
    cp .env.example .env
+   # Edit .env with your configuration
+   ```
+   Windows (PowerShell):
+   ```powershell
+   Copy-Item .env.example .env
    # Edit .env with your configuration
    ```
 
@@ -29,7 +35,7 @@ FastAPI backend service for the Plant Assistant application, providing a robust 
 
 4. **Start the development server:**
    ```bash
-   uv run fastapi dev src/app/main.py --host 0.0.0.0 --port 5000 --reload
+   uv run fastapi dev src/main.py --host 0.0.0.0 --port 5000 --reload
    ```
 
 5. **Access the API:**
@@ -37,12 +43,107 @@ FastAPI backend service for the Plant Assistant application, providing a robust 
    - Interactive docs: http://localhost:5000/docs
    - OpenAPI spec: http://localhost:5000/openapi.json
 
+## 🧰 Running in PyCharm
+
+You can run the backend directly from PyCharm using the UV-managed FastAPI dev server.
+
+Option A — Use the included Run Configuration (recommended):
+- The repository includes a ready-to-use Run/Debug Configuration: .run/Backend - UV FastAPI Dev.run.xml
+- In PyCharm, open the backend project, select: "Backend: UV FastAPI Dev" from the Run configurations dropdown, then Run.
+- Note: As a Shell Script configuration, breakpoints may not be hit because PyCharm’s Python debugger isn’t attached. See the Debugging section below for a debuggable config.
+
+Option B — Create the configuration yourself (Shell Script):
+1. Open: Run > Edit Configurations…
+2. Click + (Add New) and choose "Shell Script".
+3. Name: Backend: UV FastAPI Dev
+4. Script text:
+   uv run fastapi dev src/main.py --host 127.0.0.1 --port 5000 --reload
+5. Working directory: the backend folder (path ending with /backend)
+6. Check "Execute in terminal".
+7. Apply and Run.
+
+Notes:
+- Ensure you’ve run uv sync and created your .env file (Linux/macOS: cp .env.example .env; PowerShell: Copy-Item .env.example .env) before starting.
+- The correct command includes fastapi: uv run fastapi dev ...
+- The app will be available at http://localhost:5000 and auto-reloads on changes.
+
+---
+
+## 🧭 Debugging Guide
+
+There are three common ways to debug:
+
+1) Quick CLI with debugpy (works with any IDE that can attach)
+- Start the server with debugpy listening on a port (e.g., 5678):
+  uv run python -m debugpy --listen 5678 --wait-for-client -m fastapi dev src/main.py --host 127.0.0.1 --port 5000 --reload
+- In your IDE, create an "Attach to process/port" config to 127.0.0.1:5678, then hit your breakpoints. The server will start running once the debugger attaches.
+
+2) PyCharm debugging (attachable)
+- Create a new "Python" Run/Debug Configuration:
+  - Name: Backend: Debug (debugpy)
+  - Module name: debugpy
+  - Parameters: --listen 5678 --wait-for-client -m fastapi dev src/main.py --host 127.0.0.1 --port 5000 --reload
+  - Working directory: backend folder
+  - Python interpreter: your local Python 3.12
+  - Environment: ensure .env is present in project root (PyCharm will inherit env from your shell if you run from Terminal; otherwise, add needed vars in the configuration).
+- Click Debug, then set breakpoints as usual. This launches the app under the debugger directly (no separate attach step needed).
+
+Tip: If dependencies aren’t available to the interpreter, prefer the CLI approach (Option 1) and use PyCharm’s "Attach to process/port" with debugpy instead—this way uv still resolves and runs dependencies, while PyCharm only attaches.
+
+3) VS Code debugging
+- Create .vscode/launch.json with a configuration like:
+  {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Backend: Debug (fastapi via uv + debugpy)",
+        "type": "python",
+        "request": "launch",
+        "console": "integratedTerminal",
+        "justMyCode": false,
+        "module": "debugpy",
+        "args": [
+          "--listen", "5678",
+          "--wait-for-client",
+          "-m", "fastapi", "dev", "src/main.py",
+          "--host", "127.0.0.1",
+          "--port", "5000",
+          "--reload"
+        ],
+        "env": {},
+        "cwd": "${workspaceFolder}"
+      },
+      {
+        "name": "Attach to debugpy (5678)",
+        "type": "python",
+        "request": "attach",
+        "connect": { "host": "127.0.0.1", "port": 5678 }
+      }
+    ]
+  }
+- Start with F5 using the first config; VS Code will wait until the debugger attaches, then run the server under debug.
+
+Notes and tips:
+- Windows PowerShell: use Copy-Item .env.example .env instead of cp.
+- If port 5000 is in use, change --port 5000 to any free port (e.g., 5050) and open http://localhost:5050.
+- For production-like runs without hot reload: uv run fastapi run src/main.py --port 5000
+- You can also use uvicorn directly: uv run uvicorn src.main:app --host 127.0.0.1 --port 5000 --reload
+
+### Debugging tests (pytest)
+- Run a single test with verbose output:
+  uv run pytest -q tests/test_example.py::test_something -vv
+- Drop into the debugger on failure:
+  uv run pytest tests -x --pdb
+- Use breakpoints with debugpy in tests:
+  uv run python -m debugpy --listen 5678 -m pytest tests -k your_test_name
+  Then attach your IDE to 127.0.0.1:5678.
+
 ## 📋 Available Commands
 
 | Command | Description |
 |---------|-------------|
 | `uv sync` | Install/sync dependencies |
-| `uv run fastapi dev src/app/main.py` | Start development server |
+| `uv run fastapi dev src/main.py` | Start development server |
 | `uv run pytest` | Run test suite |
 | `uv run pytest --cov=src` | Run tests with coverage |
 | `uv run ruff check` | Lint code |

@@ -1,3 +1,5 @@
+import os
+
 from typing import Set
 from pathlib import Path
 
@@ -38,6 +40,14 @@ class Settings(BaseSettings):
 
     # CORS
     CORS_ORIGINS: Set[str] = {"http://localhost:3000"}
+
+    # AI/OpenAI Configuration
+    OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o")
+    OPENAI_VISION_MODEL: str = os.getenv("OPENAI_VISION_MODEL", "gpt-4o")
+    OPENAI_MAX_TOKENS: int = int(os.getenv("OPENAI_MAX_TOKENS", 1500))
+    OPENAI_TEMPERATURE: float = float(os.getenv("OPENAI_TEMPERATURE", 0.1))
 
     OPENAI_API_KEY: str = "your-open-api-key"
     WEATHER_API_KEY: str = "66ae9620c64d4036a01131409251208"

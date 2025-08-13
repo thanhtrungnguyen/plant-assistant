@@ -20,8 +20,8 @@ To fix the CI issues, you need to add these secrets to your GitHub repository:
 
 | Secret Name | Description | Example Value |
 |-------------|-------------|---------------|
-| `DATABASE_URL` | Main database connection | `postgresql+asyncpg://postgres:your-password@localhost:5432/plantassistant` |
-| `TEST_DATABASE_URL` | Test database connection | `postgresql+asyncpg://postgres:your-password@localhost:5432/plantassistant_test` |
+| `DATABASE_URL` | Main database connection | `postgresql+asyncpg://postgres:your-password@localhost:5432/plant_assistant` |
+| `TEST_DATABASE_URL` | Test database connection | `postgresql+asyncpg://postgres:your-password@localhost:5432/plant_assistant_test` |
 | `SECRET_KEY` | Main JWT secret key | Generate with: `python -c "import secrets; print(secrets.token_urlsafe(32))"` |
 | `ACCESS_SECRET_KEY` | Access token secret | Generate with: `python -c "import secrets; print(secrets.token_urlsafe(32))"` |
 | `RESET_PASSWORD_SECRET_KEY` | Password reset secret | Generate with: `python -c "import secrets; print(secrets.token_urlsafe(32))"` |
@@ -75,8 +75,8 @@ echo "VERIFICATION_SECRET_KEY=$(python -c 'import secrets; print(secrets.token_u
 echo "POSTGRES_PASSWORD=$(python -c 'import secrets; print(secrets.token_urlsafe(16))')"
 echo ""
 echo "# Set these based on your environment:"
-echo 'DATABASE_URL=postgresql+asyncpg://postgres:your-password@localhost:5432/plantassistant'
-echo 'TEST_DATABASE_URL=postgresql+asyncpg://postgres:your-password@localhost:5432/plantassistant_test'
+echo 'DATABASE_URL=postgresql+asyncpg://postgres:your-password@localhost:5432/plant_assistant'
+echo 'TEST_DATABASE_URL=postgresql+asyncpg://postgres:your-password@localhost:5432/plant_assistant_test'
 echo 'CORS_ORIGINS=["https://your-domain.com"]'
 echo 'MAIL_SERVER=smtp.your-provider.com'
 echo 'MAIL_PORT=587'

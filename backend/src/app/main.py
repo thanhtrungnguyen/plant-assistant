@@ -4,6 +4,7 @@ from .users import auth_backend, fastapi_users, AUTH_URL_PATH
 from fastapi.middleware.cors import CORSMiddleware
 from .utils import simple_generate_unique_route_id
 from app.routes.items import router as items_router
+from app.routes.diagnose import router as diagnose_router
 from app.config import settings
 from .routes import podcast
 
@@ -53,3 +54,6 @@ app.include_router(podcast.router, prefix="/podcast", tags=["podcast"])
 
 # Include items routes
 app.include_router(items_router, prefix="/items")
+
+# Include plant diagnosis routes
+app.include_router(diagnose_router)

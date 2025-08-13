@@ -1,86 +1,17 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "FastAPI",
+    "title": "plant-assistant",
     "version": "0.1.0"
   },
   "paths": {
-    "/auth/jwt/login": {
-      "post": {
+    "/health": {
+      "get": {
         "tags": [
-          "auth"
+          "health"
         ],
-        "summary": "Auth:Jwt.Login",
-        "operationId": "auth:jwt.login",
-        "requestBody": {
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "$ref": "#/components/schemas/login"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BearerResponse"
-                },
-                "example": {
-                  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiOTIyMWZmYzktNjQwZi00MzcyLTg2ZDMtY2U2NDJjYmE1NjAzIiwiYXVkIjoiZmFzdGFwaS11c2VyczphdXRoIiwiZXhwIjoxNTcxNTA0MTkzfQ.M10bjOe45I5Ncu_uXvOmVV8QxnL-nZfcH96U90JaocI",
-                  "token_type": "bearer"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                },
-                "examples": {
-                  "LOGIN_BAD_CREDENTIALS": {
-                    "summary": "Bad credentials or the user is inactive.",
-                    "value": {
-                      "detail": "LOGIN_BAD_CREDENTIALS"
-                    }
-                  },
-                  "LOGIN_USER_NOT_VERIFIED": {
-                    "summary": "The user is not verified.",
-                    "value": {
-                      "detail": "LOGIN_USER_NOT_VERIFIED"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/jwt/logout": {
-      "post": {
-        "tags": [
-          "auth"
-        ],
-        "summary": "Auth:Jwt.Logout",
-        "operationId": "auth:jwt.logout",
+        "summary": "Liveness probe",
+        "operationId": "healthz",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -89,70 +20,52 @@
                 "schema": {}
               }
             }
-          },
-          "401": {
-            "description": "Missing token or inactive user."
           }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Readiness probe",
+        "operationId": "readyz",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
           }
-        ]
+        }
       }
     },
     "/auth/register": {
       "post": {
         "tags": [
-          "auth"
+          "auth-local"
         ],
-        "summary": "Register:Register",
-        "operationId": "register:register",
+        "summary": "Register",
+        "operationId": "register",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UserCreate"
+                "$ref": "#/components/schemas/RegisterIn"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserRead"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                },
-                "examples": {
-                  "REGISTER_USER_ALREADY_EXISTS": {
-                    "summary": "A user with this email already exists.",
-                    "value": {
-                      "detail": "REGISTER_USER_ALREADY_EXISTS"
-                    }
-                  },
-                  "REGISTER_INVALID_PASSWORD": {
-                    "summary": "Password validation failed.",
-                    "value": {
-                      "detail": {
-                        "code": "REGISTER_INVALID_PASSWORD",
-                        "reason": "Password should beat least 3 characters"
-                      }
-                    }
-                  }
-                }
+                "schema": {}
               }
             }
           },
@@ -169,25 +82,25 @@
         }
       }
     },
-    "/auth/forgot-password": {
+    "/auth/login": {
       "post": {
         "tags": [
-          "auth"
+          "auth-local"
         ],
-        "summary": "Reset:Forgot Password",
-        "operationId": "reset:forgot_password",
+        "summary": "Login",
+        "operationId": "login",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Body_auth-reset_forgot_password"
+                "$ref": "#/components/schemas/LoginIn"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "202": {
+          "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -208,91 +121,33 @@
         }
       }
     },
-    "/auth/reset-password": {
-      "post": {
+    "/auth/login/google": {
+      "get": {
         "tags": [
-          "auth"
+          "auth-oauth"
         ],
-        "summary": "Reset:Reset Password",
-        "operationId": "reset:reset_password",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Body_auth-reset_reset_password"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
+        "summary": "Login Google",
+        "operationId": "login_google",
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
                 },
-                "examples": {
-                  "RESET_PASSWORD_BAD_TOKEN": {
-                    "summary": "Bad or expired token.",
-                    "value": {
-                      "detail": "RESET_PASSWORD_BAD_TOKEN"
-                    }
-                  },
-                  "RESET_PASSWORD_INVALID_PASSWORD": {
-                    "summary": "Password validation failed.",
-                    "value": {
-                      "detail": {
-                        "code": "RESET_PASSWORD_INVALID_PASSWORD",
-                        "reason": "Password should be at least 3 characters"
-                      }
-                    }
-                  }
+                {
+                  "type": "null"
                 }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
+              ],
+              "title": "Mode"
             }
           }
-        }
-      }
-    },
-    "/auth/request-verify-token": {
-      "post": {
-        "tags": [
-          "auth"
         ],
-        "summary": "Verify:Request-Token",
-        "operationId": "verify:request-token",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Body_auth-verify_request-token"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
-          "202": {
+          "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -313,408 +168,122 @@
         }
       }
     },
-    "/auth/verify": {
+    "/auth/callback/google": {
+      "get": {
+        "tags": [
+          "auth-oauth"
+        ],
+        "summary": "Callback Google",
+        "operationId": "callback_google",
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Mode"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
       "post": {
         "tags": [
-          "auth"
+          "auth-tokens"
         ],
-        "summary": "Verify:Verify",
-        "operationId": "verify:verify",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Body_auth-verify_verify"
-              }
-            }
-          },
-          "required": true
-        },
+        "summary": "Refresh",
+        "operationId": "refresh",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserRead"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                },
-                "examples": {
-                  "VERIFY_USER_BAD_TOKEN": {
-                    "summary": "Bad token, not existing user ornot the e-mail currently set for the user.",
-                    "value": {
-                      "detail": "VERIFY_USER_BAD_TOKEN"
-                    }
-                  },
-                  "VERIFY_USER_ALREADY_VERIFIED": {
-                    "summary": "The user is already verified.",
-                    "value": {
-                      "detail": "VERIFY_USER_ALREADY_VERIFIED"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": {}
               }
             }
           }
         }
       }
     },
-    "/users/me": {
-      "get": {
-        "tags": [
-          "users"
-        ],
-        "summary": "Users:Current User",
-        "operationId": "users:current_user",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserRead"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing token or inactive user."
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ]
-      },
-      "patch": {
-        "tags": [
-          "users"
-        ],
-        "summary": "Users:Patch Current User",
-        "operationId": "users:patch_current_user",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserUpdate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserRead"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing token or inactive user."
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                },
-                "examples": {
-                  "UPDATE_USER_EMAIL_ALREADY_EXISTS": {
-                    "summary": "A user with this email already exists.",
-                    "value": {
-                      "detail": "UPDATE_USER_EMAIL_ALREADY_EXISTS"
-                    }
-                  },
-                  "UPDATE_USER_INVALID_PASSWORD": {
-                    "summary": "Password validation failed.",
-                    "value": {
-                      "detail": {
-                        "code": "UPDATE_USER_INVALID_PASSWORD",
-                        "reason": "Password should beat least 3 characters"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ]
-      }
-    },
-    "/users/{id}": {
-      "get": {
-        "tags": [
-          "users"
-        ],
-        "summary": "Users:User",
-        "operationId": "users:user",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserRead"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing token or inactive user."
-          },
-          "403": {
-            "description": "Not a superuser."
-          },
-          "404": {
-            "description": "The user does not exist."
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "patch": {
-        "tags": [
-          "users"
-        ],
-        "summary": "Users:Patch User",
-        "operationId": "users:patch_user",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserUpdate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserRead"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing token or inactive user."
-          },
-          "403": {
-            "description": "Not a superuser."
-          },
-          "404": {
-            "description": "The user does not exist."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "UPDATE_USER_EMAIL_ALREADY_EXISTS": {
-                    "summary": "A user with this email already exists.",
-                    "value": {
-                      "detail": "UPDATE_USER_EMAIL_ALREADY_EXISTS"
-                    }
-                  },
-                  "UPDATE_USER_INVALID_PASSWORD": {
-                    "summary": "Password validation failed.",
-                    "value": {
-                      "detail": {
-                        "code": "UPDATE_USER_INVALID_PASSWORD",
-                        "reason": "Password should beat least 3 characters"
-                      }
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "users"
-        ],
-        "summary": "Users:Delete User",
-        "operationId": "users:delete_user",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Id"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "401": {
-            "description": "Missing token or inactive user."
-          },
-          "403": {
-            "description": "Not a superuser."
-          },
-          "404": {
-            "description": "The user does not exist."
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/items/": {
-      "get": {
-        "tags": [
-          "item"
-        ],
-        "summary": "Read Item",
-        "operationId": "read_item",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/ItemRead"
-                  },
-                  "type": "array",
-                  "title": "Response Item-Read Item"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ]
-      },
+    "/auth/logout": {
       "post": {
         "tags": [
-          "item"
+          "auth-tokens"
         ],
-        "summary": "Create Item",
-        "operationId": "create_item",
+        "summary": "Logout",
+        "operationId": "logout",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": [
+          "auth-tokens"
+        ],
+        "summary": "Me",
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/password/forgot": {
+      "post": {
+        "tags": [
+          "auth-recovery"
+        ],
+        "summary": "Forgot Password",
+        "operationId": "forgot_password",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ItemCreate"
+                "$ref": "#/components/schemas/ForgotIn"
               }
             }
           },
@@ -725,9 +294,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ItemRead"
-                }
+                "schema": {}
               }
             }
           },
@@ -741,48 +308,32 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ]
+        }
       }
     },
-    "/items/{item_id}": {
-      "delete": {
+    "/auth/password/reset": {
+      "post": {
         "tags": [
-          "item"
+          "auth-recovery"
         ],
-        "summary": "Delete Item",
-        "operationId": "delete_item",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "item_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Item Id"
+        "summary": "Reset Password Route",
+        "operationId": "reset_password_route",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetIn"
+              }
             }
-          }
-        ],
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "title": "Response Item-Delete Item"
-                }
+                "schema": {}
               }
             }
           },
@@ -802,25 +353,7 @@
   },
   "components": {
     "schemas": {
-      "BearerResponse": {
-        "properties": {
-          "access_token": {
-            "type": "string",
-            "title": "Access Token"
-          },
-          "token_type": {
-            "type": "string",
-            "title": "Token Type"
-          }
-        },
-        "type": "object",
-        "required": [
-          "access_token",
-          "token_type"
-        ],
-        "title": "BearerResponse"
-      },
-      "Body_auth-reset_forgot_password": {
+      "ForgotIn": {
         "properties": {
           "email": {
             "type": "string",
@@ -832,9 +365,71 @@
         "required": [
           "email"
         ],
-        "title": "Body_auth-reset:forgot_password"
+        "title": "ForgotIn"
       },
-      "Body_auth-reset_reset_password": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LoginIn": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginIn"
+      },
+      "RegisterIn": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "RegisterIn"
+      },
+      "ResetIn": {
         "properties": {
           "token": {
             "type": "string",
@@ -850,304 +445,7 @@
           "token",
           "password"
         ],
-        "title": "Body_auth-reset:reset_password"
-      },
-      "Body_auth-verify_request-token": {
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "title": "Email"
-          }
-        },
-        "type": "object",
-        "required": [
-          "email"
-        ],
-        "title": "Body_auth-verify:request-token"
-      },
-      "Body_auth-verify_verify": {
-        "properties": {
-          "token": {
-            "type": "string",
-            "title": "Token"
-          }
-        },
-        "type": "object",
-        "required": [
-          "token"
-        ],
-        "title": "Body_auth-verify:verify"
-      },
-      "ErrorModel": {
-        "properties": {
-          "detail": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "additionalProperties": {
-                  "type": "string"
-                },
-                "type": "object"
-              }
-            ],
-            "title": "Detail"
-          }
-        },
-        "type": "object",
-        "required": [
-          "detail"
-        ],
-        "title": "ErrorModel"
-      },
-      "HTTPValidationError": {
-        "properties": {
-          "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "type": "array",
-            "title": "Detail"
-          }
-        },
-        "type": "object",
-        "title": "HTTPValidationError"
-      },
-      "ItemCreate": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "quantity": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Quantity"
-          }
-        },
-        "type": "object",
-        "required": [
-          "name"
-        ],
-        "title": "ItemCreate"
-      },
-      "ItemRead": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "quantity": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Quantity"
-          },
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "user_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "User Id"
-          }
-        },
-        "type": "object",
-        "required": [
-          "name",
-          "id",
-          "user_id"
-        ],
-        "title": "ItemRead"
-      },
-      "UserCreate": {
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "title": "Email"
-          },
-          "password": {
-            "type": "string",
-            "title": "Password"
-          },
-          "is_active": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Is Active",
-            "default": true
-          },
-          "is_superuser": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Is Superuser",
-            "default": false
-          },
-          "is_verified": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Is Verified",
-            "default": false
-          }
-        },
-        "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
-        "title": "UserCreate"
-      },
-      "UserRead": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "title": "Email"
-          },
-          "is_active": {
-            "type": "boolean",
-            "title": "Is Active",
-            "default": true
-          },
-          "is_superuser": {
-            "type": "boolean",
-            "title": "Is Superuser",
-            "default": false
-          },
-          "is_verified": {
-            "type": "boolean",
-            "title": "Is Verified",
-            "default": false
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "email"
-        ],
-        "title": "UserRead"
-      },
-      "UserUpdate": {
-        "properties": {
-          "password": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Password"
-          },
-          "email": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "email"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Email"
-          },
-          "is_active": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Is Active"
-          },
-          "is_superuser": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Is Superuser"
-          },
-          "is_verified": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Is Verified"
-          }
-        },
-        "type": "object",
-        "title": "UserUpdate"
+        "title": "ResetIn"
       },
       "ValidationError": {
         "properties": {
@@ -1181,76 +479,6 @@
           "type"
         ],
         "title": "ValidationError"
-      },
-      "login": {
-        "properties": {
-          "grant_type": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^password$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Grant Type"
-          },
-          "username": {
-            "type": "string",
-            "title": "Username"
-          },
-          "password": {
-            "type": "string",
-            "format": "password",
-            "title": "Password"
-          },
-          "scope": {
-            "type": "string",
-            "title": "Scope",
-            "default": ""
-          },
-          "client_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Client Id"
-          },
-          "client_secret": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "format": "password",
-            "title": "Client Secret"
-          }
-        },
-        "type": "object",
-        "required": [
-          "username",
-          "password"
-        ],
-        "title": "Body_auth-auth:jwt.login"
-      }
-    },
-    "securitySchemes": {
-      "OAuth2PasswordBearer": {
-        "type": "oauth2",
-        "flows": {
-          "password": {
-            "scopes": {},
-            "tokenUrl": "auth/jwt/login"
-          }
-        }
       }
     }
   }

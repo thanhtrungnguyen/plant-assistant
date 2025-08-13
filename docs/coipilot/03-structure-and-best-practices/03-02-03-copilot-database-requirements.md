@@ -3,7 +3,7 @@
 ## Database Requirements
 - **Postgres**: For structured data; use SQLAlchemy ORM with typed models (Mapped[int] for ids). Async support via asyncpg.
   - Example Model: class User(Base): id: Mapped[int] = mapped_column(primary_key=True)
-- **Chroma**: For vector embeddings (OpenAI); persist collections in Docker volumes. Client: chromadb.PersistentClient.
+- **Pinecone**: For vector embeddings (OpenAI); persist collections in Docker volumes.
 - Migrations: Use Alembic for schema changes (alembic init, revision, upgrade).
 
 ## Detailed Setup

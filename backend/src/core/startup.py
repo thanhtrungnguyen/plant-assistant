@@ -1,0 +1,78 @@
+"""
+Startup utilities for application initialization and health checks.
+"""
+
+from src.auth.providers import oauth
+from src.core.config import settings
+from src.core.logging import get_logger
+
+logger = get_logger(__name__)
+
+
+def check_database_connection():
+    """Check database connection and log status"""
+    try:
+        from sqlalchemy import text
+
+        from src.database.session import engine
+
+        # Test connection with a simple query (synchronous)
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        logger.info("[DATABASE] Connection successful")
+        logger.info(
+            f"[DATABASE] URL: {settings.DATABASE_URL.split('@')[1] if '@' in settings.DATABASE_URL else 'configured'}"
+        )
+    except Exception as e:
+        logger.error(f"[DATABASE] Connection failed: {e}")
+
+
+def check_oauth_status():
+    """Check OAuth providers and log status"""
+    try:
+        google_client = (
+            oauth.create_client("google")
+            if hasattr(oauth, "_clients") and "google" in oauth._clients
+            else None
+        )
+        if google_client:
+            logger.info("[OAUTH] Google OAuth provider: CONFIGURED")
+        else:
+            logger.warning("[OAUTH] Google OAuth provider: NOT CONFIGURED")
+    except Exception as e:
+        logger.error(f"[OAUTH] OAuth check failed: {e}")
+
+
+def log_application_settings():
+    """Log important application settings"""
+    logger.info(f"Frontend URL: {settings.FRONTEND_URL}")
+    logger.info(f"CORS origins: {settings.CORS_ORIGINS}")
+    logger.info(
+        f"JWT Secret: {'CONFIGURED' if settings.JWT_SECRET != 'change-me' else 'WARNING - Using default (change in production)'}"
+    )
+    logger.info(f"Access token expiry: {settings.ACCESS_MIN} minutes")
+    logger.info(f"Refresh token expiry: {settings.REFRESH_DAYS} days")
+
+
+def run_startup_checks():
+    """Run all startup checks and log application status"""
+    logger.info(f"Starting {settings.APP_NAME} application")
+
+    # Log application settings
+    log_application_settings()
+
+    # Run database connection check
+    try:
+        check_database_connection()
+    except Exception as e:
+        logger.error(f"[DATABASE] Failed to test connection: {e}")
+
+    # Run OAuth status check
+    check_oauth_status()
+
+    logger.info("Startup checks completed")
+
+
+def log_router_inclusion(router_name: str):
+    """Log when a router is included"""
+    logger.info(f"{router_name} router included")

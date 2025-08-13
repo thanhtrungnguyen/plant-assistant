@@ -8,7 +8,7 @@ repos:
         args: ["--maxkb=500"]
         exclude: >
           (?x)^(
-              package-lock\.json
+            package-lock\.json|pnpm-lock\.yaml
           )$
       - id: fix-byte-order-marker
       - id: check-case-conflict
@@ -18,49 +18,54 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
     rev: v0.12.8
     hooks:
-      # Run the linter.
       - id: ruff
         args: [--fix]
-      # Run the formatter.
       - id: ruff-format
 
   - repo: local
     hooks:
+      # Lint frontend (cross‑platform via pnpm -C)
       - id: frontend-lint
-        name: run frontend lint
-        entry: powershell.exe -Command "cd frontend; pnpm run lint"
+        name: Run frontend lint
+        entry: pnpm
+        args: ["-C", "frontend", "run", "lint"]
         language: system
-        types: [ file ]
         files: ^frontend/.*\.(js|jsx|ts|tsx)$
         pass_filenames: false
+
+      # Prettier
       - id: frontend-prettier
         name: Run Prettier on frontend files
-        entry: powershell.exe -Command "cd frontend; pnpm run prettier"
+        entry: pnpm
+        args: ["-C", "frontend", "run", "prettier"]
         language: system
-        types: [ file ]
         files: ^frontend/.*\.(js|jsx|ts|tsx)$
         pass_filenames: false
+
+      # Type-check
       - id: frontend-tsc
-        name: run frontend tsc
-        entry: powershell.exe -Command "cd frontend; pnpm run tsc"
+        name: Run frontend tsc
+        entry: pnpm
+        args: ["-C", "frontend", "run", "tsc"]
         language: system
-        types: [ file ]
         files: ^frontend/.*\.(ts|tsx)$
         pass_filenames: false
+
       - id: generate-openapi-schema
         name: generate OpenAPI schema
-        entry: powershell.exe -Command "Set-Location -Path 'backend/src'; $env:PYTHONPATH='D:\\Projects\\plant-assistant\\backend\\src'; uv run python -m commands.generate_openapi_schema"
+        entry: uv
+        args: ["run", "--directory", "backend/src", "python", "-m", "commands.generate_openapi_schema"]
         language: system
         # Only run OpenAPI schema generation if schemas.py, main.py or package version have changed:
         files: (main\.py$|schemas\.py$|pyproject\.toml)
         pass_filenames: false
+
       - id: generate-frontend-client
-        name: generate frontend client
-        entry: powershell.exe -Command "cd frontend; pnpm run generate-client"
+        name: Generate frontend client
+        entry: pnpm
+        args: ["-C", "frontend", "run", "generate-client"]
         language: system
-        # Only run frontend client generation if frontend files have changed:
-        files: openapi\.json$
+        files: ^openapi\.json$
         pass_filenames: false
