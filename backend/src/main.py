@@ -1,4 +1,5 @@
 import time
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -7,8 +8,9 @@ from src.auth.routes.auth_oauth import router as auth_oauth
 from src.auth.routes.auth_recovery import router as auth_recovery
 from src.auth.routes.auth_tokens import router as auth_tokens
 from src.core.config import settings
+from src.core.logging import get_logger, setup_logging
 from src.core.routes.health import router as health_router
-from src.core.logging import setup_logging, get_logger
+from src.core.startup import log_router_inclusion, run_startup_checks
 from src.shared.utils import simple_generate_unique_route_id
 
 # Configure logging
@@ -21,8 +23,8 @@ app = FastAPI(
     openapi_url=settings.OPENAPI_URL,
 )
 
-logger.info(f"Starting {settings.APP_NAME} application")
-logger.info(f"CORS origins: {settings.CORS_ORIGINS}")
+# Run startup checks and log application status
+run_startup_checks()
 
 
 # Request logging middleware
@@ -49,16 +51,16 @@ app.add_middleware(
 
 # Health
 app.include_router(health_router)
-logger.info("Health router included")
+log_router_inclusion("Health")
 
 # Auth
 app.include_router(auth_local)
-logger.info("Auth local router included")
+log_router_inclusion("Auth local")
 app.include_router(auth_oauth)
-logger.info("Auth OAuth router included")
+log_router_inclusion("Auth OAuth")
 app.include_router(auth_tokens)
-logger.info("Auth tokens router included")
+log_router_inclusion("Auth tokens")
 app.include_router(auth_recovery)
-logger.info("Auth recovery router included")
+log_router_inclusion("Auth recovery")
 
 # Others
