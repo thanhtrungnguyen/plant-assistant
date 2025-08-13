@@ -1,11 +1,12 @@
-import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useFormStatus } from "react-dom";
 
-export function SubmitButton({ text }: { text: string }) {
+export function SubmitButton({ text, className }: { text: string; className?: string }) {
   const { pending } = useFormStatus();
 
   return (
-    <Button className="w-full" type="submit" disabled={pending}>
+    <Button className={cn("w-full", className)} type="submit" disabled={pending}>
       {pending ? "Loading..." : text}
     </Button>
   );
