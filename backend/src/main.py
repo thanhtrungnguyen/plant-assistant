@@ -10,7 +10,7 @@ from src.auth.routes.auth_tokens import router as auth_tokens
 from src.core.config import settings
 from src.core.logging import get_logger, setup_logging
 from src.core.routes.health import router as health_router
-from src.core.startup import log_router_inclusion, run_startup_checks
+from src.core.startup import run_startup_checks
 from src.shared.utils import simple_generate_unique_route_id
 
 # Configure logging
@@ -51,16 +51,11 @@ app.add_middleware(
 
 # Health
 app.include_router(health_router)
-log_router_inclusion("Health")
 
 # Auth
 app.include_router(auth_local)
-log_router_inclusion("Auth local")
 app.include_router(auth_oauth)
-log_router_inclusion("Auth OAuth")
 app.include_router(auth_tokens)
-log_router_inclusion("Auth tokens")
 app.include_router(auth_recovery)
-log_router_inclusion("Auth recovery")
 
 # Others
