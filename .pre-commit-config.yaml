@@ -53,20 +53,20 @@ repos:
         files: ^frontend/.*\.(ts|tsx)$
         pass_filenames: false
 
-      # - id: generate-openapi-schema
-      #   name: generate OpenAPI schema
-      #   entry: uv
-      #   args: ["run", "--directory", "backend", "python", "src/commands/generate_openapi_schema.py"]
-      #   language: system
-      #   # Only run OpenAPI schema generation if schemas.py, main.py or package version have changed:
-      #   files: (main\.py$|schemas\.py$|pyproject\.toml)
-      #   pass_filenames: false
+      - id: generate-openapi-schema
+        name: generate OpenAPI schema
+        entry: uv
+        args: ["run", "--directory", "backend/src", "python", "-m", "commands.generate_openapi_schema"]
+        language: system
+        # Only run OpenAPI schema generation if schemas.py, main.py or package version have changed:
+        files: (main\.py$|schemas\.py$|pyproject\.toml)
+        pass_filenames: false
 
-      # # Generate frontend client when openapi.json changes
-      # - id: generate-frontend-client
-      #   name: Generate frontend client
-      #   entry: pnpm
-      #   args: ["-C", "frontend", "run", "generate-client"]
-      #   language: system
-      #   files: ^openapi\.json$
-      #   pass_filenames: false
+      # Generate frontend client when openapi.json changes
+      - id: generate-frontend-client
+        name: Generate frontend client
+        entry: pnpm
+        args: ["-C", "frontend", "run", "generate-client"]
+        language: system
+        files: ^openapi\.json$
+        pass_filenames: false
