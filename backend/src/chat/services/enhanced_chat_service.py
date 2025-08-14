@@ -257,9 +257,17 @@ Hãy mô tả chi tiết vấn đề hoặc loại cây bạn quan tâm!"""
         async def mock_db_session():
             # Return a mock session that doesn't actually save to DB
             class MockSession:
-                async def execute(self, query): pass
+                async def execute(self, query):
+                    # Mock the result object with scalars method
+                    class MockResult:
+                        def scalars(self):
+                            class MockScalars:
+                                def all(self):
+                                    return []  # Return empty list for chat history
+                            return MockScalars()
+                    return MockResult()
+
                 async def commit(self): pass
-                async def add(self, obj): pass
                 async def scalar(self, query): return None
                 async def refresh(self, obj): pass
                 def add(self, obj): pass
