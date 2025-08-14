@@ -1,8 +1,8 @@
 # backend/src/app/routes/podcast.py
 
 from fastapi import APIRouter, Depends, HTTPException
-from ..schemas import GeneratePodcastInput
-from ..services.podcast_service import create_podcast_for_user
+from .schemas import GeneratePodcastInput
+from .service import create_podcast_for_user
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Response, HTTPException
 

@@ -1,14 +1,8 @@
 # backend/src/app/services/podcast_service.py
 
 from sqlalchemy.orm import Session
-from ..schemas import GeneratePodcastInput
-from ..utils import get_weather, generate_podcast, text_to_wav_bytes,generate_dummy_data
-
-# backend/src/app/services/podcast_service.py
-
-from sqlalchemy.orm import Session
-from ..schemas import GeneratePodcastInput, UserData
-from ..utils import get_weather, generate_podcast, text_to_wav_bytes, generate_dummy_data
+from .schemas import GeneratePodcastInput, UserData
+from .utils import get_weather, generate_podcast, text_to_wav_bytes, generate_dummy_data
 
 async def create_podcast_for_user(input: GeneratePodcastInput) -> bytes:
     try:
@@ -22,7 +16,6 @@ async def create_podcast_for_user(input: GeneratePodcastInput) -> bytes:
         else:
             location_str = user_data.address
         
-        print(user_data)
         weather_info = get_weather(location_str)
         podcast_text = generate_podcast(user_data.userName, weather_info, user_data.plants)
 

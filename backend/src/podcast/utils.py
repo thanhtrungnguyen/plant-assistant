@@ -1,6 +1,6 @@
 from openai import OpenAI
 import requests
-from .config import settings
+from ..core.config import settings
 from fastapi.routing import APIRoute
 from fastapi import APIRouter, Response, HTTPException
 import torch
