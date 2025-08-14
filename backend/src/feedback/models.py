@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from src.core.models.base import DomainBase
 from sqlalchemy import ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import Integer
+
+from src.core.models.base import DomainBase
 
 """Feedback model for feature quality metrics.
 

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from src.core.models.base import DomainBase
 from sqlalchemy import DateTime, ForeignKey, Index, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import Integer, Numeric
 
+from src.core.models.base import DomainBase
 from src.database.base import Base
 
 """Diagnosis feature models.

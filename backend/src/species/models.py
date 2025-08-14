@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from src.core.models.base import DomainBase
 from sqlalchemy import Index, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
+
+from src.core.models.base import DomainBase
 
 """Species reference model.
 

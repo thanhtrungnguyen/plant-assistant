@@ -33,36 +33,36 @@ from src.auth.models import (
     User,
 )
 
+# Care advice models
+from src.care.models import (
+    CarePlan,
+    CareTaskTemplate,
+)
+
+# Conversation models
+from src.conversations.models import (
+    ChatMessage,
+    ConversationSession,
+)
+
+# Diagnosis models
+from src.diagnosis.models import (
+    DiagnosisAsset,
+    DiagnosisCandidate,
+    DiagnosisSession,
+    IssueCatalog,
+)
+
+# Feedback model
+from src.feedback.models import (
+    Feedback,
+)
+
 # Plant-related models
 from src.plants.models import (
     Plant,
     PlantPhoto,
     PlantShare,
-)
-
-# Species model
-from src.species.models import (
-    Species,
-)
-
-# Conversation models
-from src.conversations.models import (
-    ConversationSession,
-    ChatMessage,
-)
-
-# Diagnosis models
-from src.diagnosis.models import (
-    DiagnosisSession,
-    DiagnosisAsset,
-    IssueCatalog,
-    DiagnosisCandidate,
-)
-
-# Care advice models
-from src.care.models import (
-    CarePlan,
-    CareTaskTemplate,
 )
 
 # Reminder models
@@ -71,16 +71,15 @@ from src.reminders.models import (
     ReminderLog,
 )
 
-# Feedback model
-from src.feedback.models import (
-    Feedback,
+# Species model
+from src.species.models import (
+    Species,
 )
 
 # Vector storage model
 from src.vertors.models import (
     VectorItem,
 )
-
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

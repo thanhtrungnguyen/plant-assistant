@@ -1,500 +1,461 @@
-"""Service for plant diagnosis and troubleshooting."""
+"""
+Plant Diagnosis Service using LangGraph Multi-Agent System
 
-import asyncio
+This module implements a multi-agent system for plant diagnosis with the following agents:
+1. Input Validator - Validates if the image is a legal plant
+2. Plant Identifier - Identifies the plant species
+3. Condition Analyzer - Diagnoses plant health condition
+4. Action Plan Generator - Creates treatment action plan
+5. Output Formatter - Formats final JSON response
+6. Master Agent - Orchestrates the entire workflow
+"""
+
 import base64
 import io
-import logging
-from typing import Any, Dict, List, Optional
+import json
+from typing import Any, Dict, List, Optional, TypedDict
 
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import END, StateGraph
 from PIL import Image
 
-from src.diagnosis.constants import (
-    PREVENTION_TIPS,
-)
-from src.diagnosis.exceptions import (
-    DiagnosisGenerationException,
-    ImageProcessingException,
-)
-from src.diagnosis.schemas import (
-    DiagnoseRequest,
-    DiagnoseResponse,
-    PlantIssue,
-    Remedy,
-)
-from src.integrations.openai_api.openai_api import get_openai_client
-
-logger = logging.getLogger(__name__)
+from src.core.config import settings
 
 
-class DiagnosisService:
-    """Service for diagnosing plant issues and providing remedies."""
+class DiagnosisState(TypedDict):
+    """State shared between agents in the diagnosis workflow"""
 
+    image_data: str  # Base64 encoded image
+    validation_result: Optional[bool]
+    plant_name: Optional[str]
+    condition: Optional[str]
+    detail_diagnosis: Optional[str]
+    action_plan: Optional[List[Dict[str, Any]]]
+    error: Optional[str]
+    final_output: Optional[Dict[str, Any]]
+
+
+class PlantDiagnosisService:
     def __init__(self):
-        """Initialize the diagnosis service."""
-        self.openai_client = None
+        if not settings.OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY not configured")
 
-    async def diagnose_plant(self, request: DiagnoseRequest) -> DiagnoseResponse:
-        """Diagnose plant issues from symptoms and/or images."""
-        logger.info(
-            f"Diagnosing plant with {len(request.images)} images and symptoms: {request.symptoms[:50] if request.symptoms else 'None'}"
+        # Initialize OpenAI client (unified model for text and vision)
+        self.llm = ChatOpenAI(
+            base_url=settings.OPENAI_BASE_URL,
+            model=settings.OPENAI_MODEL,
+            api_key=settings.OPENAI_API_KEY,
+            temperature=settings.OPENAI_TEMPERATURE,
+            max_tokens=settings.OPENAI_MAX_TOKENS,
         )
 
+        # Build the workflow graph
+        self.workflow = self._build_workflow()
+        self.app = self.workflow.compile(checkpointer=MemorySaver())
+
+    def _build_workflow(self) -> StateGraph:
+        """Build the LangGraph workflow with all agents"""
+        workflow = StateGraph(DiagnosisState)
+
+        # Add all agent nodes
+        workflow.add_node("input_validator", self._input_validator)
+        workflow.add_node("plant_identifier", self._plant_identifier)
+        workflow.add_node("condition_analyzer", self._condition_analyzer)
+        workflow.add_node("action_plan_generator", self._action_plan_generator)
+        workflow.add_node("output_formatter", self._output_formatter)
+        workflow.add_node("error_handler", self._error_handler)
+
+        # Set entry point
+        workflow.set_entry_point("input_validator")
+
+        # Add conditional edges based on validation result
+        workflow.add_conditional_edges(
+            "input_validator",
+            self._should_continue_after_validation,
+            {"continue": "plant_identifier", "error": "error_handler"},
+        )
+
+        # Sequential flow after successful validation
+        workflow.add_conditional_edges(
+            "plant_identifier",
+            self._should_continue_after_identification,
+            {"continue": "condition_analyzer", "error": "error_handler"},
+        )
+        workflow.add_edge("condition_analyzer", "action_plan_generator")
+        workflow.add_edge("action_plan_generator", "output_formatter")
+
+        # Terminal nodes
+        workflow.add_edge("output_formatter", END)
+        workflow.add_edge("error_handler", END)
+
+        return workflow
+
+    async def _input_validator(self, state: DiagnosisState) -> DiagnosisState:
+        """Agent 1: Validates if the image contains a valid plant"""
         try:
-            # Step 1: Process images if provided
-            image_analysis = None
-            if request.images:
-                image_analysis = await self._analyze_images(request.images)
-
-            # Step 2: Parse and structure symptoms
-            structured_symptoms = await self._parse_symptoms(request.symptoms)
-
-            # Step 3: Get plant context if plant_id provided
-            plant_context = None
-            if request.plant_id:
-                plant_context = await self._get_plant_context(str(request.plant_id))
-
-            # Step 4: Generate diagnosis using AI
-            diagnosis_result = await self._generate_diagnosis(
-                image_analysis, structured_symptoms, plant_context, request
-            )
-
-            # Step 5: Find similar cases (mock implementation)
-            similar_cases_count = await self._find_similar_cases(
-                structured_symptoms, image_analysis
-            )
-
-            # Step 6: Calculate overall severity
-            overall_severity = self._calculate_overall_severity(
-                diagnosis_result["issues"]
-            )
-
-            # Step 7: Generate prevention tips
-            prevention_tips = self._get_prevention_tips(diagnosis_result["issues"])
-
-            return DiagnoseResponse(
-                issues=diagnosis_result["issues"],
-                remedies=diagnosis_result["remedies"],
-                prevention=prevention_tips,
-                similar_cases=similar_cases_count,
-                severity=overall_severity,
-                disclaimer=self._get_disclaimer(),
-            )
-
-        except Exception as e:
-            logger.error(f"Diagnosis generation failed: {str(e)}")
-            raise DiagnosisGenerationException(
-                f"Failed to generate diagnosis: {str(e)}"
-            )
-
-    async def _analyze_images(self, images: List[str]) -> Dict[str, Any]:
-        """Analyze plant images for visual symptoms using OpenAI Vision."""
-        if not self.openai_client:
-            self.openai_client = get_openai_client()
-
-        if not self.openai_client or not images:
-            return {"analysis": "No image analysis available", "features": []}
-
-        try:
-            # Process first image (can be extended for multiple images)
-            image_data = images[0]
-
-            # Validate and process image
-            processed_image = self._process_image(image_data)
-
-            prompt = """
-            You are an expert plant pathologist. Analyze this plant image and identify any visible issues, symptoms, or problems.
-
-            Look for:
-            - Leaf discoloration, spots, or patterns
-            - Wilting, drooping, or structural issues
-            - Pest presence or damage signs
-            - Root problems (if visible)
-            - Growth abnormalities
-            - Environmental stress indicators
-
-            Provide detailed observations in JSON format:
-            {
-                "visible_symptoms": ["list of specific symptoms seen"],
-                "affected_areas": ["which parts of plant are affected"],
-                "severity_indicators": ["signs that indicate how severe the problem is"],
-                "possible_causes": ["likely causes based on visual evidence"],
-                "confidence_level": "high/medium/low"
-            }
-
-            Be specific and detailed in your observations.
-            """
-
-            response = await asyncio.to_thread(
-                self.openai_client.chat.completions.create,
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": prompt},
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/jpeg;base64,{processed_image}"
-                                },
-                            },
-                        ],
-                    }
-                ],
-                temperature=0.2,
-                max_tokens=1000,
-            )
-
-            content = response.choices[0].message.content
-            if content is None:
-                raise DiagnosisGenerationException("Empty response from OpenAI Vision")
-
-            return self._parse_image_analysis(content)
-
-        except Exception as e:
-            logger.warning(f"Image analysis failed: {str(e)}")
-            return {
-                "analysis": f"Image analysis unavailable: {str(e)[:100]}",
-                "features": [],
-            }
-
-    def _process_image(self, image_data: str) -> str:
-        """Process and validate image data."""
-        try:
-            # Remove data URL prefix if present
-            if "," in image_data:
-                image_data = image_data.split(",")[1]
+            # Validate image format and content
+            image_data = state["image_data"]
+            if not image_data:
+                state["error"] = "No image data provided"
+                state["validation_result"] = False
+                return state
 
             # Decode and validate image
-            image_bytes = base64.b64decode(image_data)
-            image = Image.open(io.BytesIO(image_bytes))
+            try:
+                image_bytes = base64.b64decode(image_data)
+                image = Image.open(io.BytesIO(image_bytes))
 
-            # Resize if too large (max 1024x1024 for OpenAI)
-            if image.width > 1024 or image.height > 1024:
-                image.thumbnail((1024, 1024), Image.Resampling.LANCZOS)
+                # Basic image validation
+                if image.size[0] < 100 or image.size[1] < 100:
+                    state["error"] = "Image too small (minimum 100x100 pixels)"
+                    state["validation_result"] = False
+                    return state
 
-            # Convert to RGB if necessary
-            if image.mode != "RGB":
-                image = image.convert("RGB")
+            except Exception as e:
+                state["error"] = f"Invalid image format: {str(e)}"
+                state["validation_result"] = False
+                return state
 
-            # Save back to base64
-            output_buffer = io.BytesIO()
-            image.save(output_buffer, format="JPEG", quality=85)
-            return base64.b64encode(output_buffer.getvalue()).decode()
+            # Use Vision API to validate if image contains a plant
+            validation_prompt = SystemMessage(
+                content="""
+You are a plant image validator with expertise in botany and plant identification. Analyze the image carefully to determine if it contains a valid plant for diagnosis.
 
-        except Exception as e:
-            raise ImageProcessingException(f"Failed to process image: {str(e)}")
+Respond with ONLY one of these exact responses:
+- "VALID_PLANT" if the image contains a real, living plant that is legal and appropriate for care assistance
+- "INVALID_NOT_PLANT" if the image doesn't contain a plant or contains artificial/fake plants
+- "INVALID_ILLEGAL_PLANT" if the image contains illegal or controlled substance plants (cannabis, poppy, coca, etc.)
+- "INVALID_INAPPROPRIATE" if the image contains inappropriate, harmful, or unrelated content
+- "INVALID_UNCLEAR" if the image is too blurry/unclear to properly identify
 
-    def _parse_image_analysis(self, content: str) -> Dict[str, Any]:
-        """Parse OpenAI vision response into structured data."""
-        try:
-            import json
+Validation Rules:
+✅ ACCEPT: Houseplants, garden plants, vegetables, herbs (basil, mint, oregano), fruit trees, ornamental plants, flowers, succulents, trees, shrubs
+❌ REJECT: Cannabis/marijuana, opium poppy, coca plants, any controlled substance plants
+❌ REJECT: Artificial/fake plants, drawings, paintings, toys, non-plant objects
+❌ REJECT: Images that are blurry, dark, or unclear
+❌ REJECT: Inappropriate, harmful, or completely unrelated content
 
-            # Extract JSON from response
-            start = content.find("{")
-            end = content.rfind("}") + 1
-
-            if start != -1 and end > start:
-                json_str = content[start:end]
-                return json.loads(json_str)
-            else:
-                # Fallback to text analysis
-                return {"analysis": content, "features": [], "confidence_level": "low"}
-
-        except Exception:
-            return {"analysis": content, "features": [], "confidence_level": "low"}
-
-    async def _parse_symptoms(self, symptoms: Optional[str]) -> Dict[str, Any]:
-        """Parse and structure symptom descriptions using AI."""
-        if not symptoms:
-            return {"structured": {}, "categories": []}
-
-        if not self.openai_client:
-            self.openai_client = get_openai_client()
-
-        if not self.openai_client:
-            return {"structured": {"raw": symptoms}, "categories": ["general"]}
-
-        try:
-            prompt = f"""
-            Parse these plant symptoms into structured categories:
-            
-            Symptoms: {symptoms}
-            
-            Extract and categorize into JSON format:
-            {{
-                "physical_symptoms": ["leaf yellowing", "brown spots", etc.],
-                "behavioral_symptoms": ["wilting", "dropping leaves", etc.],
-                "growth_issues": ["stunted growth", "no new growth", etc.],
-                "environmental_factors": ["recent repotting", "moved location", etc.],
-                "timeline": "when symptoms started or progression",
-                "severity": "mild/moderate/severe",
-                "affected_areas": ["leaves", "stems", "roots", etc.]
-            }}
-            
-            Be specific and extract all relevant information.
-            """
-
-            response = await asyncio.to_thread(
-                self.openai_client.chat.completions.create,
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.2,
-                max_tokens=800,
+Be thorough in your analysis - examine leaves, stems, flowers, and overall plant structure. Many legitimate plants may have similar leaf shapes, so focus on the complete plant characteristics and context.
+"""
             )
 
-            content = response.choices[0].message.content
-            if content is None:
-                raise DiagnosisGenerationException(
-                    "Empty response from symptom parsing"
+            human_message = HumanMessage(
+                content=[
+                    {"type": "text", "text": "Is this a valid plant image?"},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/jpeg;base64,{image_data}"},
+                    },
+                ]
+            )
+
+            response = await self.llm.ainvoke([validation_prompt, human_message])
+            validation_result = response.content.strip()
+
+            if validation_result == "VALID_PLANT":
+                state["validation_result"] = True
+            else:
+                state["validation_result"] = False
+                error_messages = {
+                    "INVALID_NOT_PLANT": "Image does not contain a plant or contains artificial/fake plants",
+                    "INVALID_ILLEGAL_PLANT": "Cannot provide assistance for illegal or controlled substance plants",
+                    "INVALID_INAPPROPRIATE": "Inappropriate content detected",
+                    "INVALID_UNCLEAR": "Image is too unclear for analysis",
+                }
+                state["error"] = error_messages.get(
+                    validation_result,
+                    "Invalid image - please upload a clear photo of a legal plant",
                 )
 
-            return self._parse_symptom_response(content)
+            return state
 
         except Exception as e:
-            logger.warning(f"Symptom parsing failed: {str(e)}")
-            return {"structured": {"raw": symptoms}, "categories": ["general"]}
+            state["error"] = f"Validation error: {str(e)}"
+            state["validation_result"] = False
+            return state
 
-    def _parse_symptom_response(self, content: str) -> Dict[str, Any]:
-        """Parse AI response for symptom analysis."""
+    async def _plant_identifier(self, state: DiagnosisState) -> DiagnosisState:
+        """Agent 2: Identifies the plant species"""
         try:
-            import json
+            identification_prompt = SystemMessage(
+                content="""
+You are a professional botanist specializing in plant identification for care assistance.
+Analyze the provided plant image and identify the species.
 
-            start = content.find("{")
-            end = content.rfind("}") + 1
+IMPORTANT: If you identify any illegal or controlled substance plants (cannabis, marijuana, opium poppy, coca, etc.),
+respond with "ILLEGAL_PLANT_DETECTED" instead of the plant name.
 
-            if start != -1 and end > start:
-                json_str = content[start:end]
-                return {"structured": json.loads(json_str), "categories": ["parsed"]}
-            else:
-                return {"structured": {"raw": content}, "categories": ["general"]}
+For legal plants, respond with ONLY the common name. Examples:
+- "Monstera Deliciosa"
+- "Snake Plant"
+- "Peace Lily"
+- "Fiddle Leaf Fig"
+- "Apple Tree"
+- "Basil"
+- "Tomato Plant"
 
-        except Exception:
-            return {"structured": {"raw": content}, "categories": ["general"]}
-
-    async def _get_plant_context(self, plant_id: str) -> Optional[Dict[str, Any]]:
-        """Get plant context information from database."""
-        # This would integrate with PlantService to get plant details
-        # For now, return None as implementation depends on UUID handling
-        return None
-
-    async def _generate_diagnosis(
-        self,
-        image_analysis: Optional[Dict[str, Any]],
-        structured_symptoms: Dict[str, Any],
-        plant_context: Optional[Dict[str, Any]],
-        request: DiagnoseRequest,
-    ) -> Dict[str, Any]:
-        """Generate comprehensive diagnosis using AI."""
-        if not self.openai_client:
-            self.openai_client = get_openai_client()
-
-        if not self.openai_client:
-            # Return fallback diagnosis
-            return self._get_fallback_diagnosis()
-
-        try:
-            prompt = self._build_diagnosis_prompt(
-                image_analysis, structured_symptoms, plant_context, request
+If you cannot identify the specific species, provide the closest genus or family name.
+If completely uncertain, respond with "Unknown Plant Species".
+"""
             )
 
-            response = await asyncio.to_thread(
-                self.openai_client.chat.completions.create,
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.3,
-                max_tokens=2000,
+            human_message = HumanMessage(
+                content=[
+                    {"type": "text", "text": "Please identify this plant species."},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{state['image_data']}"
+                        },
+                    },
+                ]
             )
 
-            content = response.choices[0].message.content
-            if content is None:
-                raise DiagnosisGenerationException(
-                    "Empty response from diagnosis generation"
+            response = await self.llm.ainvoke([identification_prompt, human_message])
+            plant_name = response.content.strip()
+
+            # Secondary check for illegal plants
+            if plant_name == "ILLEGAL_PLANT_DETECTED":
+                state["error"] = (
+                    "Cannot provide assistance for illegal or controlled substance plants"
                 )
+                return state
 
-            return self._parse_diagnosis_response(content)
+            state["plant_name"] = plant_name
+            return state
 
         except Exception as e:
-            logger.warning(f"AI diagnosis failed: {str(e)}")
-            return self._get_fallback_diagnosis()
+            state["error"] = f"Plant identification error: {str(e)}"
+            return state
 
-    def _build_diagnosis_prompt(
-        self,
-        image_analysis: Optional[Dict[str, Any]],
-        structured_symptoms: Dict[str, Any],
-        plant_context: Optional[Dict[str, Any]],
-        request: DiagnoseRequest,
-    ) -> str:
-        """Build comprehensive prompt for diagnosis generation."""
-        prompt = """
-        You are an expert plant pathologist and diagnostician. Based on the following information, 
-        provide a comprehensive diagnosis with specific issues and detailed remedies.
-
-        """
-
-        if image_analysis:
-            prompt += (
-                f"IMAGE ANALYSIS:\n{image_analysis.get('analysis', 'No analysis')}\n\n"
-            )
-
-        if structured_symptoms:
-            prompt += f"SYMPTOMS:\n{structured_symptoms.get('structured', {})}\n\n"
-
-        if plant_context:
-            prompt += f"PLANT CONTEXT:\n{plant_context}\n\n"
-
-        prompt += """
-        DIAGNOSIS REQUIREMENTS:
-        Provide your response in the following JSON format:
-        {
-            "issues": [
-                {
-                    "category": "environmental|pest|disease|nutritional|structural",
-                    "name": "specific issue name",
-                    "severity": "mild|moderate|severe|critical",
-                    "probability": 0.85,
-                    "root_cause": "detailed explanation of what causes this issue"
-                }
-            ],
-            "remedies": [
-                {
-                    "title": "Action title",
-                    "steps": ["specific step 1", "specific step 2"],
-                    "timeline": "expected improvement timeframe",
-                    "priority": 1,
-                    "is_organic": true
-                }
-            ]
-        }
-        
-        IMPORTANT GUIDELINES:
-        - Prioritize most likely issues based on evidence
-        - Provide specific, actionable remedy steps
-        - Include both immediate and long-term solutions
-        - Consider organic/natural remedies when possible
-        - Be conservative with severity assessments
-        - Include prevention in remedy steps
-        """
-
-        return prompt
-
-    def _parse_diagnosis_response(self, content: str) -> Dict[str, Any]:
-        """Parse AI diagnosis response into structured format."""
+    async def _condition_analyzer(self, state: DiagnosisState) -> DiagnosisState:
+        """Agent 3: Analyzes plant health condition and provides diagnosis"""
         try:
-            import json
+            plant_name = state.get("plant_name", "Unknown Plant")
 
-            start = content.find("{")
-            end = content.rfind("}") + 1
+            diagnosis_prompt = SystemMessage(
+                content=f"""
+You are a plant pathologist analyzing the health of a {plant_name}.
+Examine the image for signs of disease, pests, nutrient deficiencies, or other health issues.
 
-            if start != -1 and end > start:
-                json_str = content[start:end]
-                parsed = json.loads(json_str)
+Provide your analysis in exactly this format:
+CONDITION: [One word/short phrase: "Healthy", "Overwatered", "Underwatered", "Pest Infestation", "Nutrient Deficiency", "Disease", etc.]
+DIAGNOSIS: [2-3 detailed sentences explaining what you observe, the likely cause, and severity]
 
-                # Convert to Pydantic models
-                issues = [
-                    PlantIssue(
-                        category=issue.get("category", "environmental"),
-                        name=issue.get("name", "Unknown Issue"),
-                        severity=issue.get("severity", "moderate"),
-                        probability=issue.get("probability", 0.5),
-                        root_cause=issue.get("root_cause", "Cause under investigation"),
-                    )
-                    for issue in parsed.get("issues", [])
-                ]
-
-                remedies = [
-                    Remedy(
-                        title=remedy.get("title", "General Care"),
-                        steps=remedy.get("steps", []),
-                        timeline=remedy.get("timeline", "Varies"),
-                        priority=remedy.get("priority", 1),
-                        is_organic=remedy.get("is_organic", True),
-                    )
-                    for remedy in parsed.get("remedies", [])
-                ]
-
-                return {"issues": issues, "remedies": remedies}
-            else:
-                raise ValueError("No valid JSON found in response")
-
-        except Exception:
-            return self._get_fallback_diagnosis()
-
-    def _get_fallback_diagnosis(self) -> Dict[str, Any]:
-        """Return fallback diagnosis when AI is unavailable."""
-        issues = [
-            PlantIssue(
-                category="environmental",
-                name="General Care Issue",
-                severity="moderate",
-                probability=0.6,
-                root_cause="Multiple factors may be affecting plant health",
+Focus on visible symptoms like leaf discoloration, wilting, spots, pests, or growth abnormalities.
+If the plant appears healthy, state "Healthy" and describe positive signs.
+"""
             )
-        ]
 
-        remedies = [
-            Remedy(
-                title="Basic Plant Care Review",
-                steps=[
-                    "Check soil moisture - water only when top inch is dry",
-                    "Ensure adequate but not excessive light",
-                    "Verify proper drainage in pot",
-                    "Inspect for pests on leaves and stems",
-                    "Consider recent changes in care or environment",
-                ],
-                timeline="Monitor for 1-2 weeks",
-                priority=1,
-                is_organic=True,
+            human_message = HumanMessage(
+                content=[
+                    {
+                        "type": "text",
+                        "text": f"Please diagnose the health condition of this {plant_name}.",
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{state['image_data']}"
+                        },
+                    },
+                ]
             )
-        ]
 
-        return {"issues": issues, "remedies": remedies}
+            response = await self.llm.ainvoke([diagnosis_prompt, human_message])
+            diagnosis_text = response.content.strip()
 
-    async def _find_similar_cases(
-        self,
-        structured_symptoms: Dict[str, Any],
-        image_analysis: Optional[Dict[str, Any]],
-    ) -> int:
-        """Find similar diagnosis cases (mock implementation)."""
-        # This would integrate with Pinecone vector database
-        # to find similar cases based on symptoms and image features
-        return 12  # Mock count
+            # Parse the structured response
+            lines = diagnosis_text.split("\n")
+            condition = "Unknown"
+            detail_diagnosis = diagnosis_text
 
-    def _calculate_overall_severity(self, issues: List[PlantIssue]) -> int:
-        """Calculate overall severity score from individual issues."""
-        if not issues:
-            return 1
+            for line in lines:
+                if line.startswith("CONDITION:"):
+                    condition = line.replace("CONDITION:", "").strip()
+                elif line.startswith("DIAGNOSIS:"):
+                    detail_diagnosis = line.replace("DIAGNOSIS:", "").strip()
 
-        severity_scores = {
-            "mild": 1,
-            "moderate": 2,
-            "severe": 3,
-            "critical": 4,
+            state["condition"] = condition
+            state["detail_diagnosis"] = detail_diagnosis
+            return state
+
+        except Exception as e:
+            state["error"] = f"Condition analysis error: {str(e)}"
+            return state
+
+    async def _action_plan_generator(self, state: DiagnosisState) -> DiagnosisState:
+        """Agent 4: Generates action plan based on diagnosis"""
+        try:
+            plant_name = state.get("plant_name", "Unknown Plant")
+            condition = state.get("condition", "Unknown")
+            diagnosis = state.get("detail_diagnosis", "")
+
+            action_prompt = SystemMessage(
+                content=f"""
+You are a plant care specialist. Based on the diagnosis of a {plant_name} with condition "{condition}",
+provide a specific action plan.
+
+Create 3-5 actionable steps to address the plant's needs. Format as a JSON array:
+[
+  {{"id": 1, "action": "Specific action step 1"}},
+  {{"id": 2, "action": "Specific action step 2"}},
+  ...
+]
+
+Make actions specific, practical, and immediately actionable. Include timeframes when relevant.
+Examples: "Water thoroughly until drainage occurs", "Move to bright, indirect light", "Apply neem oil spray every 3 days"
+
+Diagnosis context: {diagnosis}
+"""
+            )
+
+            human_message = HumanMessage(
+                content=f"Create an action plan for {plant_name} with {condition}"
+            )
+
+            response = await self.llm.ainvoke([action_prompt, human_message])
+            action_plan_text = response.content.strip()
+
+            # Parse JSON response
+            try:
+                # Extract JSON from response if wrapped in markdown
+                if "```json" in action_plan_text:
+                    action_plan_text = (
+                        action_plan_text.split("```json")[1].split("```")[0].strip()
+                    )
+                elif "```" in action_plan_text:
+                    action_plan_text = action_plan_text.split("```")[1].strip()
+
+                action_plan = json.loads(action_plan_text)
+
+                # Validate structure
+                if not isinstance(action_plan, list):
+                    raise ValueError("Action plan must be a list")
+
+                for i, action in enumerate(action_plan):
+                    if (
+                        not isinstance(action, dict)
+                        or "id" not in action
+                        or "action" not in action
+                    ):
+                        raise ValueError(f"Invalid action format at index {i}")
+
+                state["action_plan"] = action_plan
+
+            except json.JSONDecodeError:
+                # Fallback: create structured plan from text
+                fallback_plan = [
+                    {
+                        "id": 1,
+                        "action": "Follow general care guidelines for the diagnosed condition",
+                    },
+                    {"id": 2, "action": "Monitor plant closely for changes"},
+                    {"id": 3, "action": "Adjust care routine based on plant response"},
+                ]
+                state["action_plan"] = fallback_plan
+
+            return state
+
+        except Exception as e:
+            state["error"] = f"Action plan generation error: {str(e)}"
+            return state
+
+    async def _output_formatter(self, state: DiagnosisState) -> DiagnosisState:
+        """Agent 5: Formats the final JSON output"""
+        try:
+            final_output = {
+                "plant_name": state.get("plant_name", "Unknown Plant"),
+                "condition": state.get("condition", "Unknown"),
+                "detail_diagnosis": state.get(
+                    "detail_diagnosis", "Unable to provide diagnosis"
+                ),
+                "action_plan": state.get("action_plan", []),
+            }
+
+            state["final_output"] = final_output
+            return state
+
+        except Exception as e:
+            state["error"] = f"Output formatting error: {str(e)}"
+            return state
+
+    async def _error_handler(self, state: DiagnosisState) -> DiagnosisState:
+        """Handles errors and creates error response"""
+        error_output = {
+            "error": "diagnosis_failed",
+            "message": state.get(
+                "error", "Unknown error occurred during plant diagnosis"
+            ),
         }
+        state["final_output"] = error_output
+        return state
 
-        max_severity = max(severity_scores.get(issue.severity, 2) for issue in issues)
+    def _should_continue_after_validation(self, state: DiagnosisState) -> str:
+        """Conditional routing after validation"""
+        if state.get("validation_result", False):
+            return "continue"
+        else:
+            return "error"
 
-        return max_severity
+    def _should_continue_after_identification(self, state: DiagnosisState) -> str:
+        """Conditional routing after plant identification"""
+        if state.get("error"):
+            return "error"
+        else:
+            return "continue"
 
-    def _get_prevention_tips(self, issues: List[PlantIssue]) -> List[str]:
-        """Generate prevention tips based on identified issues."""
-        if not issues:
-            return PREVENTION_TIPS["general"]
+    async def diagnose_plant(self, image_data: str) -> Dict[str, Any]:
+        """
+        Main method to diagnose a plant from image data
 
-        prevention_tips = set()
+        Args:
+            image_data: Base64 encoded image string
 
-        for issue in issues:
-            category_tips = PREVENTION_TIPS.get(
-                issue.category, PREVENTION_TIPS["general"]
+        Returns:
+            Dict containing diagnosis result or error
+        """
+        try:
+            # Initialize state
+            initial_state = {
+                "image_data": image_data,
+                "validation_result": None,
+                "plant_name": None,
+                "condition": None,
+                "detail_diagnosis": None,
+                "action_plan": None,
+                "error": None,
+                "final_output": None,
+            }
+
+            # Run the workflow
+            config = {"configurable": {"thread_id": "diagnosis_session"}}
+            final_state = await self.app.ainvoke(initial_state, config)
+
+            return final_state.get(
+                "final_output",
+                {
+                    "error": "workflow_failed",
+                    "message": "Diagnosis workflow failed to complete",
+                },
             )
-            prevention_tips.update(category_tips[:3])  # Add top 3 tips per category
 
-        return list(prevention_tips)[:5]  # Return max 5 tips
+        except Exception as e:
+            return {
+                "error": "service_error",
+                "message": f"Plant diagnosis service error: {str(e)}",
+            }
 
-    def _get_disclaimer(self) -> str:
-        """Get standard diagnosis disclaimer."""
-        return (
-            "This AI-generated diagnosis is not a substitute for professional consultation. "
-            "For severe issues, widespread problems, or concerns about plant safety around "
-            "pets/children, please consult a qualified botanist or extension service."
-        )
+
+# Global service instance
+diagnosis_service = None
+
+
+def get_diagnosis_service() -> PlantDiagnosisService:
+    """Dependency injection for diagnosis service"""
+    global diagnosis_service
+    if diagnosis_service is None:
+        diagnosis_service = PlantDiagnosisService()
+    return diagnosis_service

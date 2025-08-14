@@ -173,7 +173,7 @@ class CareAdviceService:
     ) -> str:
         """Build detailed prompt for OpenAI care advice generation."""
         prompt = """
-        You are an expert horticulturist and plant care advisor. Generate comprehensive, 
+        You are an expert horticulturist and plant care advisor. Generate comprehensive,
         personalized care instructions for a plant based on the following information.
 
         LOCATION CONTEXT:
@@ -199,7 +199,7 @@ class CareAdviceService:
                 prompt += f"- {key}: {value}\n"
 
         prompt += """
-        
+
         INSTRUCTIONS:
         Provide detailed care instructions in the following categories. Be specific with:
         - Quantities (e.g., "8 oz of water")
@@ -207,7 +207,7 @@ class CareAdviceService:
         - Methods (e.g., "water until drainage appears")
         - Seasonal variations
         - Signs to watch for
-        
+
         Format your response as JSON with these exact keys:
         {
             "watering": "detailed watering instructions",
@@ -220,7 +220,7 @@ class CareAdviceService:
             "pruning": "pruning techniques and timing",
             "special_notes": "any additional care considerations"
         }
-        
+
         Prioritize organic methods if eco-friendly preferences are mentioned.
         Include metric/imperial conversions where applicable.
         """

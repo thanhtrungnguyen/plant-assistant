@@ -45,3 +45,20 @@ class DiagnoseResponse(BaseModel):
     similar_cases: int = Field(description="Number of similar cases found")
     severity: int = Field(ge=1, le=3, description="Overall severity rating")
     disclaimer: str
+
+
+class ActionStep(BaseModel):
+    id: int
+    action: str
+
+
+class PlantDiagnosisResponse(BaseModel):
+    plant_name: str
+    condition: str
+    detail_diagnosis: str
+    action_plan: List[ActionStep]
+
+
+class PlantDiagnosisError(BaseModel):
+    error: str
+    message: str

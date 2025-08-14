@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from datetime import date
 
-from src.core.models.base import DomainBase, UpdatedAtMixin
 from sqlalchemy import ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import Integer
+
+from src.core.models.base import DomainBase, UpdatedAtMixin
 
 """Care advice models.
 

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from src.core.models.base import DomainBase
 from sqlalchemy import ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
+
+from src.core.models.base import DomainBase
 
 """Reminder models mapping to tracking feature requirements.
 

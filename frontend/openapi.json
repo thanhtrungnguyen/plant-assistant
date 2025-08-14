@@ -43,6 +43,45 @@
         }
       }
     },
+    "/podcast/generate_podcast": {
+      "post": {
+        "tags": [
+          "podcast"
+        ],
+        "summary": "Generate Podcast",
+        "operationId": "generate_podcast",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneratePodcastInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/register": {
       "post": {
         "tags": [
@@ -1411,19 +1450,19 @@
         }
       }
     },
-    "/api/plants/diagnose/": {
+    "/api/diagnose/": {
       "post": {
         "tags": [
-          "plant-diagnosis"
+          "Plant Diagnosis"
         ],
-        "summary": "Diagnose Plant",
-        "description": "Diagnose plant issues from symptoms and/or images.",
+        "summary": "Diagnose Plant Health",
+        "description": "Upload an image of a plant to receive AI-powered diagnosis including:\n    - Plant species identification\n    - Health condition assessment\n    - Detailed diagnosis explanation\n    - Actionable treatment plan\n\n    The image should be clear, well-lit, and show the plant's current condition.\n    Supported formats: JPEG, PNG, WebP\n    Maximum file size: 10MB",
         "operationId": "diagnose_plant",
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/DiagnoseRequest"
+                "$ref": "#/components/schemas/Body_Plant_Diagnosis-diagnose_plant"
               }
             }
           },
@@ -1435,7 +1474,15 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DiagnoseResponse"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/PlantDiagnosisResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PlantDiagnosisError"
+                    }
+                  ],
+                  "title": "Response Plant Diagnosis-Diagnose Plant"
                 }
               }
             }
@@ -1624,10 +1671,93 @@
           }
         }
       }
+    },
+    "/diagnose/": {
+      "post": {
+        "tags": [
+          "Plant Diagnosis"
+        ],
+        "summary": "Diagnose Plant Health",
+        "description": "Upload an image of a plant to receive AI-powered diagnosis including:\n    - Plant species identification\n    - Health condition assessment\n    - Detailed diagnosis explanation\n    - Actionable treatment plan\n\n    The image should be clear, well-lit, and show the plant's current condition.\n    Supported formats: JPEG, PNG, WebP\n    Maximum file size: 10MB",
+        "operationId": "diagnose_plant",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_Plant_Diagnosis-diagnose_plant"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/PlantDiagnosisResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PlantDiagnosisError"
+                    }
+                  ],
+                  "title": "Response Plant Diagnosis-Diagnose Plant"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "ActionStep": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "action"
+        ],
+        "title": "ActionStep"
+      },
+      "Body_Plant_Diagnosis-diagnose_plant": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "Plant image file"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_Plant Diagnosis-diagnose_plant"
+      },
       "Body_plant-tracking-upload_plant_photo": {
         "properties": {
           "plant_id": {
@@ -1833,97 +1963,6 @@
         "title": "ChatResponse",
         "description": "Schema for chat response."
       },
-      "DiagnoseRequest": {
-        "properties": {
-          "symptoms": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 1000
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Symptoms"
-          },
-          "images": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "maxItems": 4,
-            "title": "Images"
-          },
-          "plant_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Plant Id"
-          }
-        },
-        "type": "object",
-        "title": "DiagnoseRequest",
-        "description": "Schema for plant diagnosis request."
-      },
-      "DiagnoseResponse": {
-        "properties": {
-          "issues": {
-            "items": {
-              "$ref": "#/components/schemas/PlantIssue"
-            },
-            "type": "array",
-            "title": "Issues"
-          },
-          "remedies": {
-            "items": {
-              "$ref": "#/components/schemas/Remedy"
-            },
-            "type": "array",
-            "title": "Remedies"
-          },
-          "prevention": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Prevention"
-          },
-          "similar_cases": {
-            "type": "integer",
-            "title": "Similar Cases",
-            "description": "Number of similar cases found"
-          },
-          "severity": {
-            "type": "integer",
-            "maximum": 3.0,
-            "minimum": 1.0,
-            "title": "Severity",
-            "description": "Overall severity rating"
-          },
-          "disclaimer": {
-            "type": "string",
-            "title": "Disclaimer"
-          }
-        },
-        "type": "object",
-        "required": [
-          "issues",
-          "remedies",
-          "prevention",
-          "similar_cases",
-          "severity",
-          "disclaimer"
-        ],
-        "title": "DiagnoseResponse",
-        "description": "Schema for plant diagnosis response."
-      },
       "ForgotIn": {
         "properties": {
           "email": {
@@ -1937,6 +1976,24 @@
           "email"
         ],
         "title": "ForgotIn"
+      },
+      "GeneratePodcastInput": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "location"
+        ],
+        "title": "GeneratePodcastInput"
       },
       "HTTPValidationError": {
         "properties": {
@@ -2052,6 +2109,78 @@
         ],
         "title": "IdentifyResponse",
         "description": "Schema for plant identification response."
+      },
+      "LocationData": {
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "title": "Longitude"
+          },
+          "accuracy": {
+            "type": "number",
+            "title": "Accuracy"
+          },
+          "altitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Altitude"
+          },
+          "altitudeAccuracy": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Altitudeaccuracy"
+          },
+          "heading": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heading"
+          },
+          "speed": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speed"
+          },
+          "timestamp": {
+            "type": "integer",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "latitude",
+          "longitude",
+          "accuracy",
+          "timestamp"
+        ],
+        "title": "LocationData"
       },
       "LoginIn": {
         "properties": {
@@ -2205,6 +2334,55 @@
         "title": "PlantCreate",
         "description": "Schema for creating a new plant."
       },
+      "PlantDiagnosisError": {
+        "properties": {
+          "error": {
+            "type": "string",
+            "title": "Error"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error",
+          "message"
+        ],
+        "title": "PlantDiagnosisError"
+      },
+      "PlantDiagnosisResponse": {
+        "properties": {
+          "plant_name": {
+            "type": "string",
+            "title": "Plant Name"
+          },
+          "condition": {
+            "type": "string",
+            "title": "Condition"
+          },
+          "detail_diagnosis": {
+            "type": "string",
+            "title": "Detail Diagnosis"
+          },
+          "action_plan": {
+            "items": {
+              "$ref": "#/components/schemas/ActionStep"
+            },
+            "type": "array",
+            "title": "Action Plan"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plant_name",
+          "condition",
+          "detail_diagnosis",
+          "action_plan"
+        ],
+        "title": "PlantDiagnosisResponse"
+      },
       "PlantIdentification": {
         "properties": {
           "common_name": {
@@ -2282,52 +2460,6 @@
         ],
         "title": "PlantIdentification",
         "description": "Schema for a single plant identification result."
-      },
-      "PlantIssue": {
-        "properties": {
-          "category": {
-            "type": "string",
-            "title": "Category",
-            "description": "Issue category (pest, disease, environmental, nutrient)"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name",
-            "description": "Specific issue name"
-          },
-          "severity": {
-            "type": "string",
-            "title": "Severity",
-            "description": "mild, moderate, or severe"
-          },
-          "probability": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Probability",
-            "description": "Confidence score"
-          },
-          "root_cause": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Root Cause"
-          }
-        },
-        "type": "object",
-        "required": [
-          "category",
-          "name",
-          "severity",
-          "probability"
-        ],
-        "title": "PlantIssue",
-        "description": "Schema for a plant issue identification."
       },
       "PlantListResponse": {
         "properties": {
@@ -2868,46 +3000,6 @@
           "password"
         ],
         "title": "RegisterIn"
-      },
-      "Remedy": {
-        "properties": {
-          "title": {
-            "type": "string",
-            "title": "Title"
-          },
-          "steps": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Steps"
-          },
-          "timeline": {
-            "type": "string",
-            "title": "Timeline"
-          },
-          "priority": {
-            "type": "integer",
-            "maximum": 3.0,
-            "minimum": 1.0,
-            "title": "Priority",
-            "description": "1=high, 2=medium, 3=low"
-          },
-          "is_organic": {
-            "type": "boolean",
-            "title": "Is Organic",
-            "default": true
-          }
-        },
-        "type": "object",
-        "required": [
-          "title",
-          "steps",
-          "timeline",
-          "priority"
-        ],
-        "title": "Remedy",
-        "description": "Schema for a treatment remedy."
       },
       "ReminderCreate": {
         "properties": {

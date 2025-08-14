@@ -12,24 +12,25 @@ from uuid import UUID
 from PIL import Image
 from sqlalchemy.orm import Session
 
+from src.integrations.openai_api.openai_api import get_openai_client
+
 # Remove unused imports - no additional constants needed currently
 from src.tracking.exceptions import (
-    TrackingAnalysisException,
     PhotoProcessingException,
+    TrackingAnalysisException,
 )
 from src.tracking.schemas import (
-    TrackPhotoUploadRequest,
-    TrackPhotoResponse,
+    ComparisonPhotoAnalysis,
+    GrowthTimelineEntry,
+    GrowthTimelineResponse,
     ProgressAnalysisRequest,
     ProgressAnalysisResponse,
     ProgressInsight,
     ProgressMetrics,
     ProgressRecommendation,
-    ComparisonPhotoAnalysis,
-    GrowthTimelineResponse,
-    GrowthTimelineEntry,
+    TrackPhotoResponse,
+    TrackPhotoUploadRequest,
 )
-from src.integrations.openai_api.openai_api import get_openai_client
 
 logger = logging.getLogger(__name__)
 
