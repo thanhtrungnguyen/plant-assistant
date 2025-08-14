@@ -31,6 +31,8 @@ MAX_ALTERNATIVES = 7
 class IdentificationConfidence(Enum):
     """Confidence levels for plant identification."""
 
+    VERY_LOW = "very_low"
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
+    VERY_HIGH = "very_high"

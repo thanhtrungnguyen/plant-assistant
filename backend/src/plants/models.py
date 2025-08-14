@@ -6,7 +6,7 @@ from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, fun
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
-from core.models.base import DomainBase, UpdatedAtMixin
+from src.core.models.base import DomainBase, UpdatedAtMixin
 from src.database.base import Base
 
 """Plant domain models.

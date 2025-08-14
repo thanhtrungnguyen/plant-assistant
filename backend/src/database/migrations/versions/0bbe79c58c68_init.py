@@ -1,19 +1,19 @@
-"""create plant tables
+"""init
 
-Revision ID: 8a8c00154234
+Revision ID: 0bbe79c58c68
 Revises:
-Create Date: 2025-08-14 16:52:21.816549
+Create Date: 2025-08-15 00:27:46.976357
 
 """
 
 from typing import Sequence, Union
 
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "8a8c00154234"
+revision: str = "0bbe79c58c68"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -97,27 +97,6 @@ def upgrade() -> None:
     )
     op.create_index(
         "ix_vector_items_collection", "vector_items", ["collection"], unique=False
-    )
-    op.create_table(
-        "audit_consent_logs",
-        sa.Column("user_id", sa.Integer(), nullable=False),
-        sa.Column("consent_type", sa.String(length=40), nullable=False),
-        sa.Column("granted_at", sa.DateTime(), nullable=False),
-        sa.Column("revoked_at", sa.DateTime(), nullable=True),
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column(
-            "created_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=False,
-        ),
-        sa.ForeignKeyConstraint(
-            ["user_id"],
-            ["users.id"],
-            name=op.f("fk__audit_consent_logs__user_id__users"),
-            ondelete="CASCADE",
-        ),
-        sa.PrimaryKeyConstraint("id", name=op.f("pk__audit_consent_logs")),
     )
     op.create_table(
         "feedback",
@@ -381,42 +360,6 @@ def upgrade() -> None:
         "ix_diagnosis_sessions_user_id", "diagnosis_sessions", ["user_id"], unique=False
     )
     op.create_table(
-        "identification_sessions",
-        sa.Column("user_id", sa.Integer(), nullable=False),
-        sa.Column("plant_id", sa.Integer(), nullable=True),
-        sa.Column("prompt_text", sa.String(), nullable=False),
-        sa.Column("status", sa.String(length=20), nullable=False),
-        sa.Column("model", sa.String(length=100), nullable=True),
-        sa.Column("cost_usd", sa.Numeric(precision=10, scale=4), nullable=True),
-        sa.Column("latency_ms", sa.Integer(), nullable=True),
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column(
-            "created_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=False,
-        ),
-        sa.ForeignKeyConstraint(
-            ["plant_id"],
-            ["plants.id"],
-            name=op.f("fk__identification_sessions__plant_id__plants"),
-            ondelete="SET NULL",
-        ),
-        sa.ForeignKeyConstraint(
-            ["user_id"],
-            ["users.id"],
-            name=op.f("fk__identification_sessions__user_id__users"),
-            ondelete="CASCADE",
-        ),
-        sa.PrimaryKeyConstraint("id", name=op.f("pk__identification_sessions")),
-    )
-    op.create_index(
-        "ix_identification_sessions_user_id",
-        "identification_sessions",
-        ["user_id"],
-        unique=False,
-    )
-    op.create_table(
         "plant_photos",
         sa.Column("plant_id", sa.Integer(), nullable=False),
         sa.Column("url", sa.String(), nullable=False),
@@ -629,71 +572,6 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_table(
-        "identification_assets",
-        sa.Column("session_id", sa.Integer(), nullable=False),
-        sa.Column("url", sa.String(), nullable=False),
-        sa.Column("width", sa.Integer(), nullable=True),
-        sa.Column("height", sa.Integer(), nullable=True),
-        sa.Column("exif_json", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column(
-            "created_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=False,
-        ),
-        sa.ForeignKeyConstraint(
-            ["session_id"],
-            ["identification_sessions.id"],
-            name=op.f("fk__identification_assets__session_id__identification_sessions"),
-            ondelete="CASCADE",
-        ),
-        sa.PrimaryKeyConstraint("id", name=op.f("pk__identification_assets")),
-    )
-    op.create_index(
-        op.f("ix__identification_assets__session_id"),
-        "identification_assets",
-        ["session_id"],
-        unique=False,
-    )
-    op.create_table(
-        "identification_candidates",
-        sa.Column("session_id", sa.Integer(), nullable=False),
-        sa.Column("species_id", sa.Integer(), nullable=True),
-        sa.Column("label_text", sa.String(), nullable=False),
-        sa.Column("confidence", sa.Numeric(precision=3, scale=2), nullable=True),
-        sa.Column("rationale_text", sa.String(), nullable=True),
-        sa.Column("rank", sa.Integer(), nullable=True),
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column(
-            "created_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=False,
-        ),
-        sa.ForeignKeyConstraint(
-            ["session_id"],
-            ["identification_sessions.id"],
-            name=op.f(
-                "fk__identification_candidates__session_id__identification_sessions"
-            ),
-            ondelete="CASCADE",
-        ),
-        sa.ForeignKeyConstraint(
-            ["species_id"],
-            ["species.id"],
-            name=op.f("fk__identification_candidates__species_id__species"),
-            ondelete="SET NULL",
-        ),
-        sa.PrimaryKeyConstraint("id", name=op.f("pk__identification_candidates")),
-    )
-    op.create_index(
-        op.f("ix__identification_candidates__session_id"),
-        "identification_candidates",
-        ["session_id"],
-        unique=False,
-    )
-    op.create_table(
         "reminder_logs",
         sa.Column("reminder_id", sa.Integer(), nullable=False),
         sa.Column("sent_at", sa.DateTime(), nullable=True),
@@ -729,16 +607,6 @@ def downgrade() -> None:
     op.drop_index(op.f("ix__reminder_logs__reminder_id"), table_name="reminder_logs")
     op.drop_table("reminder_logs")
     op.drop_index(
-        op.f("ix__identification_candidates__session_id"),
-        table_name="identification_candidates",
-    )
-    op.drop_table("identification_candidates")
-    op.drop_index(
-        op.f("ix__identification_assets__session_id"),
-        table_name="identification_assets",
-    )
-    op.drop_table("identification_assets")
-    op.drop_index(
         op.f("ix__diagnosis_candidates__session_id"), table_name="diagnosis_candidates"
     )
     op.drop_table("diagnosis_candidates")
@@ -757,10 +625,6 @@ def downgrade() -> None:
     op.drop_table("plant_shares")
     op.drop_index(op.f("ix__plant_photos__plant_id"), table_name="plant_photos")
     op.drop_table("plant_photos")
-    op.drop_index(
-        "ix_identification_sessions_user_id", table_name="identification_sessions"
-    )
-    op.drop_table("identification_sessions")
     op.drop_index("ix_diagnosis_sessions_user_id", table_name="diagnosis_sessions")
     op.drop_table("diagnosis_sessions")
     op.drop_index(
@@ -786,7 +650,6 @@ def downgrade() -> None:
     op.drop_table("oauth_accounts")
     op.drop_index("ix_feedback_user_id", table_name="feedback")
     op.drop_table("feedback")
-    op.drop_table("audit_consent_logs")
     op.drop_index("ix_vector_items_collection", table_name="vector_items")
     op.drop_table("vector_items")
     op.drop_index(op.f("ix__users__email"), table_name="users")

@@ -23,6 +23,8 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
+
+# Import all models for Alembic autogenerate to work
 from src.auth.models import (
     OAuthAccount,
     PasswordCredential,
@@ -30,6 +32,55 @@ from src.auth.models import (
     RefreshToken,
     User,
 )
+
+# Plant-related models
+from src.plants.models import (
+    Plant,
+    PlantPhoto,
+    PlantShare,
+)
+
+# Species model
+from src.species.models import (
+    Species,
+)
+
+# Conversation models
+from src.conversations.models import (
+    ConversationSession,
+    ChatMessage,
+)
+
+# Diagnosis models
+from src.diagnosis.models import (
+    DiagnosisSession,
+    DiagnosisAsset,
+    IssueCatalog,
+    DiagnosisCandidate,
+)
+
+# Care advice models
+from src.care.models import (
+    CarePlan,
+    CareTaskTemplate,
+)
+
+# Reminder models
+from src.reminders.models import (
+    Reminder,
+    ReminderLog,
+)
+
+# Feedback model
+from src.feedback.models import (
+    Feedback,
+)
+
+# Vector storage model
+from src.vertors.models import (
+    VectorItem,
+)
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

@@ -1954,9 +1954,11 @@
       "IdentificationConfidence": {
         "type": "string",
         "enum": [
+          "very_low",
           "low",
           "medium",
-          "high"
+          "high",
+          "very_high"
         ],
         "title": "IdentificationConfidence",
         "description": "Confidence levels for plant identification."

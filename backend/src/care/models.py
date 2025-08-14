@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from core.models.base import DomainBase, UpdatedAtMixin
+from src.core.models.base import DomainBase, UpdatedAtMixin
 from sqlalchemy import ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
