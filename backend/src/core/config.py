@@ -1,3 +1,5 @@
+import os
+
 from pathlib import Path
 from typing import Set
 
@@ -74,12 +76,13 @@ class Settings(BaseSettings):
     PINECONE_DEFAULT_INDEX: str | None = None
     PINECONE_DEFAULT_NAMESPACE: str | None = None
 
-    # OpenAI / AI configuration
-    OPENAI_API_KEY: str | None = None
-    OPENAI_MODEL: str | None = None
-    OPENAI_VISION_MODEL: str | None = None
-    OPENAI_MAX_TOKENS: int | None = 1500
-    OPENAI_TEMPERATURE: float | None = 0.1
+    # AI/OpenAI Configuration
+    OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o")
+    OPENAI_VISION_MODEL: str = os.getenv("OPENAI_VISION_MODEL", "gpt-4o")
+    OPENAI_MAX_TOKENS: int = int(os.getenv("OPENAI_MAX_TOKENS", 1500))
+    OPENAI_TEMPERATURE: float = float(os.getenv("OPENAI_TEMPERATURE", 0.1))
 
     model_config = SettingsConfigDict(
         env_file=Path(__file__).parent.parent.parent / ".env",
