@@ -5,7 +5,10 @@ import { Brain, Leaf, Search, TrendingUp } from "lucide-react";
 
 export default function AnalyzePage() {
   return (
-    <AppLayout title="Phân tích cây trồng" subtitle="Sử dụng công nghệ AI để phân tích tình trạng sức khỏe của cây trồng từ hình ảnh">
+    <AppLayout
+      title="Phân tích cây trồng"
+      subtitle="Sử dụng công nghệ AI để phân tích tình trạng sức khỏe của cây trồng từ hình ảnh"
+    >
       <div className="space-y-6 md:space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           <Card>
@@ -57,19 +60,27 @@ export default function AnalyzePage() {
           <CardContent className="space-y-3 text-green-700 p-4 md:p-6 pt-0">
             <div className="flex items-start gap-2">
               <span className="text-green-600 mt-1">•</span>
-              <span className="text-sm md:text-base">Chụp ảnh trong điều kiện ánh sáng tự nhiên</span>
+              <span className="text-sm md:text-base">
+                Chụp ảnh trong điều kiện ánh sáng tự nhiên
+              </span>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-green-600 mt-1">•</span>
-              <span className="text-sm md:text-base">Đảm bảo cây nằm trong khung hình một cách rõ ràng</span>
+              <span className="text-sm md:text-base">
+                Đảm bảo cây nằm trong khung hình một cách rõ ràng
+              </span>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-green-600 mt-1">•</span>
-              <span className="text-sm md:text-base">Chụp từ nhiều góc độ khác nhau để có đánh giá toàn diện</span>
+              <span className="text-sm md:text-base">
+                Chụp từ nhiều góc độ khác nhau để có đánh giá toàn diện
+              </span>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-green-600 mt-1">•</span>
-              <span className="text-sm md:text-base">Tập trung vào lá cây để AI có thể phân tích tình trạng sức khỏe</span>
+              <span className="text-sm md:text-base">
+                Tập trung vào lá cây để AI có thể phân tích tình trạng sức khỏe
+              </span>
             </div>
           </CardContent>
         </Card>

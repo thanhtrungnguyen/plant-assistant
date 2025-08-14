@@ -36,7 +36,7 @@ export function PlantAnalyzer() {
       const result = await analyzeImage(selectedImage);
       setAnalysisResult(result);
     } catch (error) {
-      console.error('Analysis failed:', error);
+      console.error("Analysis failed:", error);
       // Fallback to mock result if API fails
       const mockResult: AnalysisResult = {
         plantType: "Pothos (Epipremnum aureum)",
@@ -50,8 +50,8 @@ export function PlantAnalyzer() {
           "Cây trồng đang trong tình trạng tốt",
           "Tiếp tục tưới nước 1-2 lần/tuần",
           "Đặt ở nơi có ánh sáng gián tiếp",
-          "Bón phân NPK pha loãng mỗi tháng"
-        ]
+          "Bón phân NPK pha loãng mỗi tháng",
+        ],
       };
       setAnalysisResult(mockResult);
     } finally {
@@ -63,7 +63,7 @@ export function PlantAnalyzer() {
     setSelectedImage(null);
     setAnalysisResult(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -74,7 +74,7 @@ export function PlantAnalyzer() {
   };
 
   const handleImageButtonClick = () => {
-    if (isMobile && typeof navigator !== 'undefined' && navigator.mediaDevices) {
+    if (isMobile && typeof navigator !== "undefined" && navigator.mediaDevices) {
       setShowCamera(true);
     } else {
       fileInputRef.current?.click();
@@ -105,7 +105,7 @@ export function PlantAnalyzer() {
                     Hỗ trợ định dạng JPG, PNG, GIF (tối đa 10MB)
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    {isMobile && typeof navigator !== 'undefined' && navigator.mediaDevices ? (
+                    {isMobile && typeof navigator !== "undefined" && navigator.mediaDevices ? (
                       <Button
                         onClick={handleImageButtonClick}
                         className="bg-green-600 hover:bg-green-700"
@@ -149,11 +149,7 @@ export function PlantAnalyzer() {
                 >
                   {isAnalyzing ? "Đang phân tích..." : "Phân tích bằng AI"}
                 </Button>
-                <Button
-                  onClick={handleReset}
-                  variant="outline"
-                  className="flex-1"
-                >
+                <Button onClick={handleReset} variant="outline" className="flex-1">
                   Chọn ảnh khác
                 </Button>
               </div>
@@ -185,15 +181,15 @@ export function PlantAnalyzer() {
       {analysisResult && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl text-green-700">
-              Kết quả phân tích
-            </CardTitle>
+            <CardTitle className="text-xl text-green-700">Kết quả phân tích</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Loại cây</h4>
-                <p className="text-sm md:text-base text-gray-700 mb-1">{analysisResult.plantType}</p>
+                <p className="text-sm md:text-base text-gray-700 mb-1">
+                  {analysisResult.plantType}
+                </p>
                 <p className="text-xs md:text-sm text-gray-500">
                   Độ tin cậy: {Math.round(analysisResult.confidence * 100)}%
                 </p>
@@ -240,11 +236,7 @@ export function PlantAnalyzer() {
             </div>
 
             <div className="pt-4 border-t border-gray-200">
-              <Button
-                onClick={handleReset}
-                variant="outline"
-                className="w-full"
-              >
+              <Button onClick={handleReset} variant="outline" className="w-full">
                 Phân tích ảnh khác
               </Button>
             </div>
@@ -254,10 +246,7 @@ export function PlantAnalyzer() {
 
       {/* Camera Component */}
       {showCamera && (
-        <CameraCapture
-          onImageCapture={handleCameraCapture}
-          onClose={() => setShowCamera(false)}
-        />
+        <CameraCapture onImageCapture={handleCameraCapture} onClose={() => setShowCamera(false)} />
       )}
     </div>
   );
