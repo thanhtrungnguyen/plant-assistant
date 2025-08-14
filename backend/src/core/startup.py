@@ -71,8 +71,3 @@ def run_startup_checks():
     check_oauth_status()
 
     logger.info("Startup checks completed")
-
-
-def log_router_inclusion(router_name: str):
-    """Log when a router is included"""
-    logger.info(f"{router_name} router included")

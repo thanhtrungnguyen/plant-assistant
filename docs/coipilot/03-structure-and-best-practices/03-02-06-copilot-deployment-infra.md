@@ -6,7 +6,7 @@
 - **Scalability**: Monitor OpenAI costs (prom-client); horizontal scaling with load balancers.
 
 ## Detailed Setup
-- Compose YML: Services for postgres, chroma, backend (uv run uvicorn), frontend (pnpm dev).
+- Compose YML: Services for postgres, Pinecone, backend (uv run uvicorn), frontend (pnpm dev).
 - Deployment: Vercel for frontend, Render for backend.
 
 ## Rationale
