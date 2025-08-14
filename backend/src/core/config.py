@@ -75,6 +75,14 @@ class Settings(BaseSettings):
     OPENAI_MAX_TOKENS: int = int(os.getenv("OPENAI_MAX_TOKENS", 1500))
     OPENAI_TEMPERATURE: float = float(os.getenv("OPENAI_TEMPERATURE", 0.1))
     WEATHER_API_KEY: str = os.getenv("WEATHER_API_KEY", "your-weather-api-key")
+    # AI/Chat Configuration
+    PINECONE_API_KEY: str | None = None
+    PINECONE_ENVIRONMENT: str | None = None
+    PINECONE_INDEX_NAME: str = "plant-assistant"
+
+    # Chat settings
+    EMBEDDING_MODEL: str = "text-embedding-ada-002"
+    MAX_CHAT_HISTORY: int = 10
 
     model_config = SettingsConfigDict(
         env_file=Path(__file__).parent.parent.parent / ".env",

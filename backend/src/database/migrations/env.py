@@ -31,6 +31,16 @@ from auth.models import (  # noqa: E402, F401
     User,
 )
 
+# Import chat models for migration generation
+# try:
+#     from chat.models.chat_models import (  # noqa: E402, F401
+#         ChatSession,
+#         ChatMessage,
+#         ChatKnowledge,
+#     )
+# except ImportError:
+#     pass  # Chat models not available yet
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")

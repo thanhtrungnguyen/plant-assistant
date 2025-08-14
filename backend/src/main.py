@@ -7,6 +7,7 @@ from src.auth.routes.auth_local import router as auth_local
 from src.auth.routes.auth_oauth import router as auth_oauth
 from src.auth.routes.auth_recovery import router as auth_recovery
 from src.auth.routes.auth_tokens import router as auth_tokens
+from src.chat import chat_router
 from src.core.config import settings
 from src.diagnosis.router import router as diagnosis_router
 from src.core.logging import get_logger, setup_logging
@@ -71,5 +72,8 @@ log_router_inclusion("Auth recovery")
 # Plant Diagnosis
 app.include_router(diagnosis_router)
 log_router_inclusion("Plant Diagnosis")
+# Chat
+app.include_router(chat_router)
+log_router_inclusion("Chat")
 
 # Others

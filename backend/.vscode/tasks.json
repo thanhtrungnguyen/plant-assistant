@@ -1,0 +1,23 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Backend: Start Server (Uvicorn)",
+			"type": "shell",
+			"command": "uv",
+			"args": [
+				"run",
+				"python",
+				"-m",
+				"uvicorn",
+				"src.main:app",
+				"--host",
+				"0.0.0.0",
+				"--port",
+				"5000",
+				"--reload"
+			],
+			"isBackground": true
+		}
+	]
+}

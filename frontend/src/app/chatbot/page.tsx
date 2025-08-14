@@ -3,6 +3,7 @@
 import AppLayout from "@/components/layout/AppLayout";
 import { CameraCapture } from "@/components/ui/camera-capture";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { fileToBase64, sendChatMessage, type ChatRequest } from "@/lib/chat-api";
 import { Bot, Camera, Image as ImageIcon, Send, User, X } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -26,8 +27,10 @@ export default function ChatbotPage() {
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [sessionId, setSessionId] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
 
@@ -44,26 +47,75 @@ export default function ChatbotPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const messageText = inputMessage.trim();
     setInputMessage("");
     setSelectedImage(null);
     setIsLoading(true);
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      // Prepare chat request
+      const chatRequest: ChatRequest = {
+        message: messageText || (selectedImage ? "Phân tích ảnh cây này giúp tôi" : ""),
+        session_id: sessionId || undefined,
+      };
+
+      // Convert image to base64 if present
+      if (selectedFile) {
+        try {
+          const base64 = await fileToBase64(selectedFile);
+          chatRequest.image_base64 = base64;
+        } catch (error) {
+          console.error("Failed to convert image to base64:", error);
+        }
+      }
+
+      // Call the real API
+      const response = await sendChatMessage(chatRequest);
+
+      // Handle response
+      if ('error' in response) {
+        // Error response
+        const botMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: `❌ Lỗi: ${response.message}`,
+          sender: "bot",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, botMessage]);
+      } else {
+        // Success response
+        const botMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: response.message,
+          sender: "bot",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, botMessage]);
+
+        // Update session ID if provided
+        if (response.session_id) {
+          setSessionId(response.session_id);
+        }
+      }
+    } catch (error) {
+      console.error("Chat API error:", error);
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: selectedImage ? getImageAnalysisResponse() : getBotResponse(userMessage.content),
+        content: "❌ Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.",
         sender: "bot",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+      setSelectedFile(null);
+    }
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
@@ -74,11 +126,23 @@ export default function ChatbotPage() {
 
   const removeImage = () => {
     setSelectedImage(null);
+    setSelectedFile(null);
   };
 
   const handleCameraCapture = (imageDataUrl: string) => {
     setSelectedImage(imageDataUrl);
     setShowCamera(false);
+
+    // Convert data URL to File object
+    const base64Data = imageDataUrl.split(',')[1];
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const file = new File([byteArray], `camera-capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
+    setSelectedFile(file);
   };
 
   const handleImageButtonClick = () => {
@@ -87,46 +151,6 @@ export default function ChatbotPage() {
     } else {
       fileInputRef.current?.click();
     }
-  };
-
-  const getImageAnalysisResponse = (): string => {
-    const responses = [
-      "Tôi thấy đây là một cây Pothos khỏe mạnh! Lá xanh tươi cho thấy cây đang được chăm sóc tốt. Để duy trì, hãy tưới nước khi đất khô và đặt ở nơi có ánh sáng gián tiếp.",
-      "Cây Monstera của bạn có vẻ cần nhiều ánh sáng hơn. Tôi khuyên nên di chuyển cây gần cửa sổ hơn và kiểm tra độ ẩm đất thường xuyên.",
-      "Đây có vẻ là cây Snake Plant. Cây này rất dễ chăm sóc! Chỉ cần tưới nước 1-2 lần/tháng và cây sẽ phát triển tốt ngay cả trong điều kiện ánh sáng thấp.",
-      "Tôi nhận thấy một số dấu hiệu vàng lá. Điều này có thể do tưới nước quá nhiều. Hãy kiểm tra xem đất có bị úng nước không và giảm tần suất tưới nước.",
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
-
-  const getBotResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase();
-
-    if (input.includes("tưới") || input.includes("nước")) {
-      return "Để tưới nước đúng cách, hãy kiểm tra độ ẩm đất bằng cách nhấn ngón tay xuống đất 2-3cm. Hầu hết các cây cần tưới khi lớp đất trên cùng khô. Thông thường tưới 1-2 lần/tuần, tùy thuộc vào loại cây và mùa.";
-    }
-
-    if (input.includes("ánh sáng") || input.includes("nắng")) {
-      return "Yêu cầu ánh sáng khác nhau tùy loại cây. Hầu hết cây trong nhà thích ánh sáng gián tiếp sáng. Tránh ánh nắng trực tiếp có thể làm cháy lá. Nếu lá vàng hoặc cây héo, có thể cây cần nhiều ánh sáng hơn.";
-    }
-
-    if (input.includes("bón phân") || input.includes("dinh dưỡng")) {
-      return "Bón phân cho cây trong mùa sinh trưởng (xuân/hè) bằng phân bón lỏng cân bằng 2-4 tuần/lần. Giảm hoặc ngừng bón phân vào thu/đông khi cây phát triển chậm lại.";
-    }
-
-    if (input.includes("sâu bệnh") || input.includes("côn trùng")) {
-      return "Dấu hiệu sâu bệnh thường là lá vàng, chất dính hoặc thấy côn trùng. Kiểm tra thường xuyên và xử lý bằng xà phòng diệt côn trùng hoặc dầu neem. Cách ly cây bị nhiễm bệnh.";
-    }
-
-    if (input.includes("thay chậu") || input.includes("chậu mới")) {
-      return "Thay chậu khi rễ mọc ra khỏi lỗ thoát nước hoặc đất cạn kiệt nhanh. Chọn chậu lớn hơn 2-3cm, dùng đất trồng mới, tốt nhất là thay chậu vào mùa xuân.";
-    }
-
-    if (input.includes("ảnh") || input.includes("hình")) {
-      return "Bạn có thể gửi ảnh cây trồng cho tôi để phân tích! Tôi sẽ giúp nhận dạng loại cây và đưa ra lời khuyên chăm sóc cụ thể.";
-    }
-
-    return "Tôi có thể giúp bạn về tưới nước, ánh sáng, bón phân, phòng trừ sâu bệnh, thay chậu và phân tích ảnh cây trồng. Bạn muốn hỏi gì cụ thể hơn không?";
   };
 
   return (
