@@ -356,7 +356,7 @@
           "plants"
         ],
         "summary": "Create Plant",
-        "description": "Create a new plant for the current user.",
+        "description": "Create a new plant.",
         "operationId": "create_plant",
         "requestBody": {
           "required": true,
@@ -395,9 +395,9 @@
         "tags": [
           "plants"
         ],
-        "summary": "Get Plants",
+        "summary": "List Plants",
         "description": "Get paginated list of user's plants.",
-        "operationId": "get_plants",
+        "operationId": "list_plants",
         "parameters": [
           {
             "name": "page",
@@ -406,21 +406,25 @@
             "schema": {
               "type": "integer",
               "minimum": 1,
+              "description": "Page number",
               "default": 1,
               "title": "Page"
-            }
+            },
+            "description": "Page number"
           },
           {
-            "name": "size",
+            "name": "page_size",
             "in": "query",
             "required": false,
             "schema": {
               "type": "integer",
               "maximum": 100,
               "minimum": 1,
+              "description": "Items per page",
               "default": 20,
-              "title": "Size"
-            }
+              "title": "Page Size"
+            },
+            "description": "Items per page"
           },
           {
             "name": "search",
@@ -428,8 +432,21 @@
             "required": false,
             "schema": {
               "type": "string",
+              "description": "Search term",
               "title": "Search"
-            }
+            },
+            "description": "Search term"
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Filter by archived status",
+              "title": "Archived"
+            },
+            "description": "Filter by archived status"
           },
           {
             "name": "species_id",
@@ -437,37 +454,10 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "description": "Filter by species",
               "title": "Species Id"
-            }
-          },
-          {
-            "name": "is_archived",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "boolean",
-              "title": "Is Archived"
-            }
-          },
-          {
-            "name": "sort_by",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "created_at",
-              "title": "Sort By"
-            }
-          },
-          {
-            "name": "sort_order",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "desc",
-              "title": "Sort Order"
-            }
+            },
+            "description": "Filter by species"
           }
         ],
         "responses": {
@@ -500,7 +490,7 @@
           "plants"
         ],
         "summary": "Get Plant",
-        "description": "Get a specific plant by ID.",
+        "description": "Get a specific plant.",
         "operationId": "get_plant",
         "parameters": [
           {
@@ -592,7 +582,7 @@
           "plants"
         ],
         "summary": "Delete Plant",
-        "description": "Delete (archive) a plant.",
+        "description": "Delete a plant.",
         "operationId": "delete_plant",
         "parameters": [
           {
@@ -608,6 +598,382 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/{plant_id}/photos": {
+      "post": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Add Plant Photo",
+        "description": "Add a photo to a plant.",
+        "operationId": "add_plant_photo",
+        "parameters": [
+          {
+            "name": "plant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlantPhotoCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlantPhotoResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Get Plant Photos",
+        "description": "Get all photos for a plant.",
+        "operationId": "get_plant_photos",
+        "parameters": [
+          {
+            "name": "plant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlantPhotoResponse"
+                  },
+                  "title": "Response Plants-Get Plant Photos"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/photos/{photo_id}": {
+      "delete": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Delete Plant Photo",
+        "description": "Delete a plant photo.",
+        "operationId": "delete_plant_photo",
+        "parameters": [
+          {
+            "name": "photo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Photo Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/{plant_id}/share": {
+      "post": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Share Plant",
+        "description": "Share a plant with another user.",
+        "operationId": "share_plant",
+        "parameters": [
+          {
+            "name": "plant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlantShareCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlantShareResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/{plant_id}/shares": {
+      "get": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Get Plant Shares",
+        "description": "Get all shares for a plant.",
+        "operationId": "get_plant_shares",
+        "parameters": [
+          {
+            "name": "plant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlantShareResponse"
+                  },
+                  "title": "Response Plants-Get Plant Shares"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/{plant_id}/shares/{user_id}": {
+      "delete": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Remove Plant Share",
+        "description": "Remove a plant share.",
+        "operationId": "remove_plant_share",
+        "parameters": [
+          {
+            "name": "plant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/{plant_id}/care/{care_type}": {
+      "post": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Update Care Tracking",
+        "description": "Update care tracking for a plant (water, fertilize, etc.).",
+        "operationId": "update_care_tracking",
+        "parameters": [
+          {
+            "name": "plant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          },
+          {
+            "name": "care_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Care Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlantResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/{plant_id}/insights": {
+      "get": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Get Plant Insights",
+        "description": "Generate AI insights for a plant.",
+        "operationId": "get_plant_insights",
+        "parameters": [
+          {
+            "name": "plant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Plants-Get Plant Insights"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -996,28 +1362,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/plants/dashboard/stats": {
-      "get": {
-        "tags": [
-          "plant-dashboard"
-        ],
-        "summary": "Get Dashboard",
-        "description": "Get dashboard data for the current user.",
-        "operationId": "get_dashboard",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DashboardResponse"
                 }
               }
             }
@@ -1489,82 +1833,6 @@
         "title": "ChatResponse",
         "description": "Schema for chat response."
       },
-      "DashboardResponse": {
-        "properties": {
-          "stats": {
-            "$ref": "#/components/schemas/DashboardStats"
-          },
-          "recent_plants": {
-            "items": {
-              "$ref": "#/components/schemas/PlantResponse"
-            },
-            "type": "array",
-            "title": "Recent Plants"
-          },
-          "upcoming_reminders": {
-            "items": {
-              "$ref": "#/components/schemas/ReminderResponse"
-            },
-            "type": "array",
-            "title": "Upcoming Reminders"
-          },
-          "recent_photos": {
-            "items": {
-              "$ref": "#/components/schemas/PlantPhotoResponse"
-            },
-            "type": "array",
-            "title": "Recent Photos"
-          }
-        },
-        "type": "object",
-        "required": [
-          "stats",
-          "recent_plants",
-          "upcoming_reminders",
-          "recent_photos"
-        ],
-        "title": "DashboardResponse",
-        "description": "Schema for dashboard data."
-      },
-      "DashboardStats": {
-        "properties": {
-          "total_plants": {
-            "type": "integer",
-            "title": "Total Plants"
-          },
-          "healthy_plants": {
-            "type": "integer",
-            "title": "Healthy Plants"
-          },
-          "plants_needing_attention": {
-            "type": "integer",
-            "title": "Plants Needing Attention"
-          },
-          "overdue_reminders": {
-            "type": "integer",
-            "title": "Overdue Reminders"
-          },
-          "reminders_today": {
-            "type": "integer",
-            "title": "Reminders Today"
-          },
-          "reminders_this_week": {
-            "type": "integer",
-            "title": "Reminders This Week"
-          }
-        },
-        "type": "object",
-        "required": [
-          "total_plants",
-          "healthy_plants",
-          "plants_needing_attention",
-          "overdue_reminders",
-          "reminders_today",
-          "reminders_this_week"
-        ],
-        "title": "DashboardStats",
-        "description": "Schema for dashboard statistics."
-      },
       "DiagnoseRequest": {
         "properties": {
           "symptoms": {
@@ -1686,11 +1954,9 @@
       "IdentificationConfidence": {
         "type": "string",
         "enum": [
-          "very_low",
           "low",
           "medium",
-          "high",
-          "very_high"
+          "high"
         ],
         "title": "IdentificationConfidence",
         "description": "Confidence levels for plant identification."
@@ -1809,38 +2075,26 @@
           "nickname": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 100
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Nickname"
+            "title": "Nickname",
+            "description": "User-given name for the plant"
           },
           "location_text": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 200
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Location Text"
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 1000
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
+            "title": "Location Text",
+            "description": "Where the plant is located"
           },
           "latitude": {
             "anyOf": [
@@ -1853,7 +2107,8 @@
                 "type": "null"
               }
             ],
-            "title": "Latitude"
+            "title": "Latitude",
+            "description": "GPS latitude"
           },
           "longitude": {
             "anyOf": [
@@ -1866,7 +2121,57 @@
                 "type": "null"
               }
             ],
-            "title": "Longitude"
+            "title": "Longitude",
+            "description": "GPS longitude"
+          },
+          "light_conditions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Light Conditions",
+            "description": "Light exposure description"
+          },
+          "soil_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Soil Type",
+            "description": "Type of soil being used"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Free-form notes about the plant"
+          },
+          "custom_attributes": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Attributes",
+            "description": "Custom user attributes"
           },
           "species_id": {
             "anyOf": [
@@ -1877,7 +2182,8 @@
                 "type": "null"
               }
             ],
-            "title": "Species Id"
+            "title": "Species Id",
+            "description": "ID of the plant species"
           },
           "acquisition_date": {
             "anyOf": [
@@ -1889,7 +2195,8 @@
                 "type": "null"
               }
             ],
-            "title": "Acquisition Date"
+            "title": "Acquisition Date",
+            "description": "When the plant was acquired"
           }
         },
         "type": "object",
@@ -2037,13 +2344,13 @@
             "type": "integer",
             "title": "Page"
           },
-          "size": {
+          "page_size": {
             "type": "integer",
-            "title": "Size"
+            "title": "Page Size"
           },
-          "pages": {
+          "total_pages": {
             "type": "integer",
-            "title": "Pages"
+            "title": "Total Pages"
           }
         },
         "type": "object",
@@ -2051,66 +2358,45 @@
           "plants",
           "total",
           "page",
-          "size",
-          "pages"
+          "page_size",
+          "total_pages"
         ],
         "title": "PlantListResponse",
-        "description": "Schema for paginated plant list response."
+        "description": "Response schema for plant list."
       },
-      "PlantPhotoResponse": {
+      "PlantPhotoCreate": {
         "properties": {
-          "filename": {
+          "url": {
             "type": "string",
-            "maxLength": 255,
-            "title": "Filename"
+            "title": "Url",
+            "description": "URL of the uploaded photo"
           },
-          "original_filename": {
+          "taken_at": {
             "anyOf": [
               {
                 "type": "string",
-                "maxLength": 255
+                "format": "date-time"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Original Filename"
+            "title": "Taken At",
+            "description": "When the photo was taken"
           },
-          "file_size": {
-            "type": "integer",
-            "exclusiveMinimum": 0.0,
-            "title": "File Size"
-          },
-          "content_type": {
-            "type": "string",
-            "maxLength": 50,
-            "title": "Content Type"
-          },
-          "description": {
+          "caption": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 500
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Description"
+            "title": "Caption",
+            "description": "Caption for the photo"
           },
-          "id": {
-            "type": "integer",
-            "title": "Id"
-          },
-          "plant_id": {
-            "type": "integer",
-            "title": "Plant Id"
-          },
-          "user_id": {
-            "type": "integer",
-            "title": "User Id"
-          },
-          "ai_analysis": {
+          "ai_metrics_json": {
             "anyOf": [
               {
                 "additionalProperties": true,
@@ -2120,18 +2406,44 @@
                 "type": "null"
               }
             ],
-            "title": "Ai Analysis"
+            "title": "Ai Metrics Json",
+            "description": "AI analysis metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "PlantPhotoCreate",
+        "description": "Schema for creating a plant photo."
+      },
+      "PlantPhotoResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
           },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
+          "plant_id": {
+            "type": "integer",
+            "title": "Plant Id"
           },
           "url": {
             "type": "string",
             "title": "Url"
           },
-          "thumbnail_url": {
+          "taken_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taken At"
+          },
+          "caption": {
             "anyOf": [
               {
                 "type": "string"
@@ -2140,20 +2452,32 @@
                 "type": "null"
               }
             ],
-            "title": "Thumbnail Url"
+            "title": "Caption"
+          },
+          "ai_metrics_json": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Metrics Json"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
           }
         },
         "type": "object",
         "required": [
-          "filename",
-          "file_size",
-          "content_type",
           "id",
           "plant_id",
-          "user_id",
-          "ai_analysis",
-          "created_at",
-          "url"
+          "url",
+          "created_at"
         ],
         "title": "PlantPhotoResponse",
         "description": "Schema for plant photo response."
@@ -2163,38 +2487,26 @@
           "nickname": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 100
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Nickname"
+            "title": "Nickname",
+            "description": "User-given name for the plant"
           },
           "location_text": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 200
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Location Text"
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 1000
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
+            "title": "Location Text",
+            "description": "Where the plant is located"
           },
           "latitude": {
             "anyOf": [
@@ -2207,7 +2519,8 @@
                 "type": "null"
               }
             ],
-            "title": "Latitude"
+            "title": "Latitude",
+            "description": "GPS latitude"
           },
           "longitude": {
             "anyOf": [
@@ -2220,7 +2533,57 @@
                 "type": "null"
               }
             ],
-            "title": "Longitude"
+            "title": "Longitude",
+            "description": "GPS longitude"
+          },
+          "light_conditions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Light Conditions",
+            "description": "Light exposure description"
+          },
+          "soil_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Soil Type",
+            "description": "Type of soil being used"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Free-form notes about the plant"
+          },
+          "custom_attributes": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Attributes",
+            "description": "Custom user attributes"
           },
           "id": {
             "type": "integer",
@@ -2255,7 +2618,8 @@
           },
           "is_archived": {
             "type": "boolean",
-            "title": "Is Archived"
+            "title": "Is Archived",
+            "default": false
           },
           "ai_metrics_json": {
             "anyOf": [
@@ -2278,103 +2642,94 @@
             "type": "string",
             "format": "date-time",
             "title": "Updated At"
-          },
-          "status": {
-            "$ref": "#/components/schemas/PlantStatus",
-            "default": "unknown"
-          },
-          "photo_count": {
-            "type": "integer",
-            "title": "Photo Count",
-            "default": 0
-          },
-          "last_care_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Last Care Date"
-          },
-          "next_reminder_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Next Reminder Date"
           }
         },
         "type": "object",
         "required": [
           "id",
           "user_id",
-          "species_id",
-          "acquisition_date",
-          "is_archived",
-          "ai_metrics_json",
           "created_at",
           "updated_at"
         ],
         "title": "PlantResponse",
-        "description": "Schema for plant response with additional computed fields."
+        "description": "Schema for plant response."
       },
-      "PlantStatus": {
-        "type": "string",
-        "enum": [
-          "healthy",
-          "warning",
-          "critical",
-          "unknown"
+      "PlantShareCreate": {
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "title": "User Id",
+            "description": "ID of user to share with"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "Role: viewer or editor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "role"
         ],
-        "title": "PlantStatus",
-        "description": "Status of a plant."
+        "title": "PlantShareCreate",
+        "description": "Schema for creating a plant share."
+      },
+      "PlantShareResponse": {
+        "properties": {
+          "plant_id": {
+            "type": "integer",
+            "title": "Plant Id"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plant_id",
+          "user_id",
+          "role",
+          "created_at"
+        ],
+        "title": "PlantShareResponse",
+        "description": "Schema for plant share response."
       },
       "PlantUpdate": {
         "properties": {
           "nickname": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 100
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Nickname"
+            "title": "Nickname",
+            "description": "User-given name for the plant"
           },
           "location_text": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 200
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Location Text"
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 1000
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
+            "title": "Location Text",
+            "description": "Where the plant is located"
           },
           "latitude": {
             "anyOf": [
@@ -2387,7 +2742,8 @@
                 "type": "null"
               }
             ],
-            "title": "Latitude"
+            "title": "Latitude",
+            "description": "GPS latitude"
           },
           "longitude": {
             "anyOf": [
@@ -2400,7 +2756,57 @@
                 "type": "null"
               }
             ],
-            "title": "Longitude"
+            "title": "Longitude",
+            "description": "GPS longitude"
+          },
+          "light_conditions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Light Conditions",
+            "description": "Light exposure description"
+          },
+          "soil_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Soil Type",
+            "description": "Type of soil being used"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Free-form notes about the plant"
+          },
+          "custom_attributes": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Attributes",
+            "description": "Custom user attributes"
           },
           "species_id": {
             "anyOf": [
@@ -2411,7 +2817,8 @@
                 "type": "null"
               }
             ],
-            "title": "Species Id"
+            "title": "Species Id",
+            "description": "ID of the plant species"
           },
           "is_archived": {
             "anyOf": [
@@ -2422,7 +2829,8 @@
                 "type": "null"
               }
             ],
-            "title": "Is Archived"
+            "title": "Is Archived",
+            "description": "Whether plant is archived"
           }
         },
         "type": "object",
@@ -2579,13 +2987,13 @@
             "type": "integer",
             "title": "Page"
           },
-          "size": {
+          "page_size": {
             "type": "integer",
-            "title": "Size"
+            "title": "Page Size"
           },
-          "pages": {
+          "total_pages": {
             "type": "integer",
-            "title": "Pages"
+            "title": "Total Pages"
           }
         },
         "type": "object",
@@ -2593,18 +3001,19 @@
           "reminders",
           "total",
           "page",
-          "size",
-          "pages"
+          "page_size",
+          "total_pages"
         ],
         "title": "ReminderListResponse",
-        "description": "Schema for paginated reminder list response."
+        "description": "Response schema for reminder list."
       },
       "ReminderPriority": {
         "type": "string",
         "enum": [
           "low",
           "medium",
-          "high"
+          "high",
+          "urgent"
         ],
         "title": "ReminderPriority",
         "description": "Priority levels for reminders."
@@ -2747,10 +3156,10 @@
           "pruning",
           "repotting",
           "pest_check",
-          "custom"
+          "general_care"
         ],
         "title": "ReminderType",
-        "description": "Types of plant care reminders."
+        "description": "Types of plant reminders."
       },
       "ReminderUpdate": {
         "properties": {

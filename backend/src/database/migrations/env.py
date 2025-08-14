@@ -23,37 +23,13 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
-from src.auth.models import (  # noqa: E402, F401
+from src.auth.models import (
     OAuthAccount,
     PasswordCredential,
     PasswordResetToken,
     RefreshToken,
     User,
 )
-from src.plants.models.care import CarePlan, CareTaskTemplate  # noqa: E402, F401
-from src.plants.models.consent import AuditConsentLog  # noqa: E402, F401
-from src.plants.models.conversations import (  # noqa: E402, F401
-    ChatMessage,
-    ConversationSession,
-)
-from src.plants.models.diagnosis import (  # noqa: E402, F401
-    DiagnosisAsset,
-    DiagnosisCandidate,
-    DiagnosisSession,
-    IssueCatalog,
-)
-from src.plants.models.feedback import Feedback  # noqa: E402, F401
-from src.plants.models.identification import (  # noqa: E402, F401
-    IdentificationAsset,
-    IdentificationCandidate,
-    IdentificationSession,
-)
-
-# Import plants models for autogeneration
-from src.plants.models.plants import Plant, PlantPhoto, PlantShare  # noqa: E402, F401
-from src.plants.models.reminders import Reminder, ReminderLog  # noqa: E402, F401
-from src.plants.models.species import Species  # noqa: E402, F401
-from src.plants.models.vectors import VectorItem  # noqa: E402, F401
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

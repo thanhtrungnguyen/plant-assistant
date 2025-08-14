@@ -1,78 +1,58 @@
-"""Constants for the plants module."""
+"""Constants for plants module."""
 
 from enum import Enum
 
 
 class PlantStatus(str, Enum):
-    """Status of a plant."""
+    """Plant status options."""
 
     HEALTHY = "healthy"
-    WARNING = "warning"
-    CRITICAL = "critical"
-    UNKNOWN = "unknown"
+    NEEDS_ATTENTION = "needs_attention"
+    SICK = "sick"
+    THRIVING = "thriving"
+    DORMANT = "dormant"
+    DEAD = "dead"
 
 
-class ReminderType(str, Enum):
-    """Types of plant care reminders."""
+class CareDifficulty(str, Enum):
+    """Plant care difficulty levels."""
 
-    WATERING = "watering"
-    FERTILIZING = "fertilizing"
-    PRUNING = "pruning"
-    REPOTTING = "repotting"
-    PEST_CHECK = "pest_check"
-    CUSTOM = "custom"
+    EASY = "easy"
+    MODERATE = "moderate"
+    DIFFICULT = "difficult"
+    EXPERT = "expert"
 
 
-class ReminderPriority(str, Enum):
-    """Priority levels for reminders."""
+class LightConditions(str, Enum):
+    """Light condition options."""
 
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-
-
-class IdentificationConfidence(str, Enum):
-    """Confidence levels for plant identification."""
-
-    VERY_LOW = "very_low"  # 0-25%
-    LOW = "low"  # 26-50%
-    MEDIUM = "medium"  # 51-75%
-    HIGH = "high"  # 76-90%
-    VERY_HIGH = "very_high"  # 91-100%
+    FULL_SUN = "full_sun"
+    PARTIAL_SUN = "partial_sun"
+    SHADE = "shade"
+    INDIRECT_LIGHT = "indirect_light"
+    LOW_LIGHT = "low_light"
 
 
-class ErrorCode(str, Enum):
-    """Error codes for the plants module."""
+class SoilType(str, Enum):
+    """Soil type options."""
 
-    PLANT_NOT_FOUND = "PLANT_NOT_FOUND"
-    PLANT_ACCESS_DENIED = "PLANT_ACCESS_DENIED"
-    INVALID_IMAGE_FORMAT = "INVALID_IMAGE_FORMAT"
-    IMAGE_TOO_LARGE = "IMAGE_TOO_LARGE"
-    TOO_MANY_IMAGES = "TOO_MANY_IMAGES"
-    IDENTIFICATION_FAILED = "IDENTIFICATION_FAILED"
-    REMINDER_NOT_FOUND = "REMINDER_NOT_FOUND"
-    SPECIES_NOT_FOUND = "SPECIES_NOT_FOUND"
+    POTTING_MIX = "potting_mix"
+    GARDEN_SOIL = "garden_soil"
+    SANDY = "sandy"
+    CLAY = "clay"
+    LOAMY = "loamy"
+    CACTUS_MIX = "cactus_mix"
+    ORCHID_BARK = "orchid_bark"
 
 
-# Image processing constants
-MAX_IMAGES_PER_REQUEST = 5
-MAX_IMAGE_SIZE_MB = 2  # Per image
-MAX_TOTAL_SIZE_MB = 10  # Total for all images
-SUPPORTED_IMAGE_FORMATS = {"jpeg", "jpg", "png", "heic", "webp"}
+# Photo upload constants
+MAX_PHOTO_SIZE_MB = 10
+ALLOWED_PHOTO_FORMATS = {"jpg", "jpeg", "png", "webp"}
 
-# Text input limits
-MAX_DESCRIPTION_LENGTH = 750
-MIN_DESCRIPTION_LENGTH = 10
-
-# Identification constants
-MIN_CONFIDENCE_THRESHOLD = 0.25  # 25%
-ALTERNATIVES_MIN_SIMILARITY = 0.8  # Cosine similarity threshold
-MAX_ALTERNATIVES = 7
-
-# Performance targets
-API_RESPONSE_TARGET_MS = 1800  # 1.8 seconds
-DASHBOARD_LOAD_TARGET_MS = 1000  # 1 second for 50 plants
-
-# Pagination
+# Pagination defaults
 DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
+
+# AI insights constants
+MIN_CONFIDENCE_THRESHOLD = 0.5
+MAX_INSIGHTS_PER_PLANT = 10

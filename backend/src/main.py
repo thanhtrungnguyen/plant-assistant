@@ -7,19 +7,18 @@ from src.auth.routes.auth_local import router as auth_local
 from src.auth.routes.auth_oauth import router as auth_oauth
 from src.auth.routes.auth_recovery import router as auth_recovery
 from src.auth.routes.auth_tokens import router as auth_tokens
+from src.care.router import router as care_router
+from src.conversations.router import router as chat_router
 from src.core.config import settings
 from src.core.logging import get_logger, setup_logging
 from src.core.routes.health import router as health_router
 from src.core.startup import run_startup_checks
-from src.plants.routers.care import router as care_router
-from src.plants.routers.chat import router as chat_router
-from src.plants.routers.dashboard import router as dashboard_router
-from src.plants.routers.diagnosis import router as diagnosis_router
-from src.plants.routers.identification import router as identification_router
-from src.plants.routers.plants import router as plants_router
-from src.plants.routers.reminders import router as reminders_router
-from src.plants.routers.tracking import router as tracking_router
+from src.diagnosis.router import router as diagnosis_router
+from src.identification.router import router as identification_router
+from src.plants.router import router as plants_router
+from src.reminders.router import router as reminders_router
 from src.shared.utils import simple_generate_unique_route_id
+from src.tracking.router import router as tracking_router
 
 # Configure logging
 setup_logging(level="INFO", log_file="logs/app.log")
@@ -70,7 +69,6 @@ app.include_router(auth_recovery)
 app.include_router(plants_router, prefix="/api")  # /api/plants/*
 app.include_router(identification_router, prefix="/api")  # /api/plants/identify/*
 app.include_router(reminders_router, prefix="/api")  # /api/plants/reminders/*
-app.include_router(dashboard_router, prefix="/api")  # /api/plants/dashboard/*
 app.include_router(care_router, prefix="/api")  # /api/plants/care/*
 app.include_router(diagnosis_router, prefix="/api")  # /api/plants/diagnose/*
 app.include_router(tracking_router, prefix="/api")  # /api/plants/track/*
