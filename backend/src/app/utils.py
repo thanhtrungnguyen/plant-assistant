@@ -12,7 +12,7 @@ import torchaudio
 import onnxruntime
 import numpy as np
 import soundfile as sf
-from app.schemas import UserData
+from .schemas import UserData
 
 # am_sess = onnxruntime.InferenceSession("models/am_onnx/am_onnx.onnx")
 # vocoder = Vocoder("models/mb_melgan.onnx")

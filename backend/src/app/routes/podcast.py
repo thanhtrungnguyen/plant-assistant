@@ -4,9 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from ..schemas import GeneratePodcastInput
 from ..services.podcast_service import create_podcast_for_user
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models import User
-from app.database import get_async_session
-from app.users import current_active_user
 from fastapi import APIRouter, Response, HTTPException
 
 

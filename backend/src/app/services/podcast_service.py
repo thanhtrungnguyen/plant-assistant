@@ -1,14 +1,12 @@
 # backend/src/app/services/podcast_service.py
 
 from sqlalchemy.orm import Session
-from ..models import User
 from ..schemas import GeneratePodcastInput
 from ..utils import get_weather, generate_podcast, text_to_wav_bytes,generate_dummy_data
 
 # backend/src/app/services/podcast_service.py
 
 from sqlalchemy.orm import Session
-from ..models import User
 from ..schemas import GeneratePodcastInput, UserData
 from ..utils import get_weather, generate_podcast, text_to_wav_bytes, generate_dummy_data
 
