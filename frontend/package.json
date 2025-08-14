@@ -31,7 +31,7 @@
     "dotenv": "^16.6.1",
     "lucide-react": "^0.452.0",
     "next": "^15.4.6",
-    "react": "19.0.0",
+    "react": "19.1.1",
     "react-dom": "19.0.0",
     "react-hook-form": "^7.62.0",
     "react-icons": "^5.5.0",
