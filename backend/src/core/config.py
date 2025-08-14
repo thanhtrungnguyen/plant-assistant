@@ -65,6 +65,22 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: Set[str] = {"http://localhost:3000"}
 
+    # Pinecone / Vector DB
+    PINECONE_API_KEY: str | None = None
+    PINECONE_ENVIRONMENT: str | None = None  # legacy (if needed)
+    PINECONE_HOST: str | None = (
+        None  # optional override for self-hosted / explicit host
+    )
+    PINECONE_DEFAULT_INDEX: str | None = None
+    PINECONE_DEFAULT_NAMESPACE: str | None = None
+
+    # OpenAI / AI configuration
+    OPENAI_API_KEY: str | None = None
+    OPENAI_MODEL: str | None = None
+    OPENAI_VISION_MODEL: str | None = None
+    OPENAI_MAX_TOKENS: int | None = 1500
+    OPENAI_TEMPERATURE: float | None = 0.1
+
     model_config = SettingsConfigDict(
         env_file=Path(__file__).parent.parent.parent / ".env",
         env_file_encoding="utf-8",

@@ -1,81 +1,90 @@
-'use client';
+"use client";
 
 import AppLayout from "@/components/layout/AppLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Calendar, CheckCircle, Droplets, Plus, RotateCcw, Scissors, Sprout } from 'lucide-react';
-import { useState } from 'react';
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Droplets,
+  Plus,
+  RotateCcw,
+  Scissors,
+  Sprout,
+} from "lucide-react";
+import { useState } from "react";
 
 interface Task {
   id: string;
   title: string;
   description?: string;
   dueDate: Date;
-  type: 'watering' | 'fertilizing' | 'pruning' | 'repotting';
+  type: "watering" | "fertilizing" | "pruning" | "repotting";
   plantName: string;
   completed: boolean;
-  priority: 'low' | 'medium' | 'high';
+  priority: "low" | "medium" | "high";
   createdAt: Date;
 }
 
 const mockTasks: Task[] = [
   {
-    id: '1',
-    title: 'Tưới nước cho Pothos',
-    description: 'Kiểm tra độ ẩm đất trước khi tưới',
+    id: "1",
+    title: "Tưới nước cho Pothos",
+    description: "Kiểm tra độ ẩm đất trước khi tưới",
     dueDate: new Date(2025, 7, 11),
-    type: 'watering',
-    plantName: 'Pothos của tôi',
+    type: "watering",
+    plantName: "Pothos của tôi",
     completed: false,
-    priority: 'high',
-    createdAt: new Date(2025, 7, 8)
+    priority: "high",
+    createdAt: new Date(2025, 7, 8),
   },
   {
-    id: '2',
-    title: 'Bón phân cho Monstera',
-    description: 'Sử dụng phân NPK pha loãng',
+    id: "2",
+    title: "Bón phân cho Monstera",
+    description: "Sử dụng phân NPK pha loãng",
     dueDate: new Date(2025, 7, 12),
-    type: 'fertilizing',
-    plantName: 'Monstera xinh đẹp',
+    type: "fertilizing",
+    plantName: "Monstera xinh đẹp",
     completed: false,
-    priority: 'medium',
-    createdAt: new Date(2025, 7, 9)
-  }
+    priority: "medium",
+    createdAt: new Date(2025, 7, 9),
+  },
 ];
 
 export default function TasksPage() {
   const [tasks] = useState<Task[]>(mockTasks);
 
-  const getTaskIcon = (type: Task['type']) => {
+  const getTaskIcon = (type: Task["type"]) => {
     switch (type) {
-      case 'watering':
+      case "watering":
         return <Droplets className="h-4 w-4 text-blue-500" />;
-      case 'fertilizing':
+      case "fertilizing":
         return <Sprout className="h-4 w-4 text-green-500" />;
-      case 'pruning':
+      case "pruning":
         return <Scissors className="h-4 w-4 text-orange-500" />;
-      case 'repotting':
+      case "repotting":
         return <RotateCcw className="h-4 w-4 text-purple-500" />;
     }
   };
 
-  const getPriorityColor = (priority: Task['priority']) => {
+  const getPriorityColor = (priority: Task["priority"]) => {
     switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low':
-        return 'bg-green-100 text-green-800 border-green-200';
+      case "high":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "low":
+        return "bg-green-100 text-green-800 border-green-200";
     }
   };
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
+    return new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     }).format(date);
   };
 
@@ -84,7 +93,10 @@ export default function TasksPage() {
   };
 
   return (
-    <AppLayout title="Quản lý nhiệm vụ" subtitle="Theo dõi và quản lý tất cả nhiệm vụ chăm sóc cây trồng">
+    <AppLayout
+      title="Quản lý nhiệm vụ"
+      subtitle="Theo dõi và quản lý tất cả nhiệm vụ chăm sóc cây trồng"
+    >
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -112,10 +124,10 @@ export default function TasksPage() {
                       key={task.id}
                       className={`p-4 rounded-lg border transition-colors ${
                         task.completed
-                          ? 'bg-gray-50 border-gray-200'
+                          ? "bg-gray-50 border-gray-200"
                           : overdueTask
-                          ? 'bg-red-50 border-red-200'
-                          : 'bg-white border-gray-200 hover:border-gray-300'
+                            ? "bg-red-50 border-red-200"
+                            : "bg-white border-gray-200 hover:border-gray-300"
                       }`}
                     >
                       <div className="flex items-start gap-3">
@@ -124,9 +136,11 @@ export default function TasksPage() {
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
                                 {getTaskIcon(task.type)}
-                                <h3 className={`font-semibold ${
-                                  task.completed ? 'line-through text-gray-500' : 'text-gray-900'
-                                }`}>
+                                <h3
+                                  className={`font-semibold ${
+                                    task.completed ? "line-through text-gray-500" : "text-gray-900"
+                                  }`}
+                                >
                                   {task.title}
                                 </h3>
                               </div>
@@ -139,21 +153,24 @@ export default function TasksPage() {
 
                               <div className="flex items-center gap-2 text-sm">
                                 <Calendar className="h-4 w-4 text-gray-400" />
-                                <span className={`${
-                                  overdueTask ? 'text-red-600 font-medium' : 'text-gray-500'
-                                }`}>
+                                <span
+                                  className={`${
+                                    overdueTask ? "text-red-600 font-medium" : "text-gray-500"
+                                  }`}
+                                >
                                   {formatDate(task.dueDate)}
                                 </span>
-                                {overdueTask && (
-                                  <AlertCircle className="h-4 w-4 text-red-500" />
-                                )}
+                                {overdueTask && <AlertCircle className="h-4 w-4 text-red-500" />}
                               </div>
                             </div>
 
                             <div className="flex items-center gap-2">
                               <Badge className={getPriorityColor(task.priority)}>
-                                {task.priority === 'high' ? 'Cao' :
-                                 task.priority === 'medium' ? 'Trung bình' : 'Thấp'}
+                                {task.priority === "high"
+                                  ? "Cao"
+                                  : task.priority === "medium"
+                                    ? "Trung bình"
+                                    : "Thấp"}
                               </Badge>
                             </div>
                           </div>

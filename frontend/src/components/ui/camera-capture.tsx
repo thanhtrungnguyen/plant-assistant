@@ -23,7 +23,7 @@ export function CameraCapture({ onImageCapture, onClose }: CameraCaptureProps) {
 
       // Stop existing stream if any
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
 
       const constraints: MediaStreamConstraints = {
@@ -31,8 +31,8 @@ export function CameraCapture({ onImageCapture, onClose }: CameraCaptureProps) {
           facingMode: facingMode,
           width: { ideal: 1920 },
           height: { ideal: 1080 },
-          aspectRatio: { ideal: 4/3 }
-        }
+          aspectRatio: { ideal: 4 / 3 },
+        },
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -51,7 +51,7 @@ export function CameraCapture({ onImageCapture, onClose }: CameraCaptureProps) {
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
     setIsStreaming(false);
@@ -82,7 +82,7 @@ export function CameraCapture({ onImageCapture, onClose }: CameraCaptureProps) {
   }, [onImageCapture, stopCamera]);
 
   const switchCamera = useCallback(() => {
-    setFacingMode(prev => prev === "user" ? "environment" : "user");
+    setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
   }, []);
 
   const handleClose = useCallback(() => {
@@ -144,22 +144,14 @@ export function CameraCapture({ onImageCapture, onClose }: CameraCaptureProps) {
               <Camera className="h-16 w-16 mx-auto mb-4 opacity-50" />
               <p className="text-lg mb-2">Lỗi camera</p>
               <p className="text-sm opacity-75">{error}</p>
-              <Button
-                onClick={startCamera}
-                className="mt-4 bg-green-600 hover:bg-green-700"
-              >
+              <Button onClick={startCamera} className="mt-4 bg-green-600 hover:bg-green-700">
                 Thử lại
               </Button>
             </div>
           </div>
         ) : (
           <>
-            <video
-              ref={videoRef}
-              className="w-full h-full object-cover"
-              playsInline
-              muted
-            />
+            <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
 
             {/* Camera Grid Overlay */}
             <div className="absolute inset-0 pointer-events-none">

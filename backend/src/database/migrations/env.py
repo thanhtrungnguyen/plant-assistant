@@ -3,11 +3,11 @@ from logging.config import fileConfig
 from typing import Optional
 
 from alembic import context
+from sqlalchemy import create_engine, pool
 
 # Use project modules (no prefixed 'src.' since backend/src is already on sys.path)
-from core.config import settings
-from database.base import Base
-from sqlalchemy import create_engine, pool
+from src.core.config import settings
+from src.database.base import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -23,13 +23,37 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
-from auth.models import (  # noqa: E402, F401
+from src.auth.models import (  # noqa: E402, F401
     OAuthAccount,
     PasswordCredential,
     PasswordResetToken,
     RefreshToken,
     User,
 )
+from src.plants.models.care import CarePlan, CareTaskTemplate  # noqa: E402, F401
+from src.plants.models.consent import AuditConsentLog  # noqa: E402, F401
+from src.plants.models.conversations import (  # noqa: E402, F401
+    ChatMessage,
+    ConversationSession,
+)
+from src.plants.models.diagnosis import (  # noqa: E402, F401
+    DiagnosisAsset,
+    DiagnosisCandidate,
+    DiagnosisSession,
+    IssueCatalog,
+)
+from src.plants.models.feedback import Feedback  # noqa: E402, F401
+from src.plants.models.identification import (  # noqa: E402, F401
+    IdentificationAsset,
+    IdentificationCandidate,
+    IdentificationSession,
+)
+
+# Import plants models for autogeneration
+from src.plants.models.plants import Plant, PlantPhoto, PlantShare  # noqa: E402, F401
+from src.plants.models.reminders import Reminder, ReminderLog  # noqa: E402, F401
+from src.plants.models.species import Species  # noqa: E402, F401
+from src.plants.models.vectors import VectorItem  # noqa: E402, F401
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

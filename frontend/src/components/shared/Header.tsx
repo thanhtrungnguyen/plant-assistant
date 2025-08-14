@@ -1,43 +1,34 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import {
-  Bell,
-  Calendar,
-  CheckSquare,
-  Home,
-  Leaf,
-  MessageSquare,
-  Search,
-  User,
-} from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Button } from "@/components/ui/button";
+import { Bell, Calendar, CheckSquare, Home, Leaf, MessageSquare, Search, User } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navigationItems = [
   {
-    href: '/dashboard',
-    label: 'Dashboard',
+    href: "/dashboard",
+    label: "Dashboard",
     icon: Home,
   },
   {
-    href: '/chatbot',
-    label: 'Plant AI',
+    href: "/chatbot",
+    label: "Plant AI",
     icon: MessageSquare,
   },
   {
-    href: '/calendar',
-    label: 'Lịch',
+    href: "/calendar",
+    label: "Lịch",
     icon: Calendar,
   },
   {
-    href: '/tasks',
-    label: 'Nhiệm vụ',
+    href: "/tasks",
+    label: "Nhiệm vụ",
     icon: CheckSquare,
   },
   {
-    href: '/analyze',
-    label: 'Phân tích',
+    href: "/analyze",
+    label: "Phân tích",
     icon: Search,
   },
 ];
@@ -48,11 +39,7 @@ interface HeaderProps {
   showNavigation?: boolean;
 }
 
-export default function Header({
-  title,
-  subtitle,
-  showNavigation = true,
-}: HeaderProps) {
+export default function Header({ title, subtitle, showNavigation = true }: HeaderProps) {
   const pathname = usePathname();
 
   return (

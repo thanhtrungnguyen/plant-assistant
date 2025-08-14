@@ -349,10 +349,1313 @@
           }
         }
       }
+    },
+    "/api/plants/": {
+      "post": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Create Plant",
+        "description": "Create a new plant for the current user.",
+        "operationId": "create_plant",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlantCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlantResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Get Plants",
+        "description": "Get paginated list of user's plants.",
+        "operationId": "get_plants",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Size"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Search"
+            }
+          },
+          {
+            "name": "species_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "title": "Species Id"
+            }
+          },
+          {
+            "name": "is_archived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "title": "Is Archived"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "created_at",
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "desc",
+              "title": "Sort Order"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlantListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/{plant_id}": {
+      "get": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Get Plant",
+        "description": "Get a specific plant by ID.",
+        "operationId": "get_plant",
+        "parameters": [
+          {
+            "name": "plant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlantResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Update Plant",
+        "description": "Update a plant.",
+        "operationId": "update_plant",
+        "parameters": [
+          {
+            "name": "plant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlantUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlantResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "plants"
+        ],
+        "summary": "Delete Plant",
+        "description": "Delete (archive) a plant.",
+        "operationId": "delete_plant",
+        "parameters": [
+          {
+            "name": "plant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/identify/": {
+      "post": {
+        "tags": [
+          "plant-identification"
+        ],
+        "summary": "Identify Plant",
+        "description": "Identify a plant from images and/or description.",
+        "operationId": "identify_plant",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentifyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/reminders/": {
+      "post": {
+        "tags": [
+          "plant-reminders"
+        ],
+        "summary": "Create Reminder",
+        "description": "Create a new reminder for a plant.",
+        "operationId": "create_reminder",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReminderCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReminderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "plant-reminders"
+        ],
+        "summary": "Get Reminders",
+        "description": "Get paginated list of user's reminders.",
+        "operationId": "get_reminders",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Size"
+            }
+          },
+          {
+            "name": "plant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          },
+          {
+            "name": "reminder_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ReminderType"
+            }
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ReminderPriority"
+            }
+          },
+          {
+            "name": "is_completed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "title": "Is Completed"
+            }
+          },
+          {
+            "name": "overdue_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Overdue Only"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "next_due_date",
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "asc",
+              "title": "Sort Order"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReminderListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/reminders/upcoming": {
+      "get": {
+        "tags": [
+          "plant-reminders"
+        ],
+        "summary": "Get Upcoming Reminders",
+        "description": "Get upcoming reminders for the next N days.",
+        "operationId": "get_upcoming_reminders",
+        "parameters": [
+          {
+            "name": "days_ahead",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 30,
+              "minimum": 1,
+              "default": 7,
+              "title": "Days Ahead"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReminderResponse"
+                  },
+                  "title": "Response Plant-Reminders-Get Upcoming Reminders"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/reminders/{reminder_id}": {
+      "get": {
+        "tags": [
+          "plant-reminders"
+        ],
+        "summary": "Get Reminder",
+        "description": "Get a specific reminder by ID.",
+        "operationId": "get_reminder",
+        "parameters": [
+          {
+            "name": "reminder_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Reminder Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReminderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "plant-reminders"
+        ],
+        "summary": "Update Reminder",
+        "description": "Update a reminder.",
+        "operationId": "update_reminder",
+        "parameters": [
+          {
+            "name": "reminder_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Reminder Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReminderUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReminderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "plant-reminders"
+        ],
+        "summary": "Delete Reminder",
+        "description": "Delete a reminder.",
+        "operationId": "delete_reminder",
+        "parameters": [
+          {
+            "name": "reminder_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Reminder Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/dashboard/stats": {
+      "get": {
+        "tags": [
+          "plant-dashboard"
+        ],
+        "summary": "Get Dashboard",
+        "description": "Get dashboard data for the current user.",
+        "operationId": "get_dashboard",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/care/advice": {
+      "post": {
+        "tags": [
+          "plant-care"
+        ],
+        "summary": "Get Care Advice",
+        "description": "Get personalized care advice for a plant.",
+        "operationId": "get_care_advice",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CareRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CareResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/diagnose/": {
+      "post": {
+        "tags": [
+          "plant-diagnosis"
+        ],
+        "summary": "Diagnose Plant",
+        "description": "Diagnose plant issues from symptoms and/or images.",
+        "operationId": "diagnose_plant",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiagnoseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiagnoseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/track/photos": {
+      "post": {
+        "tags": [
+          "plant-tracking"
+        ],
+        "summary": "Upload Plant Photo",
+        "description": "Upload a new photo for plant tracking.",
+        "operationId": "upload_plant_photo",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_plant-tracking-upload_plant_photo"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlantPhotoResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/track/photos/{plant_id}": {
+      "get": {
+        "tags": [
+          "plant-tracking"
+        ],
+        "summary": "Get Plant Photos",
+        "description": "Get all photos for a specific plant.",
+        "operationId": "get_plant_photos",
+        "parameters": [
+          {
+            "name": "plant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlantPhotoResponse"
+                  },
+                  "title": "Response Plant-Tracking-Get Plant Photos"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/track/progress/{plant_id}": {
+      "get": {
+        "tags": [
+          "plant-tracking"
+        ],
+        "summary": "Get Plant Progress",
+        "description": "Get AI-generated progress insights from photo history.",
+        "operationId": "get_plant_progress",
+        "parameters": [
+          {
+            "name": "plant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plants/chat/": {
+      "post": {
+        "tags": [
+          "plant-chat"
+        ],
+        "summary": "Chat With Assistant",
+        "description": "Chat with the plant care assistant.",
+        "operationId": "chat_with_assistant",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Body_plant-tracking-upload_plant_photo": {
+        "properties": {
+          "plant_id": {
+            "type": "integer",
+            "title": "Plant Id"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plant_id",
+          "file"
+        ],
+        "title": "Body_plant-tracking-upload_plant_photo"
+      },
+      "CareRequest": {
+        "properties": {
+          "plant_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plant Id"
+          },
+          "location": {
+            "type": "string",
+            "title": "Location",
+            "description": "ZIP code or location"
+          },
+          "environment": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Environment",
+            "description": "Environment details"
+          },
+          "preferences": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Preferences",
+            "description": "User care preferences"
+          }
+        },
+        "type": "object",
+        "required": [
+          "location",
+          "environment"
+        ],
+        "title": "CareRequest",
+        "description": "Schema for plant care advice request."
+      },
+      "CareResponse": {
+        "properties": {
+          "plan": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Plan",
+            "description": "Care instructions by category (watering, light, soil, etc.)"
+          },
+          "seasonal_adjustments": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Seasonal Adjustments",
+            "description": "Seasonal care modifications"
+          },
+          "eco_tips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Eco Tips",
+            "description": "Environmentally friendly care suggestions"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources",
+            "description": "Reference sources for recommendations"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer",
+            "description": "Care advice disclaimer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan",
+          "seasonal_adjustments",
+          "eco_tips",
+          "sources",
+          "disclaimer"
+        ],
+        "title": "CareResponse",
+        "description": "Schema for plant care advice response."
+      },
+      "ChatRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Message",
+            "description": "User's message"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "Additional context"
+          },
+          "plant_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plant Id",
+            "description": "Related plant ID if applicable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ChatRequest",
+        "description": "Schema for chat request."
+      },
+      "ChatResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Assistant's response"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions",
+            "description": "Follow-up suggestions"
+          },
+          "related_actions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Related Actions",
+            "description": "Suggested actions"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "description": "Response confidence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "confidence"
+        ],
+        "title": "ChatResponse",
+        "description": "Schema for chat response."
+      },
+      "DashboardResponse": {
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/DashboardStats"
+          },
+          "recent_plants": {
+            "items": {
+              "$ref": "#/components/schemas/PlantResponse"
+            },
+            "type": "array",
+            "title": "Recent Plants"
+          },
+          "upcoming_reminders": {
+            "items": {
+              "$ref": "#/components/schemas/ReminderResponse"
+            },
+            "type": "array",
+            "title": "Upcoming Reminders"
+          },
+          "recent_photos": {
+            "items": {
+              "$ref": "#/components/schemas/PlantPhotoResponse"
+            },
+            "type": "array",
+            "title": "Recent Photos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stats",
+          "recent_plants",
+          "upcoming_reminders",
+          "recent_photos"
+        ],
+        "title": "DashboardResponse",
+        "description": "Schema for dashboard data."
+      },
+      "DashboardStats": {
+        "properties": {
+          "total_plants": {
+            "type": "integer",
+            "title": "Total Plants"
+          },
+          "healthy_plants": {
+            "type": "integer",
+            "title": "Healthy Plants"
+          },
+          "plants_needing_attention": {
+            "type": "integer",
+            "title": "Plants Needing Attention"
+          },
+          "overdue_reminders": {
+            "type": "integer",
+            "title": "Overdue Reminders"
+          },
+          "reminders_today": {
+            "type": "integer",
+            "title": "Reminders Today"
+          },
+          "reminders_this_week": {
+            "type": "integer",
+            "title": "Reminders This Week"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_plants",
+          "healthy_plants",
+          "plants_needing_attention",
+          "overdue_reminders",
+          "reminders_today",
+          "reminders_this_week"
+        ],
+        "title": "DashboardStats",
+        "description": "Schema for dashboard statistics."
+      },
+      "DiagnoseRequest": {
+        "properties": {
+          "symptoms": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symptoms"
+          },
+          "images": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Images"
+          },
+          "plant_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plant Id"
+          }
+        },
+        "type": "object",
+        "title": "DiagnoseRequest",
+        "description": "Schema for plant diagnosis request."
+      },
+      "DiagnoseResponse": {
+        "properties": {
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/PlantIssue"
+            },
+            "type": "array",
+            "title": "Issues"
+          },
+          "remedies": {
+            "items": {
+              "$ref": "#/components/schemas/Remedy"
+            },
+            "type": "array",
+            "title": "Remedies"
+          },
+          "prevention": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Prevention"
+          },
+          "similar_cases": {
+            "type": "integer",
+            "title": "Similar Cases",
+            "description": "Number of similar cases found"
+          },
+          "severity": {
+            "type": "integer",
+            "maximum": 3.0,
+            "minimum": 1.0,
+            "title": "Severity",
+            "description": "Overall severity rating"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "issues",
+          "remedies",
+          "prevention",
+          "similar_cases",
+          "severity",
+          "disclaimer"
+        ],
+        "title": "DiagnoseResponse",
+        "description": "Schema for plant diagnosis response."
+      },
       "ForgotIn": {
         "properties": {
           "email": {
@@ -380,6 +1683,108 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "IdentificationConfidence": {
+        "type": "string",
+        "enum": [
+          "very_low",
+          "low",
+          "medium",
+          "high",
+          "very_high"
+        ],
+        "title": "IdentificationConfidence",
+        "description": "Confidence levels for plant identification."
+      },
+      "IdentifyRequest": {
+        "properties": {
+          "images": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Images",
+            "description": "Base64-encoded images"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 750,
+                "minLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Text description of the plant"
+          },
+          "user_metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Metadata",
+            "description": "Additional context like location, conditions"
+          }
+        },
+        "type": "object",
+        "title": "IdentifyRequest",
+        "description": "Schema for plant identification request."
+      },
+      "IdentifyResponse": {
+        "properties": {
+          "primary_identification": {
+            "$ref": "#/components/schemas/PlantIdentification"
+          },
+          "alternatives": {
+            "items": {
+              "$ref": "#/components/schemas/PlantIdentification"
+            },
+            "type": "array",
+            "title": "Alternatives"
+          },
+          "fun_facts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fun Facts",
+            "default": []
+          },
+          "basic_info": {
+            "type": "string",
+            "title": "Basic Info"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer"
+          },
+          "processing_time_ms": {
+            "type": "integer",
+            "title": "Processing Time Ms"
+          },
+          "confidence_level": {
+            "$ref": "#/components/schemas/IdentificationConfidence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "primary_identification",
+          "basic_info",
+          "disclaimer",
+          "processing_time_ms",
+          "confidence_level"
+        ],
+        "title": "IdentifyResponse",
+        "description": "Schema for plant identification response."
+      },
       "LoginIn": {
         "properties": {
           "email": {
@@ -398,6 +1803,631 @@
           "password"
         ],
         "title": "LoginIn"
+      },
+      "PlantCreate": {
+        "properties": {
+          "nickname": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nickname"
+          },
+          "location_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Text"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 90.0,
+                "minimum": -90.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 180.0,
+                "minimum": -180.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longitude"
+          },
+          "species_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Species Id"
+          },
+          "acquisition_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acquisition Date"
+          }
+        },
+        "type": "object",
+        "title": "PlantCreate",
+        "description": "Schema for creating a new plant."
+      },
+      "PlantIdentification": {
+        "properties": {
+          "common_name": {
+            "type": "string",
+            "title": "Common Name"
+          },
+          "scientific_name": {
+            "type": "string",
+            "title": "Scientific Name"
+          },
+          "family": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family"
+          },
+          "genus": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Genus"
+          },
+          "native_origin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Native Origin"
+          },
+          "key_traits": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Key Traits",
+            "default": []
+          },
+          "growth_habits": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Growth Habits"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "common_name",
+          "scientific_name",
+          "confidence"
+        ],
+        "title": "PlantIdentification",
+        "description": "Schema for a single plant identification result."
+      },
+      "PlantIssue": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "description": "Issue category (pest, disease, environmental, nutrient)"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Specific issue name"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity",
+            "description": "mild, moderate, or severe"
+          },
+          "probability": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Probability",
+            "description": "Confidence score"
+          },
+          "root_cause": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Root Cause"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "name",
+          "severity",
+          "probability"
+        ],
+        "title": "PlantIssue",
+        "description": "Schema for a plant issue identification."
+      },
+      "PlantListResponse": {
+        "properties": {
+          "plants": {
+            "items": {
+              "$ref": "#/components/schemas/PlantResponse"
+            },
+            "type": "array",
+            "title": "Plants"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plants",
+          "total",
+          "page",
+          "size",
+          "pages"
+        ],
+        "title": "PlantListResponse",
+        "description": "Schema for paginated plant list response."
+      },
+      "PlantPhotoResponse": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Filename"
+          },
+          "original_filename": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Filename"
+          },
+          "file_size": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "File Size"
+          },
+          "content_type": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Content Type"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "plant_id": {
+            "type": "integer",
+            "title": "Plant Id"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "ai_analysis": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Analysis"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "thumbnail_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumbnail Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "file_size",
+          "content_type",
+          "id",
+          "plant_id",
+          "user_id",
+          "ai_analysis",
+          "created_at",
+          "url"
+        ],
+        "title": "PlantPhotoResponse",
+        "description": "Schema for plant photo response."
+      },
+      "PlantResponse": {
+        "properties": {
+          "nickname": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nickname"
+          },
+          "location_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Text"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 90.0,
+                "minimum": -90.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 180.0,
+                "minimum": -180.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longitude"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "species_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Species Id"
+          },
+          "acquisition_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acquisition Date"
+          },
+          "is_archived": {
+            "type": "boolean",
+            "title": "Is Archived"
+          },
+          "ai_metrics_json": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Metrics Json"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PlantStatus",
+            "default": "unknown"
+          },
+          "photo_count": {
+            "type": "integer",
+            "title": "Photo Count",
+            "default": 0
+          },
+          "last_care_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Care Date"
+          },
+          "next_reminder_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Reminder Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "user_id",
+          "species_id",
+          "acquisition_date",
+          "is_archived",
+          "ai_metrics_json",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "PlantResponse",
+        "description": "Schema for plant response with additional computed fields."
+      },
+      "PlantStatus": {
+        "type": "string",
+        "enum": [
+          "healthy",
+          "warning",
+          "critical",
+          "unknown"
+        ],
+        "title": "PlantStatus",
+        "description": "Status of a plant."
+      },
+      "PlantUpdate": {
+        "properties": {
+          "nickname": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nickname"
+          },
+          "location_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Text"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 90.0,
+                "minimum": -90.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 180.0,
+                "minimum": -180.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longitude"
+          },
+          "species_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Species Id"
+          },
+          "is_archived": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Archived"
+          }
+        },
+        "type": "object",
+        "title": "PlantUpdate",
+        "description": "Schema for updating a plant."
       },
       "RegisterIn": {
         "properties": {
@@ -428,6 +2458,395 @@
           "password"
         ],
         "title": "RegisterIn"
+      },
+      "Remedy": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "timeline": {
+            "type": "string",
+            "title": "Timeline"
+          },
+          "priority": {
+            "type": "integer",
+            "maximum": 3.0,
+            "minimum": 1.0,
+            "title": "Priority",
+            "description": "1=high, 2=medium, 3=low"
+          },
+          "is_organic": {
+            "type": "boolean",
+            "title": "Is Organic",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "steps",
+          "timeline",
+          "priority"
+        ],
+        "title": "Remedy",
+        "description": "Schema for a treatment remedy."
+      },
+      "ReminderCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "reminder_type": {
+            "$ref": "#/components/schemas/ReminderType"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/ReminderPriority",
+            "default": "medium"
+          },
+          "cron_expression": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cron Expression",
+            "description": "Cron expression for recurring reminders"
+          },
+          "next_due_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Next Due Date"
+          },
+          "is_recurring": {
+            "type": "boolean",
+            "title": "Is Recurring",
+            "default": false
+          },
+          "plant_id": {
+            "type": "integer",
+            "title": "Plant Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "reminder_type",
+          "next_due_date",
+          "plant_id"
+        ],
+        "title": "ReminderCreate",
+        "description": "Schema for creating a new reminder."
+      },
+      "ReminderListResponse": {
+        "properties": {
+          "reminders": {
+            "items": {
+              "$ref": "#/components/schemas/ReminderResponse"
+            },
+            "type": "array",
+            "title": "Reminders"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reminders",
+          "total",
+          "page",
+          "size",
+          "pages"
+        ],
+        "title": "ReminderListResponse",
+        "description": "Schema for paginated reminder list response."
+      },
+      "ReminderPriority": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "ReminderPriority",
+        "description": "Priority levels for reminders."
+      },
+      "ReminderResponse": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "reminder_type": {
+            "$ref": "#/components/schemas/ReminderType"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/ReminderPriority",
+            "default": "medium"
+          },
+          "cron_expression": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cron Expression",
+            "description": "Cron expression for recurring reminders"
+          },
+          "next_due_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Next Due Date"
+          },
+          "is_recurring": {
+            "type": "boolean",
+            "title": "Is Recurring",
+            "default": false
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "plant_id": {
+            "type": "integer",
+            "title": "Plant Id"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "is_completed": {
+            "type": "boolean",
+            "title": "Is Completed"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "plant_nickname": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plant Nickname"
+          },
+          "is_overdue": {
+            "type": "boolean",
+            "title": "Is Overdue",
+            "default": false
+          },
+          "days_until_due": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Until Due"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "reminder_type",
+          "next_due_date",
+          "id",
+          "plant_id",
+          "user_id",
+          "is_completed",
+          "completed_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ReminderResponse",
+        "description": "Schema for reminder response."
+      },
+      "ReminderType": {
+        "type": "string",
+        "enum": [
+          "watering",
+          "fertilizing",
+          "pruning",
+          "repotting",
+          "pest_check",
+          "custom"
+        ],
+        "title": "ReminderType",
+        "description": "Types of plant care reminders."
+      },
+      "ReminderUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "reminder_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReminderType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReminderPriority"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cron_expression": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cron Expression"
+          },
+          "next_due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Due Date"
+          },
+          "is_recurring": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Recurring"
+          },
+          "is_completed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Completed"
+          }
+        },
+        "type": "object",
+        "title": "ReminderUpdate",
+        "description": "Schema for updating a reminder."
       },
       "ResetIn": {
         "properties": {

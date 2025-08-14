@@ -1,0 +1,15 @@
+{
+	"servers": {
+		"postgres": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@modelcontextprotocol/server-postgres@0.6.2",
+				"postgresql://postgres:password@localhost:5432/plant_assistant"
+			],
+			"env": {},
+			"type": "stdio"
+		}
+	},
+	"inputs": []
+}

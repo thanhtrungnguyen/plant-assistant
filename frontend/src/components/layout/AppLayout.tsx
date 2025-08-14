@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Bell,
   Calendar,
@@ -15,11 +15,11 @@ import {
   Search,
   Settings,
   User,
-  X
-} from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 interface NavigationItem {
   href: string;
@@ -30,35 +30,35 @@ interface NavigationItem {
 
 const navigationItems: NavigationItem[] = [
   {
-    href: '/dashboard',
-    label: 'Dashboard',
+    href: "/dashboard",
+    label: "Dashboard",
     icon: Home,
-    description: 'Tổng quan'
+    description: "Tổng quan",
   },
   {
-    href: '/chatbot',
-    label: 'Plant AI',
+    href: "/chatbot",
+    label: "Plant AI",
     icon: MessageSquare,
-    description: 'Trợ lý AI'
+    description: "Trợ lý AI",
   },
   {
-    href: '/calendar',
-    label: 'Lịch chăm sóc',
+    href: "/calendar",
+    label: "Lịch chăm sóc",
     icon: Calendar,
-    description: 'Lịch trình'
+    description: "Lịch trình",
   },
   {
-    href: '/tasks',
-    label: 'Nhiệm vụ',
+    href: "/tasks",
+    label: "Nhiệm vụ",
     icon: CheckSquare,
-    description: 'Quản lý tasks'
+    description: "Quản lý tasks",
   },
   {
-    href: '/analyze',
-    label: 'Phân tích ảnh',
+    href: "/analyze",
+    label: "Phân tích ảnh",
     icon: Search,
-    description: 'AI phân tích'
-  }
+    description: "AI phân tích",
+  },
 ];
 
 interface User {
@@ -70,10 +70,10 @@ interface User {
 
 // Mock user data - replace with real user data
 const mockUser: User = {
-  name: 'Nguyễn Văn A',
-  email: 'nguyenvana@example.com',
+  name: "Nguyễn Văn A",
+  email: "nguyenvana@example.com",
   avatar: undefined,
-  plantsCount: 15
+  plantsCount: 15,
 };
 
 interface AppLayoutProps {
@@ -87,7 +87,7 @@ export default function AppLayout({
   children,
   title,
   subtitle,
-  showNavigation = true
+  showNavigation = true,
 }: AppLayoutProps) {
   const pathname = usePathname();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -102,9 +102,9 @@ export default function AppLayout({
     };
 
     checkMobile();
-    window.addEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
 
-    return () => window.removeEventListener('resize', checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Close mobile menu on route change
@@ -113,8 +113,8 @@ export default function AppLayout({
   }, [pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    window.location.href = '/login';
+    localStorage.removeItem("authToken");
+    window.location.href = "/login";
   };
 
   const toggleMobileMenu = () => {
@@ -146,9 +146,7 @@ export default function AppLayout({
                     <span>/</span>
                     <span className="text-gray-900 font-medium">{title}</span>
                   </div>
-                  {subtitle && (
-                    <p className="text-sm text-gray-500">{subtitle}</p>
-                  )}
+                  {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
                 </div>
               )}
             </div>
@@ -208,7 +206,9 @@ export default function AppLayout({
                         <p className="text-xs text-gray-500 mt-1">2 giờ trước</p>
                       </div>
                       <div className="px-4 py-3 hover:bg-gray-50">
-                        <p className="text-sm font-medium text-gray-900">Monstera đã sẵn sàng bón phân</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          Monstera đã sẵn sàng bón phân
+                        </p>
                         <p className="text-xs text-gray-500 mt-1">1 ngày trước</p>
                       </div>
                     </div>
@@ -231,7 +231,11 @@ export default function AppLayout({
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={mockUser.avatar} alt={mockUser.name} />
                     <AvatarFallback className="bg-green-100 text-green-600">
-                      {mockUser.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                      {mockUser.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden sm:block text-left">
@@ -250,7 +254,11 @@ export default function AppLayout({
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={mockUser.avatar} alt={mockUser.name} />
                           <AvatarFallback className="bg-green-100 text-green-600">
-                            {mockUser.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                            {mockUser.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .slice(0, 2)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
@@ -338,11 +346,7 @@ export default function AppLayout({
                 </div>
                 <h1 className="text-xl font-bold text-gray-900">Plant Assistant</h1>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowMobileMenu(false)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setShowMobileMenu(false)}>
                 <X className="h-5 w-5" />
               </Button>
             </div>
@@ -356,11 +360,13 @@ export default function AppLayout({
 
                   return (
                     <Link key={item.href} href={item.href} onClick={() => setShowMobileMenu(false)}>
-                      <div className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                        isActive
-                          ? "bg-green-100 text-green-700"
-                          : "text-gray-600 hover:bg-gray-100"
-                      }`}>
+                      <div
+                        className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                          isActive
+                            ? "bg-green-100 text-green-700"
+                            : "text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
                         <Icon className="h-5 w-5" />
                         <div>
                           <p className="font-medium">{item.label}</p>
@@ -379,7 +385,11 @@ export default function AppLayout({
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={mockUser.avatar} alt={mockUser.name} />
                   <AvatarFallback className="bg-green-100 text-green-600">
-                    {mockUser.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    {mockUser.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -410,9 +420,7 @@ export default function AppLayout({
       )}
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:pt-6 pt-16">
-        {children}
-      </main>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:pt-6 pt-16">{children}</main>
     </div>
   );
 }
