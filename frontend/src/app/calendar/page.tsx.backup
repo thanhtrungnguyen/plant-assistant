@@ -1,0 +1,319 @@
+'use client';
+
+import React from 'react';
+import { Calendar, Clock, Droplets, Scissors, Sprout } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import Header from "@/components/shared/Header";
+
+interface CalendarEvent {
+  id: string;
+  title: string;
+  date: Date;
+  type: 'watering' | 'fertilizing' | 'pruning' | 'repotting' | 'other';
+  plantName: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+}
+
+// Mock data for calendar events
+const mockEvents: CalendarEvent[] = [
+  {
+    id: '1',
+    title: 'Tưới nước',
+    date: new Date(2025, 7, 11), // Today
+    type: 'watering',
+    plantName: 'Pothos của tôi',
+    completed: false,
+    priority: 'high'
+  },
+  {
+    id: '2',
+    title: 'Bón phân',
+    date: new Date(2025, 7, 12),
+    type: 'fertilizing',
+    plantName: 'Monstera xinh đẹp',
+    completed: false,
+    priority: 'medium'
+  },
+  {
+    id: '3',
+    title: 'Cắt tỉa',
+    date: new Date(2025, 7, 13),
+    type: 'pruning',
+    plantName: 'Xương rồng mini',
+    completed: false,
+    priority: 'low'
+  },
+  {
+    id: '4',
+    title: 'Thay chậu',
+    date: new Date(2025, 7, 15),
+    type: 'repotting',
+    plantName: 'Cây cao su',
+    completed: false,
+    priority: 'medium'
+  },
+  {
+    id: '5',
+    title: 'Tưới nước',
+    date: new Date(2025, 7, 10), // Yesterday
+    type: 'watering',
+    plantName: 'Lavender',
+    completed: true,
+    priority: 'high'
+  }
+];
+
+const getEventIcon = (type: string) => {
+  switch (type) {
+    case 'watering':
+      return <Droplets className="h-4 w-4 text-blue-500" />;
+    case 'fertilizing':
+      return <Sprout className="h-4 w-4 text-green-500" />;
+    case 'pruning':
+      return <Scissors className="h-4 w-4 text-orange-500" />;
+    case 'repotting':
+      return <Calendar className="h-4 w-4 text-purple-500" />;
+    default:
+      return <Clock className="h-4 w-4 text-gray-500" />;
+  }
+};
+
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case 'high':
+      return 'bg-red-100 text-red-800 border-red-200';
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case 'low':
+      return 'bg-green-100 text-green-800 border-green-200';
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
+};
+
+const formatDate = (date: Date) => {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return 'Hôm nay';
+  } else if (date.toDateString() === tomorrow.toDateString()) {
+    return 'Ngày mai';
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return 'Hôm qua';
+  } else {
+    return date.toLocaleDateString('vi-VN', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+};
+
+export default function CalendarPage() {
+  const today = new Date();
+  const upcomingEvents = mockEvents
+    .filter(event => event.date >= today && !event.completed)
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+  
+  const completedEvents = mockEvents
+    .filter(event => event.completed)
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  const overdueEvents = mockEvents
+    .filter(event => event.date < today && !event.completed)
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  return (
+    <div>
+      <Header />
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+              <Calendar className="h-8 w-8 text-green-600" />
+              Lịch chăm sóc cây
+            </h1>
+            <p className="text-gray-600">
+              Quản lý lịch trình chăm sóc và theo dõi nhiệm vụ cho cây trồng của bạn
+            </p>
+          </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Hôm nay</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {mockEvents.filter(e => 
+                      e.date.toDateString() === today.toDateString() && !e.completed
+                    ).length}
+                  </p>
+                </div>
+                <Clock className="h-8 w-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Sắp tới</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {upcomingEvents.length}
+                  </p>
+                </div>
+                <Calendar className="h-8 w-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Quá hạn</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {overdueEvents.length}
+                  </p>
+                </div>
+                <Clock className="h-8 w-8 text-red-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Hoàn thành</p>
+                  <p className="text-2xl font-bold text-gray-600">
+                    {completedEvents.length}
+                  </p>
+                </div>
+                <Sprout className="h-8 w-8 text-gray-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Upcoming Tasks */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-green-600" />
+                Nhiệm vụ sắp tới
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {upcomingEvents.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">
+                    Không có nhiệm vụ nào sắp tới
+                  </p>
+                ) : (
+                  upcomingEvents.map((event) => (
+                    <div key={event.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3">
+                        {getEventIcon(event.type)}
+                        <div>
+                          <h3 className="font-medium text-gray-900">{event.title}</h3>
+                          <p className="text-sm text-gray-600">{event.plantName}</p>
+                          <p className="text-sm text-gray-500">{formatDate(event.date)}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={getPriorityColor(event.priority)}>
+                          {event.priority === 'high' ? 'Cao' : 
+                           event.priority === 'medium' ? 'Trung bình' : 'Thấp'}
+                        </Badge>
+                        <Button size="sm" variant="outline">
+                          Hoàn thành
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Overdue Tasks */}
+          {overdueEvents.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-red-600">
+                  <Clock className="h-5 w-5" />
+                  Nhiệm vụ quá hạn
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {overdueEvents.map((event) => (
+                    <div key={event.id} className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
+                      <div className="flex items-center gap-3">
+                        {getEventIcon(event.type)}
+                        <div>
+                          <h3 className="font-medium text-red-900">{event.title}</h3>
+                          <p className="text-sm text-red-700">{event.plantName}</p>
+                          <p className="text-sm text-red-600">{formatDate(event.date)}</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="destructive">
+                        Xử lý ngay
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Completed Tasks */}
+          <Card className={overdueEvents.length > 0 ? "lg:col-span-2" : ""}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sprout className="h-5 w-5 text-gray-600" />
+                Nhiệm vụ đã hoàn thành
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {completedEvents.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">
+                    Chưa có nhiệm vụ nào được hoàn thành
+                  </p>
+                ) : (
+                  completedEvents.map((event) => (
+                    <div key={event.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 opacity-75">
+                      <div className="flex items-center gap-3">
+                        {getEventIcon(event.type)}
+                        <div>
+                          <h3 className="font-medium text-gray-700 line-through">{event.title}</h3>
+                          <p className="text-sm text-gray-600">{event.plantName}</p>
+                          <p className="text-sm text-gray-500">{formatDate(event.date)}</p>
+                        </div>
+                      </div>
+                      <Badge variant="secondary">Hoàn thành</Badge>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

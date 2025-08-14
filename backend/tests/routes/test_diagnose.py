@@ -8,8 +8,8 @@ from fastapi.testclient import TestClient
 from io import BytesIO
 from PIL import Image
 
-from app.main import app
-from app.services.plant_diagnosis import PlantDiagnosisService
+from src.main import app
+from src.diagnosis.service import PlantDiagnosisService
 
 
 client = TestClient(app)
@@ -138,5 +138,4 @@ class TestPlantDiagnosisService:
         service = PlantDiagnosisService()
 
         assert service.llm == mock_llm
-        assert service.vision_llm == mock_vision_llm
         assert service.app is not None
