@@ -27,10 +27,10 @@ export function PlantAnalyzer() {
         setError(null);
       };
       reader.onerror = (e) => {
-        console.error('File read error:', e);
+        console.error("File read error:", e);
         setError({
-          message: 'Không thể đọc file ảnh. Vui lòng thử lại.',
-          type: 'error'
+          message: "Không thể đọc file ảnh. Vui lòng thử lại.",
+          type: "error",
         });
       };
       reader.readAsDataURL(file);
@@ -48,7 +48,7 @@ export function PlantAnalyzer() {
       const result = await analyzeImage(selectedImage);
 
       // Check if result is an error response
-      if ('message' in result && 'type' in result) {
+      if ("message" in result && "type" in result) {
         const errorResult = result as AnalysisError;
         setError(errorResult);
       } else {
@@ -65,12 +65,13 @@ export function PlantAnalyzer() {
 
       setError({
         message: errorMessage,
-        type: 'error'
+        type: "error",
       });
     } finally {
       setIsAnalyzing(false);
     }
-  };  const handleReset = () => {
+  };
+  const handleReset = () => {
     setSelectedImage(null);
     setAnalysisResult(null);
     setError(null);
@@ -170,7 +171,6 @@ export function PlantAnalyzer() {
           )}
         </CardContent>
       </Card>
-
       {/* Loading */}
       {isAnalyzing && (
         <Card>
@@ -189,21 +189,16 @@ export function PlantAnalyzer() {
           </CardContent>
         </Card>
       )}
-
       {/* Error Display */}
       {error && (
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-4 md:p-6">
             <div className="flex items-center gap-2 text-red-700">
               <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-red-200">
-                <span className="text-xs font-bold text-red-700">
-                  !
-                </span>
+                <span className="text-xs font-bold text-red-700">!</span>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">
-                  Lỗi phân tích
-                </h4>
+                <h4 className="font-semibold mb-1">Lỗi phân tích</h4>
                 <p className="text-sm">{error.message}</p>
                 <button
                   onClick={() => setError(null)}
@@ -215,13 +210,12 @@ export function PlantAnalyzer() {
             </div>
           </CardContent>
         </Card>
-      )}      {/* Results */}
+      )}{" "}
+      {/* Results */}
       {analysisResult && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl text-green-700">
-              Kết quả phân tích
-            </CardTitle>
+            <CardTitle className="text-xl text-green-700">Kết quả phân tích</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -265,7 +259,6 @@ export function PlantAnalyzer() {
           </CardContent>
         </Card>
       )}
-
       {/* Camera Component */}
       {showCamera && (
         <CameraCapture onImageCapture={handleCameraCapture} onClose={() => setShowCamera(false)} />

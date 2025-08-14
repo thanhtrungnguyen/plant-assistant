@@ -21,7 +21,7 @@ interface PlantDiagnosisError {
 // Frontend error types
 export interface AnalysisError {
   message: string;
-  type: 'error';
+  type: "error";
 }
 
 // Frontend types (for compatibility)
@@ -38,7 +38,7 @@ export type AnalysisResponse = AnalysisResult | AnalysisError;
 export async function analyzeImage(imageDataUrl: string): Promise<AnalysisResponse> {
   try {
     // Convert data URL to base64
-    const base64Data = imageDataUrl.split(',')[1];
+    const base64Data = imageDataUrl.split(",")[1];
 
     // Convert base64 to blob for FormData
     const byteCharacters = atob(base64Data);
@@ -47,16 +47,16 @@ export async function analyzeImage(imageDataUrl: string): Promise<AnalysisRespon
       byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
     const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: 'image/jpeg' });
+    const blob = new Blob([byteArray], { type: "image/jpeg" });
 
     // Create FormData for file upload
     const formData = new FormData();
-    formData.append('file', blob, 'plant-image.jpg');
+    formData.append("file", blob, "plant-image.jpg");
 
     // Call backend API
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
     const response = await fetch(`${API_BASE_URL}/diagnose/`, {
-      method: 'POST',
+      method: "POST",
       body: formData,
     });
 
@@ -67,7 +67,7 @@ export async function analyzeImage(imageDataUrl: string): Promise<AnalysisRespon
     const result = await response.json();
 
     // Check if result is an error
-    if ('error' in result) {
+    if ("error" in result) {
       const errorResult = result as PlantDiagnosisError;
 
       // Transform backend error to frontend error format
@@ -76,8 +76,9 @@ export async function analyzeImage(imageDataUrl: string): Promise<AnalysisRespon
 
     // Transform backend response to frontend format
     const diagnosisResult = result as PlantDiagnosisResponse;
-    return transformBackendResponse(diagnosisResult);  } catch (error) {
-    console.error('Error calling backend API:', error);
+    return transformBackendResponse(diagnosisResult);
+  } catch (error) {
+    console.error("Error calling backend API:", error);
 
     // Re-throw the error instead of falling back to mock data
     throw error;
@@ -96,6 +97,6 @@ function transformBackendResponse(backendResult: PlantDiagnosisResponse): Analys
 function transformBackendError(backendError: PlantDiagnosisError): AnalysisError {
   return {
     message: backendError.message,
-    type: 'error',
+    type: "error",
   };
 }
