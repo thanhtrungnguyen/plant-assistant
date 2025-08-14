@@ -99,11 +99,11 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           VERSION_NUMBER=$(echo $VERSION | sed 's/^v//')
-          
+
           # Extract changelog section for this version
           CHANGELOG=$(awk -v version="$VERSION_NUMBER" '
             BEGIN { RS="## "; FS="\n"; found=0 }
-            $0 ~ version && !found { 
+            $0 ~ version && !found {
               found=1;
               # Skip the version line and print the rest
               for(i=2; i<=NF; i++) {
@@ -134,10 +134,10 @@ Migration Notes:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           RELEASE_TYPE="${{ github.event.inputs.release_type }}"
-          
+
           # Get previous tag
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
-          
+
           # Generate commit list since last tag
           if [ -n "$PREVIOUS_TAG" ]; then
             COMMITS=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD)
@@ -220,7 +220,7 @@ Migration Notes:
           name: "Plant Assistant ${{ github.ref_name }}"
           body: |
             Release ${{ github.ref_name }} of Plant Assistant.
-            
+
             See [CHANGELOG.md](https://github.com/thanhtrungnguyen/plant-assistant/blob/main/CHANGELOG.md) for details.
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}

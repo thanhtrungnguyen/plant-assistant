@@ -11,7 +11,7 @@
 - Indexing: Add indexes on frequent queries (e.g., user_id).
 
 ## Rationale
-- Postgres for relational data (users/plants); Chroma for AI speed (sub-second searches).
+- Postgres for relational data (users/plants); Pinecone for AI speed (sub-second searches).
 
 ## Scaling Considerations
 - Sharding for large data; add read replicas. Monitor with pgAdmin.

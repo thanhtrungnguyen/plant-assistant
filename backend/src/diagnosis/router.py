@@ -9,7 +9,7 @@ from typing import Union
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from fastapi.security import HTTPBearer
 
-from src.diagnosis.models import PlantDiagnosisResponse, PlantDiagnosisError
+from src.diagnosis.schemas import PlantDiagnosisResponse, PlantDiagnosisError
 from src.diagnosis.service import PlantDiagnosisService, get_diagnosis_service
 
 

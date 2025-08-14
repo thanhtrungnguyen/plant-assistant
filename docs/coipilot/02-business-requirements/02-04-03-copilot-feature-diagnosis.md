@@ -4,7 +4,7 @@
 - Users input symptoms via text (max 1000 characters, e.g., "Leaves curling inward, sticky residue on undersides, slow growth") or upload photos (up to 4, max 8MB total, focused on affected areas like close-ups of spots or pests).
 - Use OpenAI to analyze and identify issues: Categorize problems (e.g., pest infestation like aphids, disease such as root rot, environmental stress from cold, nutrient deficiency like iron chlorosis) with root causes (e.g., overwatering leading to fungal growth), severity levels (mild/moderate/severe based on extent), probability estimates (e.g., 75% pest, 25% virus), and differential diagnoses (e.g., "Rule out scale insects vs. mealybugs").
 - Suggest remedies in prioritized order: Organic first (e.g., "Mix 1 tsp neem oil with water, spray weekly for 3 weeks; introduce beneficial insects like ladybugs"), chemical alternatives if needed (e.g., "If persistent, use insecticidal soap—dilute per label"), step-by-step instructions (e.g., "1. Isolate plant. 2. Prune affected parts. 3. Apply treatment. 4. Monitor daily"), and timelines (e.g., "Improvement expected in 5-7 days").
-- Leverage Chroma for similar case searches: Embed symptoms/descriptions and query anonymized historical data (user-submitted cases, pre-seeded with 5k+ entries from sources like extension services); return insights (e.g., "In 70% similar cases, improved with better drainage—see anonymized examples").
+- Leverage Pinecone for similar case searches: Embed symptoms/descriptions and query anonymized historical data (user-submitted cases, pre-seeded with 5k+ entries from sources like extension services); return insights (e.g., "In 70% similar cases, improved with better drainage—see anonymized examples").
 - Include prevention steps (e.g., "Sterilize tools between uses; quarantine new plants for 2 weeks") and eco-tips (e.g., "Use companion planting with marigolds to deter pests naturally").
 - Disclaimers: "AI-generated diagnosis; not a replacement for lab testing or professional consultation, especially for pet/child safety or widespread issues."
 
@@ -24,12 +24,12 @@
 - **Endpoint**: POST /api/plants/diagnose in routes/plants.py (async, authenticated).
 - **Request Schema**: DiagnoseRequest(symptoms: Optional[str], images: List[str] = [], plant_id: Optional[UUID]).
 - **Response Schema**: DiagnoseResponse(issues: List[Dict[str, Any]], remedies: List[Dict[str, List[str>]], prevention: List[str], similar_cases: int, severity: int, disclaimer: str).
-- **Service**: plant_service.py LangGraph chain: 
+- **Service**: plant_service.py LangGraph chain:
   - Node 1: parse_inputs (OpenAI structured extraction for symptoms).
   - Node 2: vision_analysis (if images: OpenAI prompt for feature detection like "Describe lesions, colors, patterns").
-  - Node 3: embed_and_query (Chroma 'diagnosis_cases': upsert anonymized, query top_k=10).
+  - Node 3: embed_and_query (Pinecone 'diagnosis_cases': upsert anonymized, query top_k=10).
   - Node 4: synthesize (OpenAI: "Diagnose {data}; suggest remedies prioritizing organic; include prevention").
-- **Example Flow**: Inputs → Parse/embed → Chroma (filters for plant_type if known) → OpenAI (~$0.02) → Response.
+- **Example Flow**: Inputs → Parse/embed → Pinecone (filters for plant_type if known) → OpenAI (~$0.02) → Response.
 - **Edge Cases**: Vague symptoms → Prompt for more via response; no images → Text-only mode; high severity → Urgent disclaimer.
 - **Logging/Monitoring**: Track diagnosis types for trends; Sentry alerts on low confidence.
 
@@ -41,9 +41,9 @@
 
 ## Rationale and Scaling
 - **Why**: Addresses 30% troubleshooting queries; early fixes improve satisfaction.
-- **Accuracy**: Feedback-labeled data for Chroma; expert-seeded cases.
+- **Accuracy**: Feedback-labeled data for Pinecone; expert-seeded cases.
 - **Performance**: Limit queries to recent cases; async vision.
 - **Success Metrics**: 75% issues resolved per user logs; 90% feedback positive.
 - **Risks/Mitigations**: Wrong diagnosis → Disclaimers + pros referral; privacy → Hash cases.
-- **Dependencies**: Zod in frontend; Chroma collection in vector_db.py.
+- **Dependencies**: Zod in frontend; Pinecone collection in vector_db.py.
 - **Extensions**: Video for pest movement; affiliate remedy purchases.

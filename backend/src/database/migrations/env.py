@@ -3,11 +3,11 @@ from logging.config import fileConfig
 from typing import Optional
 
 from alembic import context
+from sqlalchemy import create_engine, pool
 
 # Use project modules (no prefixed 'src.' since backend/src is already on sys.path)
-from core.config import settings
-from database.base import Base
-from sqlalchemy import create_engine, pool
+from src.core.config import settings
+from src.database.base import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -23,12 +23,62 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
-from auth.models import (  # noqa: E402, F401
+
+# Import all models for Alembic autogenerate to work
+from src.auth.models import (
     OAuthAccount,
     PasswordCredential,
     PasswordResetToken,
     RefreshToken,
     User,
+)
+
+# Care advice models
+from src.care.models import (
+    CarePlan,
+    CareTaskTemplate,
+)
+
+# Conversation models
+from src.conversations.models import (
+    ChatMessage,
+    ConversationSession,
+)
+
+# Diagnosis models
+from src.diagnosis.models import (
+    DiagnosisAsset,
+    DiagnosisCandidate,
+    DiagnosisSession,
+    IssueCatalog,
+)
+
+# Feedback model
+from src.feedback.models import (
+    Feedback,
+)
+
+# Plant-related models
+from src.plants.models import (
+    Plant,
+    PlantPhoto,
+    PlantShare,
+)
+
+# Reminder models
+from src.reminders.models import (
+    Reminder,
+    ReminderLog,
+)
+
+# Species model
+from src.species.models import (
+    Species,
+)
+
+# Vector storage model
+from src.vertors.models import (
+    VectorItem,
 )
 
 # other values from the config, defined by the needs of env.py,
