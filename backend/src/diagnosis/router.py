@@ -31,11 +31,11 @@ security = HTTPBearer()
     The image should be clear, well-lit, and show the plant's current condition.
     Supported formats: JPEG, PNG, WebP
     Maximum file size: 10MB
-    """
+    """,
 )
 async def diagnose_plant(
     file: UploadFile = File(..., description="Plant image file"),
-    diagnosis_service: PlantDiagnosisService = Depends(get_diagnosis_service)
+    diagnosis_service: PlantDiagnosisService = Depends(get_diagnosis_service),
 ) -> Union[PlantDiagnosisResponse, PlantDiagnosisError]:
     """
     Diagnose plant health from uploaded image using multi-agent AI system.
@@ -49,10 +49,10 @@ async def diagnose_plant(
     """
     try:
         # Validate file type
-        if not file.content_type or not file.content_type.startswith('image/'):
+        if not file.content_type or not file.content_type.startswith("image/"):
             raise HTTPException(
                 status_code=400,
-                detail="Invalid file type. Please upload an image file."
+                detail="Invalid file type. Please upload an image file.",
             )
 
         # Validate file size (10MB limit)
@@ -60,12 +60,11 @@ async def diagnose_plant(
         contents = await file.read()
         if len(contents) > MAX_FILE_SIZE:
             raise HTTPException(
-                status_code=400,
-                detail="File too large. Maximum size is 10MB."
+                status_code=400, detail="File too large. Maximum size is 10MB."
             )
 
         # Convert to base64 for AI processing
-        image_base64 = base64.b64encode(contents).decode('utf-8')
+        image_base64 = base64.b64encode(contents).decode("utf-8")
 
         # Process through multi-agent diagnosis system
         result = await diagnosis_service.diagnose_plant(image_base64)
@@ -84,5 +83,5 @@ async def diagnose_plant(
         # Handle unexpected errors
         return PlantDiagnosisError(
             error="processing_error",
-            message=f"Failed to process plant diagnosis: {str(e)}"
+            message=f"Failed to process plant diagnosis: {str(e)}",
         )

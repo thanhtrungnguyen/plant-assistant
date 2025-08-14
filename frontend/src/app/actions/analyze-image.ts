@@ -13,7 +13,7 @@ export interface AnalysisResult {
 
 export async function analyzeImage(imageDataUrl: string): Promise<AnalysisResult> {
   // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
   // Mock analysis result based on image analysis
   const mockResults: AnalysisResult[] = [
@@ -29,23 +29,24 @@ export async function analyzeImage(imageDataUrl: string): Promise<AnalysisResult
         "Cây trồng đang trong tình trạng tốt",
         "Tiếp tục tưới nước 1-2 lần/tuần",
         "Đặt ở nơi có ánh sáng gián tiếp",
-        "Bón phân NPK pha loãng mỗi tháng"
-      ]
+        "Bón phân NPK pha loãng mỗi tháng",
+      ],
     },
     {
       plantType: "Monstera Deliciosa",
       health: "Có dấu hiệu bệnh",
       confidence: 0.85,
       disease: "Đốm lá nâu",
-      description: "Phát hiện một số đốm nâu trên lá, có thể do tưới nước quá nhiều hoặc độ ẩm cao.",
+      description:
+        "Phát hiện một số đốm nâu trên lá, có thể do tưới nước quá nhiều hoặc độ ẩm cao.",
       treatment: "Cắt bỏ lá bị bệnh, giảm tần suất tưới nước và tăng thông gió.",
       prevention: "Tránh nước đọng lại trên lá, tưới nước vào buổi sáng để lá khô nhanh.",
       recommendations: [
         "Cắt bỏ lá bị đốm nâu",
         "Giảm tưới nước xuống 1 lần/tuần",
         "Tăng thông gió xung quanh cây",
-        "Kiểm tra dẫn nước của chậu"
-      ]
+        "Kiểm tra dẫn nước của chậu",
+      ],
     },
     {
       plantType: "Snake Plant (Sansevieria)",
@@ -59,9 +60,9 @@ export async function analyzeImage(imageDataUrl: string): Promise<AnalysisResult
         "Kiểm tra và cắt bỏ rễ thối",
         "Thay đất mới có thoát nước tốt",
         "Giảm tưới nước xuống 1 lần/2 tuần",
-        "Đặt ở nơi có ánh sáng đủ"
-      ]
-    }
+        "Đặt ở nơi có ánh sáng đủ",
+      ],
+    },
   ];
 
   // Randomly select a result for demo purposes

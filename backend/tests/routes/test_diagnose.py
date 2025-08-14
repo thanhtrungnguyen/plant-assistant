@@ -1,6 +1,7 @@
 """
 Tests for plant diagnosis API
 """
+
 import pytest
 from unittest.mock import patch, AsyncMock, Mock
 from fastapi.testclient import TestClient
@@ -16,19 +17,20 @@ client = TestClient(app)
 
 def create_test_image() -> BytesIO:
     """Create a simple test image for testing"""
-    image = Image.new('RGB', (200, 200), color='green')
+    image = Image.new("RGB", (200, 200), color="green")
     img_buffer = BytesIO()
-    image.save(img_buffer, format='JPEG')
+    image.save(img_buffer, format="JPEG")
     img_buffer.seek(0)
     return img_buffer
 
 
 @pytest.mark.asyncio
 class TestDiagnoseAPI:
-
     def test_health_check_endpoint(self):
         """Test the health check endpoint"""
-        with patch('app.services.plant_diagnosis.get_diagnosis_service') as mock_get_service:
+        with patch(
+            "app.services.plant_diagnosis.get_diagnosis_service"
+        ) as mock_get_service:
             mock_service = Mock()
             mock_get_service.return_value = mock_service
 
@@ -45,7 +47,7 @@ class TestDiagnoseAPI:
         assert response.status_code == 400
         assert "Invalid file type" in response.json()["detail"]
 
-    @patch('app.services.plant_diagnosis.get_diagnosis_service')
+    @patch("app.services.plant_diagnosis.get_diagnosis_service")
     async def test_diagnose_success(self, mock_get_service):
         """Test successful plant diagnosis"""
         # Mock the diagnosis service
@@ -57,8 +59,8 @@ class TestDiagnoseAPI:
             "action_plan": [
                 {"id": 1, "action": "Continue current watering schedule"},
                 {"id": 2, "action": "Maintain bright, indirect light"},
-                {"id": 3, "action": "Monitor for pest activity monthly"}
-            ]
+                {"id": 3, "action": "Monitor for pest activity monthly"},
+            ],
         }
         mock_get_service.return_value = mock_service
 
@@ -75,14 +77,14 @@ class TestDiagnoseAPI:
         assert len(data["action_plan"]) == 3
         assert data["action_plan"][0]["action"] == "Continue current watering schedule"
 
-    @patch('app.services.plant_diagnosis.get_diagnosis_service')
+    @patch("app.services.plant_diagnosis.get_diagnosis_service")
     async def test_diagnose_service_error(self, mock_get_service):
         """Test diagnosis with service error"""
         # Mock service to return error
         mock_service = AsyncMock()
         mock_service.diagnose_plant.return_value = {
             "error": "validation_failed",
-            "message": "Image does not contain a plant"
+            "message": "Image does not contain a plant",
         }
         mock_get_service.return_value = mock_service
 
@@ -110,8 +112,7 @@ class TestDiagnoseAPI:
 
 @pytest.mark.asyncio
 class TestPlantDiagnosisService:
-
-    @patch('app.services.plant_diagnosis.settings')
+    @patch("app.services.plant_diagnosis.settings")
     def test_service_initialization_without_api_key(self, mock_settings):
         """Test service fails without OpenAI API key"""
         mock_settings.OPENAI_API_KEY = None
@@ -119,8 +120,8 @@ class TestPlantDiagnosisService:
         with pytest.raises(ValueError, match="OPENAI_API_KEY not configured"):
             PlantDiagnosisService()
 
-    @patch('app.services.plant_diagnosis.settings')
-    @patch('app.services.plant_diagnosis.ChatOpenAI')
+    @patch("app.services.plant_diagnosis.settings")
+    @patch("app.services.plant_diagnosis.ChatOpenAI")
     def test_service_initialization_success(self, mock_chat_openai, mock_settings):
         """Test successful service initialization"""
         mock_settings.OPENAI_API_KEY = "test-key"

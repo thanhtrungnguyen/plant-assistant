@@ -1,7 +1,7 @@
-import uuid
 from typing import List
 
 from pydantic import BaseModel
+
 
 class ActionStep(BaseModel):
     id: int

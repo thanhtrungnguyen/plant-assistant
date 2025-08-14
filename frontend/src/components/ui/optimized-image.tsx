@@ -1,14 +1,14 @@
-import Image, { ImageProps } from 'next/image';
-import { useState } from 'react';
+import Image, { ImageProps } from "next/image";
+import { useState } from "react";
 
-interface OptimizedImageProps extends Omit<ImageProps, 'src'> {
+interface OptimizedImageProps extends Omit<ImageProps, "src"> {
   src: string;
   fallbackSrc?: string;
 }
 
 export function OptimizedImage({
   src,
-  fallbackSrc = '/images/placeholder.png',
+  fallbackSrc = "/images/placeholder.png",
   alt,
   className,
   ...props
@@ -16,8 +16,7 @@ export function OptimizedImage({
   const [imageSrc, setImageSrc] = useState(src);
 
   // For data URLs (base64 images from camera/file upload)
-  if (src.startsWith('data:')) {
-     
+  if (src.startsWith("data:")) {
     return (
       <img
         src={src}

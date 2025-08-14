@@ -16,7 +16,8 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Plant Assistant - AI-powered Plant Care",
-  description: "Trợ lý AI chăm sóc cây trồng thông minh với phân tích hình ảnh và tư vấn chuyên nghiệp",
+  description:
+    "Trợ lý AI chăm sóc cây trồng thông minh với phân tích hình ảnh và tư vấn chuyên nghiệp",
 };
 
 export default function RootLayout({
@@ -27,9 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

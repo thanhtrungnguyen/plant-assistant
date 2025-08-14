@@ -15,17 +15,19 @@ export function LoadingSpinner() {
 
       <div className="flex space-x-2">
         <div className="w-3 h-3 bg-green-500 rounded-full animate-bounce"></div>
-        <div className="w-3 h-3 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-        <div className="w-3 h-3 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+        <div
+          className="w-3 h-3 bg-green-500 rounded-full animate-bounce"
+          style={{ animationDelay: "0.1s" }}
+        ></div>
+        <div
+          className="w-3 h-3 bg-green-500 rounded-full animate-bounce"
+          style={{ animationDelay: "0.2s" }}
+        ></div>
       </div>
     </div>
   );
 }
 
 export function PageLoader({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      {children}
-    </div>
-  );
+  return <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">{children}</div>;
 }

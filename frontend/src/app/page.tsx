@@ -47,7 +47,8 @@ export default function Home() {
             </h1>
 
             <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Trợ lý AI giúp bạn nhận dạng, chăm sóc và theo dõi sức khỏe cây trồng một cách dễ dàng và hiệu quả
+              Trợ lý AI giúp bạn nhận dạng, chăm sóc và theo dõi sức khỏe cây trồng một cách dễ dàng
+              và hiệu quả
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -58,7 +59,11 @@ export default function Home() {
                 </Button>
               </Link>
               <Link href="/chatbot">
-                <Button size="lg" variant="outline" className="border-green-500 text-green-600 hover:bg-green-50">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-green-500 text-green-600 hover:bg-green-50"
+                >
                   <MessageCircle className="w-5 h-5 mr-2" />
                   Dùng thử AI Assistant
                 </Button>
@@ -115,12 +120,20 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/register">
-                <Button size="lg" variant="secondary" className="bg-white text-green-600 hover:bg-gray-100">
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="bg-white text-green-600 hover:bg-gray-100"
+                >
                   Đăng ký miễn phí
                 </Button>
               </Link>
               <Link href="/login">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-green-600">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-green-600"
+                >
                   Đăng nhập
                 </Button>
               </Link>

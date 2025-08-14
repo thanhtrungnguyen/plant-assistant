@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Bell,
   Calendar,
@@ -13,11 +13,11 @@ import {
   MessageSquare,
   Search,
   Settings,
-  User
-} from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import React, { useState } from 'react';
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React, { useState } from "react";
 
 interface NavigationItem {
   href: string;
@@ -28,41 +28,41 @@ interface NavigationItem {
 
 const navigationItems: NavigationItem[] = [
   {
-    href: '/dashboard',
-    label: 'Dashboard',
+    href: "/dashboard",
+    label: "Dashboard",
     icon: Home,
-    description: 'Tổng quan'
+    description: "Tổng quan",
   },
   {
-    href: '/chatbot',
-    label: 'Plant Assistant AI',
+    href: "/chatbot",
+    label: "Plant Assistant AI",
     icon: MessageSquare,
-    description: 'Trợ lý AI'
+    description: "Trợ lý AI",
   },
   {
-    href: '/calendar',
-    label: 'Lịch chăm sóc',
+    href: "/calendar",
+    label: "Lịch chăm sóc",
     icon: Calendar,
-    description: 'Lịch trình'
+    description: "Lịch trình",
   },
   {
-    href: '/tasks',
-    label: 'Nhiệm vụ',
+    href: "/tasks",
+    label: "Nhiệm vụ",
     icon: CheckSquare,
-    description: 'Quản lý tasks'
+    description: "Quản lý tasks",
   },
   {
-    href: '/analyze',
-    label: 'Phân tích ảnh',
+    href: "/analyze",
+    label: "Phân tích ảnh",
     icon: Search,
-    description: 'AI phân tích'
+    description: "AI phân tích",
   },
   {
-    href: '/plants',
-    label: 'Cây của tôi',
+    href: "/plants",
+    label: "Cây của tôi",
     icon: Leaf,
-    description: 'Quản lý cây'
-  }
+    description: "Quản lý cây",
+  },
 ];
 
 interface User {
@@ -74,10 +74,10 @@ interface User {
 
 // Mock user data
 const mockUser: User = {
-  name: 'Nguyễn Văn A',
-  email: 'nguyenvana@example.com',
+  name: "Nguyễn Văn A",
+  email: "nguyenvana@example.com",
   avatar: undefined,
-  plantsCount: 15
+  plantsCount: 15,
 };
 
 interface AppHeaderProps {
@@ -91,19 +91,19 @@ export default function AppHeader({
   title,
   subtitle,
   showNavigation = true,
-  onMobileMenuToggle
+  onMobileMenuToggle,
 }: AppHeaderProps) {
   const pathname = usePathname();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const currentPage = navigationItems.find(item => item.href === pathname);
+  const currentPage = navigationItems.find((item) => item.href === pathname);
 
   const handleLogout = () => {
     // Clear any auth tokens
-    localStorage.removeItem('authToken');
+    localStorage.removeItem("authToken");
     // Redirect to login
-    window.location.href = '/login';
+    window.location.href = "/login";
   };
 
   return (
@@ -114,12 +114,7 @@ export default function AppHeader({
           <div className="flex items-center gap-4">
             {/* Mobile menu button */}
             {onMobileMenuToggle && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onMobileMenuToggle}
-                className="lg:hidden"
-              >
+              <Button variant="ghost" size="sm" onClick={onMobileMenuToggle} className="lg:hidden">
                 <Menu className="h-5 w-5" />
               </Button>
             )}
@@ -141,9 +136,7 @@ export default function AppHeader({
                   <span>/</span>
                   <span className="text-gray-900 font-medium">{title}</span>
                 </div>
-                {subtitle && (
-                  <p className="text-sm text-gray-500">{subtitle}</p>
-                )}
+                {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
               </div>
             )}
           </div>
@@ -204,7 +197,9 @@ export default function AppHeader({
                       <p className="text-xs text-gray-500 mt-1">2 giờ trước</p>
                     </div>
                     <div className="px-4 py-3 hover:bg-gray-50">
-                      <p className="text-sm font-medium text-gray-900">Monstera đã sẵn sàng bón phân</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        Monstera đã sẵn sàng bón phân
+                      </p>
                       <p className="text-xs text-gray-500 mt-1">1 ngày trước</p>
                     </div>
                   </div>
@@ -226,7 +221,11 @@ export default function AppHeader({
               >
                 <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
                   <span className="text-green-600 font-medium text-sm">
-                    {mockUser.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    {mockUser.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .slice(0, 2)}
                   </span>
                 </div>
                 <div className="hidden sm:block text-left">
@@ -244,7 +243,11 @@ export default function AppHeader({
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
                         <span className="text-green-600 font-medium">
-                          {mockUser.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          {mockUser.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .slice(0, 2)}
                         </span>
                       </div>
                       <div>

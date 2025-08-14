@@ -26,6 +26,7 @@ from src.core.config import settings
 
 class DiagnosisState(TypedDict):
     """State shared between agents in the diagnosis workflow"""
+
     image_data: str  # Base64 encoded image
     validation_result: Optional[bool]
     plant_name: Optional[str]
@@ -47,7 +48,7 @@ class PlantDiagnosisService:
             model=settings.OPENAI_MODEL,
             api_key=settings.OPENAI_API_KEY,
             temperature=settings.OPENAI_TEMPERATURE,
-            max_tokens=settings.OPENAI_MAX_TOKENS
+            max_tokens=settings.OPENAI_MAX_TOKENS,
         )
 
         # Build the workflow graph
@@ -73,20 +74,14 @@ class PlantDiagnosisService:
         workflow.add_conditional_edges(
             "input_validator",
             self._should_continue_after_validation,
-            {
-                "continue": "plant_identifier",
-                "error": "error_handler"
-            }
+            {"continue": "plant_identifier", "error": "error_handler"},
         )
 
         # Sequential flow after successful validation
         workflow.add_conditional_edges(
             "plant_identifier",
             self._should_continue_after_identification,
-            {
-                "continue": "condition_analyzer",
-                "error": "error_handler"
-            }
+            {"continue": "condition_analyzer", "error": "error_handler"},
         )
         workflow.add_edge("condition_analyzer", "action_plan_generator")
         workflow.add_edge("action_plan_generator", "output_formatter")
@@ -124,7 +119,8 @@ class PlantDiagnosisService:
                 return state
 
             # Use Vision API to validate if image contains a plant
-            validation_prompt = SystemMessage(content="""
+            validation_prompt = SystemMessage(
+                content="""
 You are a plant image validator with expertise in botany and plant identification. Analyze the image carefully to determine if it contains a valid plant for diagnosis.
 
 Respond with ONLY one of these exact responses:
@@ -142,12 +138,18 @@ Validation Rules:
 ❌ REJECT: Inappropriate, harmful, or completely unrelated content
 
 Be thorough in your analysis - examine leaves, stems, flowers, and overall plant structure. Many legitimate plants may have similar leaf shapes, so focus on the complete plant characteristics and context.
-""")
+"""
+            )
 
-            human_message = HumanMessage(content=[
-                {"type": "text", "text": "Is this a valid plant image?"},
-                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_data}"}}
-            ])
+            human_message = HumanMessage(
+                content=[
+                    {"type": "text", "text": "Is this a valid plant image?"},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/jpeg;base64,{image_data}"},
+                    },
+                ]
+            )
 
             response = await self.llm.ainvoke([validation_prompt, human_message])
             validation_result = response.content.strip()
@@ -160,9 +162,12 @@ Be thorough in your analysis - examine leaves, stems, flowers, and overall plant
                     "INVALID_NOT_PLANT": "Image does not contain a plant or contains artificial/fake plants",
                     "INVALID_ILLEGAL_PLANT": "Cannot provide assistance for illegal or controlled substance plants",
                     "INVALID_INAPPROPRIATE": "Inappropriate content detected",
-                    "INVALID_UNCLEAR": "Image is too unclear for analysis"
+                    "INVALID_UNCLEAR": "Image is too unclear for analysis",
                 }
-                state["error"] = error_messages.get(validation_result, "Invalid image - please upload a clear photo of a legal plant")
+                state["error"] = error_messages.get(
+                    validation_result,
+                    "Invalid image - please upload a clear photo of a legal plant",
+                )
 
             return state
 
@@ -174,7 +179,8 @@ Be thorough in your analysis - examine leaves, stems, flowers, and overall plant
     async def _plant_identifier(self, state: DiagnosisState) -> DiagnosisState:
         """Agent 2: Identifies the plant species"""
         try:
-            identification_prompt = SystemMessage(content="""
+            identification_prompt = SystemMessage(
+                content="""
 You are a professional botanist specializing in plant identification for care assistance.
 Analyze the provided plant image and identify the species.
 
@@ -192,19 +198,29 @@ For legal plants, respond with ONLY the common name. Examples:
 
 If you cannot identify the specific species, provide the closest genus or family name.
 If completely uncertain, respond with "Unknown Plant Species".
-""")
+"""
+            )
 
-            human_message = HumanMessage(content=[
-                {"type": "text", "text": "Please identify this plant species."},
-                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{state['image_data']}"}}
-            ])
+            human_message = HumanMessage(
+                content=[
+                    {"type": "text", "text": "Please identify this plant species."},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{state['image_data']}"
+                        },
+                    },
+                ]
+            )
 
             response = await self.llm.ainvoke([identification_prompt, human_message])
             plant_name = response.content.strip()
 
             # Secondary check for illegal plants
             if plant_name == "ILLEGAL_PLANT_DETECTED":
-                state["error"] = "Cannot provide assistance for illegal or controlled substance plants"
+                state["error"] = (
+                    "Cannot provide assistance for illegal or controlled substance plants"
+                )
                 return state
 
             state["plant_name"] = plant_name
@@ -219,7 +235,8 @@ If completely uncertain, respond with "Unknown Plant Species".
         try:
             plant_name = state.get("plant_name", "Unknown Plant")
 
-            diagnosis_prompt = SystemMessage(content=f"""
+            diagnosis_prompt = SystemMessage(
+                content=f"""
 You are a plant pathologist analyzing the health of a {plant_name}.
 Examine the image for signs of disease, pests, nutrient deficiencies, or other health issues.
 
@@ -229,18 +246,29 @@ DIAGNOSIS: [2-3 detailed sentences explaining what you observe, the likely cause
 
 Focus on visible symptoms like leaf discoloration, wilting, spots, pests, or growth abnormalities.
 If the plant appears healthy, state "Healthy" and describe positive signs.
-""")
+"""
+            )
 
-            human_message = HumanMessage(content=[
-                {"type": "text", "text": f"Please diagnose the health condition of this {plant_name}."},
-                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{state['image_data']}"}}
-            ])
+            human_message = HumanMessage(
+                content=[
+                    {
+                        "type": "text",
+                        "text": f"Please diagnose the health condition of this {plant_name}.",
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{state['image_data']}"
+                        },
+                    },
+                ]
+            )
 
             response = await self.llm.ainvoke([diagnosis_prompt, human_message])
             diagnosis_text = response.content.strip()
 
             # Parse the structured response
-            lines = diagnosis_text.split('\n')
+            lines = diagnosis_text.split("\n")
             condition = "Unknown"
             detail_diagnosis = diagnosis_text
 
@@ -265,7 +293,8 @@ If the plant appears healthy, state "Healthy" and describe positive signs.
             condition = state.get("condition", "Unknown")
             diagnosis = state.get("detail_diagnosis", "")
 
-            action_prompt = SystemMessage(content=f"""
+            action_prompt = SystemMessage(
+                content=f"""
 You are a plant care specialist. Based on the diagnosis of a {plant_name} with condition "{condition}",
 provide a specific action plan.
 
@@ -280,9 +309,12 @@ Make actions specific, practical, and immediately actionable. Include timeframes
 Examples: "Water thoroughly until drainage occurs", "Move to bright, indirect light", "Apply neem oil spray every 3 days"
 
 Diagnosis context: {diagnosis}
-""")
+"""
+            )
 
-            human_message = HumanMessage(content=f"Create an action plan for {plant_name} with {condition}")
+            human_message = HumanMessage(
+                content=f"Create an action plan for {plant_name} with {condition}"
+            )
 
             response = await self.llm.ainvoke([action_prompt, human_message])
             action_plan_text = response.content.strip()
@@ -291,7 +323,9 @@ Diagnosis context: {diagnosis}
             try:
                 # Extract JSON from response if wrapped in markdown
                 if "```json" in action_plan_text:
-                    action_plan_text = action_plan_text.split("```json")[1].split("```")[0].strip()
+                    action_plan_text = (
+                        action_plan_text.split("```json")[1].split("```")[0].strip()
+                    )
                 elif "```" in action_plan_text:
                     action_plan_text = action_plan_text.split("```")[1].strip()
 
@@ -302,7 +336,11 @@ Diagnosis context: {diagnosis}
                     raise ValueError("Action plan must be a list")
 
                 for i, action in enumerate(action_plan):
-                    if not isinstance(action, dict) or "id" not in action or "action" not in action:
+                    if (
+                        not isinstance(action, dict)
+                        or "id" not in action
+                        or "action" not in action
+                    ):
                         raise ValueError(f"Invalid action format at index {i}")
 
                 state["action_plan"] = action_plan
@@ -310,9 +348,12 @@ Diagnosis context: {diagnosis}
             except json.JSONDecodeError:
                 # Fallback: create structured plan from text
                 fallback_plan = [
-                    {"id": 1, "action": "Follow general care guidelines for the diagnosed condition"},
+                    {
+                        "id": 1,
+                        "action": "Follow general care guidelines for the diagnosed condition",
+                    },
                     {"id": 2, "action": "Monitor plant closely for changes"},
-                    {"id": 3, "action": "Adjust care routine based on plant response"}
+                    {"id": 3, "action": "Adjust care routine based on plant response"},
                 ]
                 state["action_plan"] = fallback_plan
 
@@ -328,8 +369,10 @@ Diagnosis context: {diagnosis}
             final_output = {
                 "plant_name": state.get("plant_name", "Unknown Plant"),
                 "condition": state.get("condition", "Unknown"),
-                "detail_diagnosis": state.get("detail_diagnosis", "Unable to provide diagnosis"),
-                "action_plan": state.get("action_plan", [])
+                "detail_diagnosis": state.get(
+                    "detail_diagnosis", "Unable to provide diagnosis"
+                ),
+                "action_plan": state.get("action_plan", []),
             }
 
             state["final_output"] = final_output
@@ -343,7 +386,9 @@ Diagnosis context: {diagnosis}
         """Handles errors and creates error response"""
         error_output = {
             "error": "diagnosis_failed",
-            "message": state.get("error", "Unknown error occurred during plant diagnosis")
+            "message": state.get(
+                "error", "Unknown error occurred during plant diagnosis"
+            ),
         }
         state["final_output"] = error_output
         return state
@@ -382,22 +427,25 @@ Diagnosis context: {diagnosis}
                 "detail_diagnosis": None,
                 "action_plan": None,
                 "error": None,
-                "final_output": None
+                "final_output": None,
             }
 
             # Run the workflow
             config = {"configurable": {"thread_id": "diagnosis_session"}}
             final_state = await self.app.ainvoke(initial_state, config)
 
-            return final_state.get("final_output", {
-                "error": "workflow_failed",
-                "message": "Diagnosis workflow failed to complete"
-            })
+            return final_state.get(
+                "final_output",
+                {
+                    "error": "workflow_failed",
+                    "message": "Diagnosis workflow failed to complete",
+                },
+            )
 
         except Exception as e:
             return {
                 "error": "service_error",
-                "message": f"Plant diagnosis service error: {str(e)}"
+                "message": f"Plant diagnosis service error: {str(e)}",
             }
 
 
