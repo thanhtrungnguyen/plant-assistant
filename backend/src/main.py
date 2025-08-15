@@ -2,6 +2,7 @@ import time
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
 from src.auth.routes.auth_local import router as auth_local
 from src.auth.routes.auth_oauth import router as auth_oauth
@@ -49,6 +50,13 @@ async def log_requests(request: Request, call_next):
 
     return response
 
+
+# Add Session Middleware (required for OAuth)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.ACCESS_SECRET_KEY,
+    max_age=3600  # 1 hour session
+)
 
 app.add_middleware(
     CORSMiddleware,

@@ -14,6 +14,7 @@ from src.auth.repositories.auth_repo import (
     revoke_refresh,
     store_refresh,
 )
+from src.auth.repositories.user_repo import get_user_by_id
 
 router = APIRouter(prefix="/auth", tags=["auth-tokens"])
 
@@ -46,6 +47,18 @@ def logout(response: Response, request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/me")
-def me(request: Request):
-    user = decode_access(request)
-    return {"sub": user["sub"]}
+def me(request: Request, db: Session = Depends(get_db)):
+    claims = decode_access(request)
+    user_id = int(claims["sub"])
+
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {
+        "id": str(user.id),
+        "email": user.email,
+        "name": user.name,
+        "email_verified": user.email_verified,
+        "is_active": user.is_active
+    }

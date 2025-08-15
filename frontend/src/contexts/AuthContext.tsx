@@ -1,5 +1,6 @@
 "use client";
 
+import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
@@ -25,12 +26,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  const checkAuth = async () => {
+    const checkAuth = async () => {
     try {
-      // Check if user has valid token
-      const response = await fetch("/api/auth/me", {
-        credentials: "include",
-      });
+      // Check if user has valid token using the proper API helper
+      const response = await api("/auth/me");
 
       if (response.ok) {
         const userData = await response.json();
@@ -46,15 +45,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string) => {
+    const login = async (email: string, password: string) => {
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await api("/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
-        credentials: "include",
       });
 
       if (response.ok) {
