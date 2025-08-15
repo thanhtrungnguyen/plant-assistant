@@ -1,7 +1,12 @@
 # backend/src/app/services/podcast_service.py
 
 from .schemas import GeneratePodcastInput
-from .utils import get_weather, generate_podcast, text_to_wav_bytes, generate_dummy_data,synthesize_edge_tts
+from .utils import (
+    get_weather,
+    generate_podcast,
+    generate_dummy_data,
+    synthesize_edge_tts,
+)
 
 
 async def create_podcast_for_user(input: GeneratePodcastInput) -> bytes:
@@ -19,9 +24,7 @@ async def create_podcast_for_user(input: GeneratePodcastInput) -> bytes:
 
         # Generate podcast script using user and weather data
         podcast_text = generate_podcast(
-            user_data.userName,
-            weather_info,
-            user_data.plants
+            user_data.userName, weather_info, user_data.plants
         )
 
         # Convert the podcast script to WAV audio bytes
@@ -33,4 +36,3 @@ async def create_podcast_for_user(input: GeneratePodcastInput) -> bytes:
         # Log and re-raise the exception
         print(f"[ERROR] Failed to create podcast for user {input.user_id}: {e}")
         raise
-

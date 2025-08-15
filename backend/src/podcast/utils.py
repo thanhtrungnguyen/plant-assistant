@@ -1,4 +1,6 @@
 from openai import OpenAI
+from typing import Optional
+
 import requests
 from ..core.config import settings
 from fastapi.routing import APIRoute
@@ -37,8 +39,6 @@ client = OpenAI(
 )
 
 
-from typing import Optional
-
 def generate_podcast(name: str, plants: str, weather: Optional[str] = None) -> str:
     if weather:
         weather_part = f"- Thời tiết hôm nay: {weather}\n"
@@ -69,6 +69,7 @@ def generate_podcast(name: str, plants: str, weather: Optional[str] = None) -> s
 
     return response.choices[0].message.content
 
+
 def text_to_wav_bytes(text: str) -> bytes:
     inputs = tokenizer(text, return_tensors="pt")
     with torch.no_grad():
@@ -87,6 +88,7 @@ def generate_dummy_data(user_id):
     plant_names = ["Cây vạn niên thanh", "Cây lưỡi hổ", "Cây hạnh phúc"]
     plants_str = ", ".join(plant_names)
     return UserData(address="Hà Nội", plants=plants_str, userName="Hoa")
+
 
 async def synthesize_edge_tts(text: str, voice: str = "vi-VN-HoaiMyNeural") -> bytes:
     buffer_mp3 = io.BytesIO()
