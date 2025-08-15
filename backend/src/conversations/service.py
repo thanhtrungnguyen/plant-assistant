@@ -1,7 +1,6 @@
 """Conversational AI service for plant assistance."""
 
 import logging
-from typing import List
 
 from sqlalchemy.orm import Session
 
