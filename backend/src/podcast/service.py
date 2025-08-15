@@ -21,8 +21,9 @@ async def create_podcast_for_user(input: GeneratePodcastInput) -> bytes:
             user_data.userName, weather_info, user_data.plants
         )
 
-        # 2. Convert text to WAV bytes
-        audio_bytes = text_to_wav_bytes(podcast_text)
+        # 2. Convert text to WAV bytes with specified voice type
+        voice_type = getattr(input, 'voice_type', 'female')  # Default to female voice
+        audio_bytes = text_to_wav_bytes(podcast_text, voice_type)
 
         # 3. Return audio file response
         return audio_bytes

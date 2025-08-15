@@ -1,13 +1,13 @@
 "use client";
 
 import AppLayout from "@/components/layout/AppLayout";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import useGeneratePostcast from "../../hooks/useGeneratePostcast";
+import { Download, Loader2, MapPin, Mic, Pause, Play, Sparkles, Volume2, X } from "lucide-react";
 import { useState } from "react";
-import { Mic, Download, Play, Pause, Volume2, MapPin, Loader2, X, Sparkles } from "lucide-react";
+import useGeneratePostcast from "../../hooks/useGeneratePostcast";
 
 export default function PodcastPage() {
   const { audioUrl, loading, error, generate, download, cancel, clear } = useGeneratePostcast();
@@ -52,7 +52,7 @@ export default function PodcastPage() {
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Tạo Podcast Cá Nhân</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Tạo podcast cá nhân hóa dựa trên vị trí của bạn, thời tiết hiện tại và danh sách cây trồng. 
+            Tạo podcast cá nhân hóa dựa trên vị trí của bạn, thời tiết hiện tại và danh sách cây trồng.
             AI sẽ tạo nội dung phù hợp và chuyển đổi thành giọng nói tự nhiên.
           </p>
         </div>
@@ -191,7 +191,7 @@ export default function PodcastPage() {
                     )}
                   </Button>
                 </div>
-                
+
                 <audio
                   controls
                   src={audioUrl}
@@ -212,7 +212,7 @@ export default function PodcastPage() {
                   <Download className="h-4 w-4 mr-2" />
                   Tải xuống
                 </Button>
-                
+
                 <a
                   href={audioUrl}
                   target="_blank"

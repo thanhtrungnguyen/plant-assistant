@@ -1,8 +1,8 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type LatLng = { 
-  latitude: number; 
+type LatLng = {
+  latitude: number;
   longitude: number;
   accuracy: number;
   altitude?: number | null;
@@ -49,8 +49,8 @@ async function getCurrentLatLng(timeoutMs = 5000): Promise<LatLng | null> {
   if (typeof navigator === "undefined" || !navigator.geolocation) return null;
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
-      (p) => resolve({ 
-        latitude: p.coords.latitude, 
+      (p) => resolve({
+        latitude: p.coords.latitude,
         longitude: p.coords.longitude,
         accuracy: p.coords.accuracy,
         altitude: p.coords.altitude,
