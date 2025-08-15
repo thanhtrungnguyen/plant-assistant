@@ -1,9 +1,13 @@
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, List
 
 from sqlalchemy import DateTime, ForeignKey, String, UniqueConstraint, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database.base import Base  # unified Base with timestamps
+
+if TYPE_CHECKING:
+    from src.chat.models import ChatSession
 
 
 class User(Base):
@@ -13,6 +17,13 @@ class User(Base):
     email_verified: Mapped[bool] = mapped_column(default=False)
     name: Mapped[str | None] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(default=True)
+
+    # Chat sessions relationship
+    chat_sessions: Mapped[List["ChatSession"]] = relationship(
+        "ChatSession",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
 
 
 class PasswordCredential(Base):

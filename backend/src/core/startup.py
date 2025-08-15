@@ -27,6 +27,8 @@ def check_database_connection():
         )
     except Exception as e:
         logger.error(f"[DATABASE] Connection failed: {e}")
+        # Don't fail startup on database connection issues for now
+        pass
 
 
 def check_oauth_status():

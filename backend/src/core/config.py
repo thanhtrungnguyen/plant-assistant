@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     OPENAPI_URL: str = "/openapi.json"
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost/dbname"
+    DATABASE_URL: str = "sqlite:///./plant_assistant.db"
     TEST_DATABASE_URL: str | None = None
     EXPIRE_ON_COMMIT: bool = False
 
@@ -65,16 +65,14 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = True
 
     # CORS
-    CORS_ORIGINS: Set[str] = {"http://localhost:3000"}
+    CORS_ORIGINS: Set[str] = {"http://localhost:3000", "http://localhost:3001"}
 
     # Pinecone / Vector DB
-    PINECONE_API_KEY: str | None = None
-    PINECONE_ENVIRONMENT: str | None = None  # legacy (if needed)
-    PINECONE_HOST: str | None = (
-        None  # optional override for self-hosted / explicit host
-    )
-    PINECONE_DEFAULT_INDEX: str | None = None
-    PINECONE_DEFAULT_NAMESPACE: str | None = None
+    PINECONE_API_KEY: str | None = os.getenv("PINECONE_API_KEY")
+    PINECONE_ENVIRONMENT: str | None = os.getenv("PINECONE_ENVIRONMENT")  # legacy (if needed)
+    PINECONE_HOST: str | None = os.getenv("PINECONE_HOST")  # optional override for self-hosted / explicit host
+    PINECONE_DEFAULT_INDEX: str | None = os.getenv("PINECONE_DEFAULT_INDEX")
+    PINECONE_DEFAULT_NAMESPACE: str | None = os.getenv("PINECONE_DEFAULT_NAMESPACE", "plant_knowledge")
 
     # AI/OpenAI Configuration
     OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")

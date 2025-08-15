@@ -8,7 +8,9 @@ from src.auth.routes.auth_oauth import router as auth_oauth
 from src.auth.routes.auth_recovery import router as auth_recovery
 from src.auth.routes.auth_tokens import router as auth_tokens
 from src.care.router import router as care_router
-from src.conversations.router import router as chat_router
+from src.chat.routes.chat_routes import router as chat_router
+from src.chat.routes.rag import router as rag_router
+# from src.conversations.router import router as legacy_chat_router  # Disabled to avoid table conflicts
 from src.core.config import settings
 from src.diagnosis.router import router as diagnosis_router
 from src.core.logging import get_logger, setup_logging
@@ -76,7 +78,13 @@ app.include_router(reminders_router, prefix="/api")  # /api/plants/reminders/*
 app.include_router(care_router, prefix="/api")  # /api/plants/care/*
 app.include_router(diagnosis_router, prefix="/api")  # /api/plants/diagnose/*
 app.include_router(tracking_router, prefix="/api")  # /api/plants/track/*
-app.include_router(chat_router, prefix="/api")  # /api/plants/chat/*
+
+# Chat - New advanced chat system
+app.include_router(chat_router, prefix="/api")  # /api/chat/*
+app.include_router(rag_router, prefix="/api")  # /api/rag/*
+
+# Legacy chat (keeping for backward compatibility) - Disabled to avoid table conflicts
+# app.include_router(legacy_chat_router, prefix="/api")  # /api/plants/chat/*
 
 # Plant Diagnosis
 app.include_router(diagnosis_router)

@@ -4,31 +4,32 @@ import AppLayout from "@/components/layout/AppLayout";
 import { CameraCapture } from "@/components/ui/camera-capture";
 import { ChatHistoryPanel } from "@/components/ui/chat-history-panel";
 import { DemoHistoryButton } from "@/components/ui/demo-history-sidebar";
+import { Message, useChat, useChatSessions } from "@/hooks/useChat";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { Bot, Camera, History, Image as ImageIcon, Send, User, X } from "lucide-react";
+import { AlertCircle, Bot, Camera, History, Image as ImageIcon, Send, User, X } from "lucide-react";
 import { useRef, useState } from "react";
 
-type Message = {
-  id: string;
-  content: string;
-  sender: "user" | "bot";
-  timestamp: Date;
-  imageUrl?: string;
-};
-
 export default function ChatbotPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content:
-        "Xin chào! Tôi là trợ lý AI chăm sóc cây trồng. Bạn có thể hỏi tôi về cách chăm sóc cây hoặc gửi ảnh cây để tôi phân tích.",
-      sender: "bot",
-      timestamp: new Date(),
+  const {
+    messages,
+    isLoading,
+    currentSession,
+    error: chatError,
+    sendMessage,
+    clearMessages,
+    createNewSession,
+    loadSession,
+  } = useChat({
+    useRag: true,
+    onError: (error) => {
+      console.error("Chat error:", error);
     },
-  ]);
+  });
+
+  const { sessions, loadSessions } = useChatSessions();
+
   const [inputMessage, setInputMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [showMobileHistory, setShowMobileHistory] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,30 +39,13 @@ export default function ChatbotPage() {
     e.preventDefault();
     if ((!inputMessage.trim() && !selectedImage) || isLoading) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: inputMessage.trim() || (selectedImage ? "Đã gửi ảnh cây trồng" : ""),
-      sender: "user",
-      timestamp: new Date(),
-      imageUrl: selectedImage || undefined,
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInputMessage("");
-    setSelectedImage(null);
-    setIsLoading(true);
-
-    // Simulate bot response
-    setTimeout(() => {
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: selectedImage ? getImageAnalysisResponse() : getBotResponse(userMessage.content),
-        sender: "bot",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, botMessage]);
-      setIsLoading(false);
-    }, 1500);
+    try {
+      await sendMessage(inputMessage, selectedImage || undefined);
+      setInputMessage("");
+      setSelectedImage(null);
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,8 +68,19 @@ export default function ChatbotPage() {
     setShowCamera(false);
   };
 
-  const handleLoadHistory = (historyMessages: Message[]) => {
-    setMessages(historyMessages);
+  const handleLoadHistory = async (historyMessages: Message[]) => {
+    // For now, we'll just clear and set messages
+    // In a real implementation, you might want to load a specific session
+    clearMessages();
+    // You could implement session loading here
+  };
+
+  const handleNewChat = async () => {
+    try {
+      await createNewSession();
+    } catch (error) {
+      console.error("Failed to create new session:", error);
+    }
   };
 
   const handleImageButtonClick = () => {
@@ -94,46 +89,6 @@ export default function ChatbotPage() {
     } else {
       fileInputRef.current?.click();
     }
-  };
-
-  const getImageAnalysisResponse = (): string => {
-    const responses = [
-      "Tôi thấy đây là một cây Pothos khỏe mạnh! Lá xanh tươi cho thấy cây đang được chăm sóc tốt. Để duy trì, hãy tưới nước khi đất khô và đặt ở nơi có ánh sáng gián tiếp.",
-      "Cây Monstera của bạn có vẻ cần nhiều ánh sáng hơn. Tôi khuyên nên di chuyển cây gần cửa sổ hơn và kiểm tra độ ẩm đất thường xuyên.",
-      "Đây có vẻ là cây Snake Plant. Cây này rất dễ chăm sóc! Chỉ cần tưới nước 1-2 lần/tháng và cây sẽ phát triển tốt ngay cả trong điều kiện ánh sáng thấp.",
-      "Tôi nhận thấy một số dấu hiệu vàng lá. Điều này có thể do tưới nước quá nhiều. Hãy kiểm tra xem đất có bị úng nước không và giảm tần suất tưới nước.",
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
-
-  const getBotResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase();
-
-    if (input.includes("tưới") || input.includes("nước")) {
-      return "Để tưới nước đúng cách, hãy kiểm tra độ ẩm đất bằng cách nhấn ngón tay xuống đất 2-3cm. Hầu hết các cây cần tưới khi lớp đất trên cùng khô. Thông thường tưới 1-2 lần/tuần, tùy thuộc vào loại cây và mùa.";
-    }
-
-    if (input.includes("ánh sáng") || input.includes("nắng")) {
-      return "Yêu cầu ánh sáng khác nhau tùy loại cây. Hầu hết cây trong nhà thích ánh sáng gián tiếp sáng. Tránh ánh nắng trực tiếp có thể làm cháy lá. Nếu lá vàng hoặc cây héo, có thể cây cần nhiều ánh sáng hơn.";
-    }
-
-    if (input.includes("bón phân") || input.includes("dinh dưỡng")) {
-      return "Bón phân cho cây trong mùa sinh trưởng (xuân/hè) bằng phân bón lỏng cân bằng 2-4 tuần/lần. Giảm hoặc ngừng bón phân vào thu/đông khi cây phát triển chậm lại.";
-    }
-
-    if (input.includes("sâu bệnh") || input.includes("côn trùng")) {
-      return "Dấu hiệu sâu bệnh thường là lá vàng, chất dính hoặc thấy côn trùng. Kiểm tra thường xuyên và xử lý bằng xà phòng diệt côn trùng hoặc dầu neem. Cách ly cây bị nhiễm bệnh.";
-    }
-
-    if (input.includes("thay chậu") || input.includes("chậu mới")) {
-      return "Thay chậu khi rễ mọc ra khỏi lỗ thoát nước hoặc đất cạn kiệt nhanh. Chọn chậu lớn hơn 2-3cm, dùng đất trồng mới, tốt nhất là thay chậu vào mùa xuân.";
-    }
-
-    if (input.includes("ảnh") || input.includes("hình")) {
-      return "Bạn có thể gửi ảnh cây trồng cho tôi để phân tích! Tôi sẽ giúp nhận dạng loại cây và đưa ra lời khuyên chăm sóc cụ thể.";
-    }
-
-    return "Tôi có thể giúp bạn về tưới nước, ánh sáng, bón phân, phòng trừ sâu bệnh, thay chậu và phân tích ảnh cây trồng. Bạn muốn hỏi gì cụ thể hơn không?";
   };
 
   return (
@@ -146,6 +101,16 @@ export default function ChatbotPage() {
 
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col bg-white rounded-lg shadow-lg">
+          {/* Error Display */}
+          {chatError && (
+            <div className="p-3 md:p-4 bg-red-50 border-b border-red-200">
+              <div className="flex items-center space-x-2 text-red-600">
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-sm">{chatError}</span>
+              </div>
+            </div>
+          )}
+
           {/* Header - Responsive */}
           <div className="p-3 md:p-6 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center justify-between">
@@ -160,14 +125,22 @@ export default function ChatbotPage() {
                   <span className="sm:hidden">Trợ lý AI chăm sóc cây trồng</span>
                 </p>
               </div>
-              {/* History button for mobile */}
-              <button
-                onClick={() => setShowMobileHistory(true)}
-                className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Xem lịch sử trò chuyện"
-              >
-                <History className="h-5 w-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleNewChat}
+                  className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Cuộc trò chuyện mới
+                </button>
+                {/* History button for mobile */}
+                <button
+                  onClick={() => setShowMobileHistory(true)}
+                  className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Xem lịch sử trò chuyện"
+                >
+                  <History className="h-5 w-5" />
+                </button>
+              </div>
             </div>
           </div>
 
