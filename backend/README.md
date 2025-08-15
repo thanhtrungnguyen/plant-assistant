@@ -38,6 +38,11 @@ FastAPI backend service for the Plant Assistant application, providing a robust 
    uv run fastapi dev src/main.py --host 0.0.0.0 --port 5000 --reload
    ```
 
+   *Alternative (if fastapi dev has issues):*
+   ```bash
+   uv run uvicorn src.main:app --host 0.0.0.0 --port 5000 --reload
+   ```
+
 5. **Access the API:**
    - API: http://localhost:5000
    - Interactive docs: http://localhost:5000/docs

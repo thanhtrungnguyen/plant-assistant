@@ -1,5 +1,12 @@
 const API = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
+// Debug environment variable
+console.log("🔧 API Base URL:", API);
+console.log("🔧 Environment Variables:", {
+  NODE_ENV: process.env.NODE_ENV,
+  NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL
+});
+
 export async function api(path: string, init: RequestInit = {}) {
   const fullUrl = API + path;
 
