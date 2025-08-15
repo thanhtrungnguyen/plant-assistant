@@ -1,16 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Bell, Calendar, CheckSquare, Home, Leaf, MessageSquare, Search, User } from "lucide-react";
+import { Bell, Calendar, CheckSquare, Leaf, MessageSquare, Search, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navigationItems = [
-  {
-    href: "/dashboard",
-    label: "Dashboard",
-    icon: Home,
-  },
   {
     href: "/chatbot",
     label: "Plant AI",
@@ -47,7 +42,7 @@ export default function Header({ title, subtitle, showNavigation = true }: Heade
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-3">
+          <Link href="/chatbot" className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <Leaf className="h-6 w-6 text-green-600" />
             </div>

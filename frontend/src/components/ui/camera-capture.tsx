@@ -113,26 +113,26 @@ export function CameraCapture({ onImageCapture, onClose }: CameraCaptureProps) {
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-black/80 text-white">
+      <div className="flex items-center justify-between p-3 md:p-4 bg-black/80 text-white safe-area-inset-top">
         <Button
           variant="ghost"
           size="sm"
           onClick={handleClose}
-          className="text-white hover:bg-white/20"
+          className="text-white hover:bg-white/20 p-2"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4 md:h-5 md:w-5" />
         </Button>
 
-        <h2 className="text-lg font-semibold">Chụp ảnh cây trồng</h2>
+        <h2 className="text-base md:text-lg font-semibold">Chụp ảnh cây trồng</h2>
 
         <Button
           variant="ghost"
           size="sm"
           onClick={switchCamera}
-          className="text-white hover:bg-white/20"
+          className="text-white hover:bg-white/20 p-2"
           disabled={!isStreaming}
         >
-          <RotateCcw className="h-5 w-5" />
+          <RotateCcw className="h-4 w-4 md:h-5 md:w-5" />
         </Button>
       </div>
 
@@ -140,55 +140,86 @@ export function CameraCapture({ onImageCapture, onClose }: CameraCaptureProps) {
       <div className="flex-1 relative overflow-hidden">
         {error ? (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center text-white p-6">
-              <Camera className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg mb-2">Lỗi camera</p>
-              <p className="text-sm opacity-75">{error}</p>
-              <Button onClick={startCamera} className="mt-4 bg-green-600 hover:bg-green-700">
+            <div className="text-center text-white p-4 md:p-6 max-w-sm">
+              <Camera className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-4 opacity-50" />
+              <p className="text-base md:text-lg mb-2">Lỗi camera</p>
+              <p className="text-sm md:text-base opacity-75 mb-4">{error}</p>
+              <Button
+                onClick={startCamera}
+                className="bg-green-600 hover:bg-green-700 text-sm md:text-base"
+              >
+                <Camera className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                 Thử lại
               </Button>
             </div>
           </div>
         ) : (
           <>
-            <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              playsInline
+              muted
+            />
 
-            {/* Camera Grid Overlay */}
-            <div className="absolute inset-0 pointer-events-none">
-              {/* Rule of thirds grid */}
-              <div className="w-full h-full relative">
-                <div className="absolute top-1/3 left-0 right-0 h-px bg-white/30"></div>
-                <div className="absolute top-2/3 left-0 right-0 h-px bg-white/30"></div>
-                <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white/30"></div>
-                <div className="absolute left-2/3 top-0 bottom-0 w-px bg-white/30"></div>
-              </div>
+            {/* Camera Grid Overlay - Only show when streaming */}
+            {isStreaming && (
+              <div className="absolute inset-0 pointer-events-none">
+                {/* Rule of thirds grid */}
+                <div className="w-full h-full relative">
+                  <div className="absolute top-1/3 left-4 right-4 h-px bg-white/20"></div>
+                  <div className="absolute top-2/3 left-4 right-4 h-px bg-white/20"></div>
+                  <div className="absolute left-1/3 top-4 bottom-4 w-px bg-white/20"></div>
+                  <div className="absolute left-2/3 top-4 bottom-4 w-px bg-white/20"></div>
+                </div>
 
-              {/* Center focus indicator */}
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="w-16 h-16 border-2 border-white/50 rounded-full"></div>
+                {/* Center focus frame */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                  <div className="w-32 h-32 md:w-48 md:h-48 border-2 border-white/40 rounded-lg">
+                    <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white"></div>
+                    <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white"></div>
+                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white"></div>
+                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-white"></div>
+                  </div>
+                </div>
+
+                {/* Plant icon in center */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                  <div className="w-6 h-6 md:w-8 md:h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <Camera className="h-3 w-3 md:h-4 md:w-4 text-white/60" />
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </>
         )}
       </div>
 
       {/* Controls */}
-      <div className="bg-black/80 p-6">
-        <div className="flex items-center justify-center">
+      <div className="bg-black/80 p-4 md:p-6 safe-area-inset-bottom">
+        <div className="flex items-center justify-center mb-4">
           <Button
             onClick={capturePhoto}
             disabled={!isStreaming}
-            className="w-16 h-16 rounded-full bg-white hover:bg-gray-200 text-black border-4 border-white"
+            className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white hover:bg-gray-200 text-black border-4 border-white disabled:opacity-50 disabled:bg-gray-400"
           >
-            <Camera className="h-8 w-8" />
+            <Camera className="h-6 w-6 md:h-8 md:w-8" />
           </Button>
         </div>
 
         {/* Instructions */}
-        <div className="text-center mt-4">
-          <p className="text-white/75 text-sm">
-            Giữ thiết bị ổn định và đảm bảo cây trong khung hình
+        <div className="text-center">
+          <p className="text-white/75 text-xs md:text-sm leading-relaxed">
+            <span className="block">Giữ thiết bị ổn định và đảm bảo cây trong khung hình</span>
+            <span className="block mt-1">Nhấn vào khung trắng để chụp ảnh tự động</span>
           </p>
+          {isStreaming && (
+            <div className="flex items-center justify-center gap-4 mt-3 text-white/60 text-xs">
+              <span>Camera: {facingMode === "environment" ? "Sau" : "Trước"}</span>
+              <span>•</span>
+              <span>Chất lượng: HD</span>
+            </div>
+          )}
         </div>
       </div>
 
