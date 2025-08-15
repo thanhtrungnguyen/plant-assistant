@@ -2,18 +2,17 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  Bell,
-  Calendar,
-  CheckSquare,
-  ChevronDown,
-  Home,
-  Leaf,
-  LogOut,
-  Menu,
-  MessageSquare,
-  Search,
-  Settings,
-  User,
+    Bell,
+    Calendar,
+    CheckSquare,
+    ChevronDown,
+    Leaf,
+    LogOut,
+    Menu,
+    MessageSquare,
+    Search,
+    Settings,
+    User
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,12 +26,6 @@ interface NavigationItem {
 }
 
 const navigationItems: NavigationItem[] = [
-  {
-    href: "/dashboard",
-    label: "Dashboard",
-    icon: Home,
-    description: "Tổng quan",
-  },
   {
     href: "/chatbot",
     label: "Plant Assistant AI",
@@ -120,7 +113,7 @@ export default function AppHeader({
             )}
 
             {/* Logo */}
-            <Link href="/dashboard" className="flex items-center gap-3">
+            <Link href="/chatbot" className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
                 <Leaf className="h-6 w-6 text-green-600" />
               </div>

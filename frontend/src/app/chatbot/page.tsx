@@ -131,42 +131,46 @@ export default function ChatbotPage() {
 
   return (
     <AppLayout title="Plant Assistant AI" subtitle="Trợ lý AI chăm sóc cây trồng">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg h-[calc(100dvh-5rem)] flex flex-col">
-          <div className="p-4 md:p-6 border-b border-gray-200">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Bot className="h-6 w-6 md:h-8 md:w-8 text-green-600" />
-              Plant Care Assistant
+      <div className="max-w-4xl mx-auto h-[calc(100vh-8rem)] lg:h-[calc(100vh-12rem)]">
+        <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
+          {/* Header - Responsive */}
+          <div className="p-3 md:p-6 border-b border-gray-200 flex-shrink-0">
+            <h1 className="text-lg md:text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Bot className="h-5 w-5 md:h-8 md:w-8 text-green-600" />
+              <span className="hidden sm:inline">Plant Care Assistant</span>
+              <span className="sm:hidden">Plant AI</span>
             </h1>
-            <p className="text-gray-600 mt-1 text-sm md:text-base">
-              Hỏi tôi bất cứ điều gì về chăm sóc cây, tưới nước, ánh sáng và nhiều hơn nữa!
+            <p className="text-gray-600 mt-1 text-xs md:text-base">
+              <span className="hidden sm:inline">Hỏi tôi bất cứ điều gì về chăm sóc cây, tưới nước, ánh sáng và nhiều hơn nữa!</span>
+              <span className="sm:hidden">Trợ lý AI chăm sóc cây trồng</span>
             </p>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+          {/* Messages Area - Scrollable */}
+          <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-3 md:space-y-4 min-h-0">
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex items-start gap-3 ${
+                className={`flex items-start gap-2 md:gap-3 ${
                   message.sender === "user" ? "flex-row-reverse" : "flex-row"
                 }`}
               >
                 <div
-                  className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                  className={`flex-shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center ${
                     message.sender === "user"
                       ? "bg-blue-100 text-blue-600"
                       : "bg-green-100 text-green-600"
                   }`}
                 >
                   {message.sender === "user" ? (
-                    <User className="h-4 w-4" />
+                    <User className="h-3 w-3 md:h-4 md:w-4" />
                   ) : (
-                    <Bot className="h-4 w-4" />
+                    <Bot className="h-3 w-3 md:h-4 md:w-4" />
                   )}
                 </div>
 
                 <div
-                  className={`max-w-[85%] md:max-w-[70%] rounded-lg p-3 ${
+                  className={`max-w-[80%] md:max-w-[70%] rounded-lg p-2 md:p-3 ${
                     message.sender === "user"
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-900"
@@ -177,11 +181,11 @@ export default function ChatbotPage() {
                       <img
                         src={message.imageUrl}
                         alt="Uploaded plant"
-                        className="max-w-full h-auto rounded-lg max-h-48 object-cover"
+                        className="max-w-full h-auto rounded-lg max-h-32 md:max-h-48 object-cover"
                       />
                     </div>
                   )}
-                  <p className="text-sm">{message.content}</p>
+                  <p className="text-xs md:text-sm">{message.content}</p>
                   <p
                     className={`text-xs mt-1 ${
                       message.sender === "user" ? "text-blue-100" : "text-gray-500"
@@ -194,11 +198,11 @@ export default function ChatbotPage() {
             ))}
 
             {isLoading && (
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
-                  <Bot className="h-4 w-4" />
+              <div className="flex items-start gap-2 md:gap-3">
+                <div className="flex-shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                  <Bot className="h-3 w-3 md:h-4 md:w-4" />
                 </div>
-                <div className="bg-gray-100 rounded-lg p-3">
+                <div className="bg-gray-100 rounded-lg p-2 md:p-3">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                     <div
@@ -215,63 +219,64 @@ export default function ChatbotPage() {
             )}
           </div>
 
-          <form onSubmit={handleSendMessage} className="p-4 md:p-6 border-t border-gray-200">
+          {/* Input Form - Fixed at bottom */}
+          <form onSubmit={handleSendMessage} className="p-3 md:p-6 border-t border-gray-200 flex-shrink-0">
             {/* Image Preview */}
             {selectedImage && (
-              <div className="mb-4 relative inline-block">
+              <div className="mb-3 relative inline-block">
                 <img
                   src={selectedImage}
                   alt="Selected"
-                  className="max-w-32 h-24 object-cover rounded-lg border"
+                  className="w-20 h-16 md:w-32 md:h-24 object-cover rounded-lg border"
                 />
                 <button
                   type="button"
                   onClick={removeImage}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center text-xs hover:bg-red-600"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-2 w-2 md:h-3 md:w-3" />
                 </button>
               </div>
             )}
 
             <div className="flex gap-2">
-              <div className="flex-1 flex gap-2">
+              <div className="flex-1 flex gap-1 md:gap-2">
                 <input
                   type="text"
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder="Hỏi về chăm sóc cây hoặc gửi ảnh..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm md:text-base w-[5px]"
+                  placeholder="Hỏi về chăm sóc cây..."
+                  className="flex-1 px-3 md:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm md:text-base min-w-0"
                   disabled={isLoading}
                 />
 
-                {/* Image Upload/Camera Button */}
+                {/* Camera/Image Upload Buttons */}
                 {isMobile && typeof navigator !== "undefined" && navigator.mediaDevices && (
                   <button
                     type="button"
                     onClick={handleImageButtonClick}
-                    className="p-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    className="p-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 flex-shrink-0"
                     title="Chụp ảnh"
                   >
-                    <Camera className="h-5 w-5" />
+                    <Camera className="h-4 w-4 md:h-5 md:w-5" />
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="p-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 flex-shrink-0"
                   title="Tải ảnh lên"
                 >
-                  <ImageIcon className="h-5 w-5" />
+                  <ImageIcon className="h-4 w-4 md:h-5 md:w-5" />
                 </button>
               </div>
 
               <button
                 type="submit"
                 disabled={(!inputMessage.trim() && !selectedImage) || isLoading}
-                className="px-4 md:px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-3 md:px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-3 w-3 md:h-4 md:w-4" />
                 <span className="hidden md:inline">Gửi</span>
               </button>
             </div>

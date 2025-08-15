@@ -100,39 +100,39 @@ export function PlantAnalyzer() {
       {/* Upload Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl md:text-2xl text-center">
+          <CardTitle className="text-lg md:text-2xl text-center">
             Tải lên hình ảnh cây trồng
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {!selectedImage ? (
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-green-500 transition-colors">
-              <div className="space-y-4">
-                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-gray-400" />
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 md:p-8 text-center hover:border-green-500 transition-colors">
+              <div className="space-y-3 md:space-y-4">
+                <div className="mx-auto w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                  <Upload className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-lg font-medium text-gray-700 mb-2">
+                  <p className="text-base md:text-lg font-medium text-gray-700 mb-2">
                     Chọn hình ảnh để phân tích
                   </p>
-                  <p className="text-sm text-gray-500 mb-4">
+                  <p className="text-xs md:text-sm text-gray-500 mb-4">
                     Hỗ trợ định dạng JPG, PNG, GIF (tối đa 10MB)
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <div className="flex flex-col sm:flex-row gap-2 md:gap-3 justify-center">
                     {isMobile && typeof navigator !== "undefined" && navigator.mediaDevices ? (
                       <Button
                         onClick={() => setShowCamera(true)}
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-green-600 hover:bg-green-700 text-sm md:text-base"
                       >
-                        <Camera className="w-4 h-4 mr-2" />
+                        <Camera className="w-3 h-3 md:w-4 md:h-4 mr-2" />
                         Chụp ảnh
                       </Button>
                     ) : null}
                     <Button
                       onClick={() => fileInputRef.current?.click()}
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-green-600 hover:bg-green-700 text-sm md:text-base"
                     >
-                      <ImageIcon className="w-4 h-4 mr-2" />
+                      <ImageIcon className="w-3 h-3 md:w-4 md:h-4 mr-2" />
                       Chọn từ thiết bị
                     </Button>
                   </div>
@@ -147,23 +147,27 @@ export function PlantAnalyzer() {
               />
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               <div className="relative">
                 <img
                   src={selectedImage}
                   alt="Uploaded plant"
-                  className="w-full h-64 md:h-80 object-cover rounded-lg"
+                  className="w-full h-48 md:h-80 object-cover rounded-lg"
                 />
               </div>
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                 <Button
                   onClick={handleAnalyze}
                   disabled={isAnalyzing}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-sm md:text-base"
                 >
                   {isAnalyzing ? "Đang phân tích..." : "Phân tích bằng AI"}
                 </Button>
-                <Button onClick={handleReset} variant="outline" className="flex-1">
+                <Button
+                  onClick={handleReset}
+                  variant="outline"
+                  className="flex-1 text-sm md:text-base"
+                >
                   Chọn ảnh khác
                 </Button>
               </div>
@@ -174,14 +178,14 @@ export function PlantAnalyzer() {
       {/* Loading */}
       {isAnalyzing && (
         <Card>
-          <CardContent className="p-8 text-center">
-            <div className="space-y-4">
-              <div className="mx-auto w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+          <CardContent className="p-4 md:p-8 text-center">
+            <div className="space-y-3 md:space-y-4">
+              <div className="mx-auto w-12 h-12 md:w-16 md:h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">
                   AI đang phân tích hình ảnh...
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-sm md:text-base text-gray-600">
                   Vui lòng đợi trong giây lát để nhận kết quả chi tiết
                 </p>
               </div>
@@ -192,14 +196,14 @@ export function PlantAnalyzer() {
       {/* Error Display */}
       {error && (
         <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-4 md:p-6">
+          <CardContent className="p-3 md:p-6">
             <div className="flex items-center gap-2 text-red-700">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-red-200">
+              <div className="w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-red-200">
                 <span className="text-xs font-bold text-red-700">!</span>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">Lỗi phân tích</h4>
-                <p className="text-sm">{error.message}</p>
+                <h4 className="font-semibold mb-1 text-sm md:text-base">Lỗi phân tích</h4>
+                <p className="text-xs md:text-sm">{error.message}</p>
                 <button
                   onClick={() => setError(null)}
                   className="mt-2 text-xs underline hover:no-underline"
@@ -215,44 +219,44 @@ export function PlantAnalyzer() {
       {analysisResult && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl text-green-700">Kết quả phân tích</CardTitle>
+            <CardTitle className="text-lg md:text-xl text-green-700">Kết quả phân tích</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="space-y-4 md:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Loại cây</h4>
+                <h4 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">Loại cây</h4>
                 <p className="text-sm md:text-base text-gray-700 mb-1">
                   {analysisResult.plantType}
                 </p>
               </div>
 
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Tình trạng</h4>
+                <h4 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">Tình trạng</h4>
                 <p className="text-sm md:text-base text-gray-700">{analysisResult.condition}</p>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Chẩn đoán chi tiết</h4>
+                <h4 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">Chẩn đoán chi tiết</h4>
                 <p className="text-sm md:text-base text-gray-700">{analysisResult.diagnosis}</p>
               </div>
 
               <div>
-                <h4 className="font-semibold text-gray-900 mb-3">Kế hoạch chăm sóc</h4>
+                <h4 className="font-semibold text-gray-900 mb-3 text-sm md:text-base">Kế hoạch chăm sóc</h4>
                 <ul className="space-y-2">
                   {analysisResult.treatments.map((treatment, index) => (
                     <li key={treatment.id} className="flex items-start gap-2">
-                      <span className="text-green-600 mt-1">{index + 1}.</span>
-                      <span className="text-sm md:text-base text-gray-700">{treatment.action}</span>
+                      <span className="text-green-600 mt-1 text-sm md:text-base">{index + 1}.</span>
+                      <span className="text-xs md:text-base text-gray-700">{treatment.action}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-200">
-              <Button onClick={handleReset} variant="outline" className="w-full">
+            <div className="pt-3 md:pt-4 border-t border-gray-200">
+              <Button onClick={handleReset} variant="outline" className="w-full text-sm md:text-base">
                 Phân tích ảnh khác
               </Button>
             </div>
