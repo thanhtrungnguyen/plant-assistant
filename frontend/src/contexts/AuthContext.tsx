@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-    const checkAuth = async () => {
+  const checkAuth = async () => {
     try {
       // Check if user has valid token using the proper API helper
       const response = await api("/auth/me");
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-    const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string) => {
     try {
       const response = await api("/auth/login", {
         method: "POST",

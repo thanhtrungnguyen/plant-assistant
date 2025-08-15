@@ -16,11 +16,13 @@ router = APIRouter(prefix="/auth", tags=["auth-local"])
 
 
 @router.post("/register")
-async def register(payload: RegisterIn, response: Response, db: Session = Depends(get_db)):
+async def register(
+    payload: RegisterIn, response: Response, db: Session = Depends(get_db)
+):
     logger.info(f"Registration attempt for email: {payload.email}")
     try:
-        user = await to_thread.run_sync(register_email_password,
-            db, payload.email, payload.password, payload.name
+        user = await to_thread.run_sync(
+            register_email_password, db, payload.email, payload.password, payload.name
         )
         logger.info(f"User registered successfully with ID: {user.id}")
     except ValueError as e:
@@ -40,7 +42,9 @@ async def register(payload: RegisterIn, response: Response, db: Session = Depend
 @router.post("/login")
 async def login(payload: LoginIn, response: Response, db: Session = Depends(get_db)):
     logger.info(f"Login attempt for email: {payload.email}")
-    user = await to_thread.run_sync(login_email_password, db, payload.email, payload.password)
+    user = await to_thread.run_sync(
+        login_email_password, db, payload.email, payload.password
+    )
     if not user:
         logger.warning(f"Login failed for {payload.email}: Invalid credentials")
         raise HTTPException(401, "Invalid credentials")

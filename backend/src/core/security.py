@@ -31,7 +31,9 @@ def set_auth_cookies(response: Response, access: str, refresh: str):
         httponly=True,
         secure=settings.COOKIE_SECURE,
         samesite=settings.COOKIE_SAMESITE,
-        domain=settings.COOKIE_DOMAIN if settings.COOKIE_DOMAIN != "localhost" else None,
+        domain=settings.COOKIE_DOMAIN
+        if settings.COOKIE_DOMAIN != "localhost"
+        else None,
         path="/",
     )
     response.set_cookie(
@@ -52,8 +54,10 @@ def clear_auth_cookies(response: Response):
     for name in ("access_token", "refresh_token", settings.CSRF_COOKIE_NAME):
         response.delete_cookie(
             name,
-            domain=settings.COOKIE_DOMAIN if settings.COOKIE_DOMAIN != "localhost" else None,
-            path="/"
+            domain=settings.COOKIE_DOMAIN
+            if settings.COOKIE_DOMAIN != "localhost"
+            else None,
+            path="/",
         )
 
 
@@ -91,7 +95,9 @@ def set_csrf_cookie(response: Response, token: str):
         httponly=False,
         secure=settings.COOKIE_SECURE,
         samesite=settings.COOKIE_SAMESITE,  # type: ignore
-        domain=settings.COOKIE_DOMAIN if settings.COOKIE_DOMAIN != "localhost" else None,
+        domain=settings.COOKIE_DOMAIN
+        if settings.COOKIE_DOMAIN != "localhost"
+        else None,
         path="/",
         max_age=7 * 24 * 3600,
     )

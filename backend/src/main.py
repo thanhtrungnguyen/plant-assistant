@@ -55,7 +55,7 @@ async def log_requests(request: Request, call_next):
 app.add_middleware(
     SessionMiddleware,
     secret_key=settings.ACCESS_SECRET_KEY,
-    max_age=3600  # 1 hour session
+    max_age=3600,  # 1 hour session
 )
 
 app.add_middleware(

@@ -60,5 +60,5 @@ def me(request: Request, db: Session = Depends(get_db)):
         "email": user.email,
         "name": user.name,
         "email_verified": user.email_verified,
-        "is_active": user.is_active
+        "is_active": user.is_active,
     }

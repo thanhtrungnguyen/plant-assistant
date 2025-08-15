@@ -11,11 +11,11 @@ import { useEffect, useRef, useState } from "react";
 // Client-side timestamp component to prevent hydration mismatch
 function ClientTimestamp({ timestamp, className }: { timestamp: Date; className?: string }) {
   const [formattedTime, setFormattedTime] = useState<string>("");
-  
+
   useEffect(() => {
     setFormattedTime(timestamp.toLocaleTimeString());
   }, [timestamp]);
-  
+
   return <span className={className}>{formattedTime}</span>;
 }
 
@@ -25,7 +25,7 @@ interface Message {
   sender: "user" | "bot";
   timestamp: Date;
   imageUrl?: string;
-};
+}
 
 export default function ChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -221,7 +221,7 @@ export default function ChatbotPage() {
                     </div>
                   )}
                   <p className="text-xs md:text-sm">{message.content}</p>
-                  <ClientTimestamp 
+                  <ClientTimestamp
                     timestamp={message.timestamp}
                     className={`text-xs mt-1 ${
                       message.sender === "user" ? "text-blue-100" : "text-gray-500"

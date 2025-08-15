@@ -39,7 +39,9 @@ async def callback_google(
     email_verified = bool(info.get("email_verified"))
     name = info.get("name")
 
-    logger.info(f"[OAuth] Google callback - sub: {sub}, email: {email}, verified: {email_verified}, name: {name}")
+    logger.info(
+        f"[OAuth] Google callback - sub: {sub}, email: {email}, verified: {email_verified}, name: {name}"
+    )
 
     if not sub:
         logger.error("[OAuth] No provider subject from Google")
@@ -57,12 +59,16 @@ async def callback_google(
                 409, "This Google account is already linked to another user"
             )
         if not existing:
-            await to_thread.run_sync(link_oauth, db, current_user_id, "google", sub, email or None)
+            await to_thread.run_sync(
+                link_oauth, db, current_user_id, "google", sub, email or None
+            )
         return RedirectResponse(url=f"{settings.WEB_APP_URL}/settings/connections")
 
     # Sign-in or create+link
     try:
-        user = await to_thread.run_sync(signin_or_link_google, db, sub, email or None, email_verified, name)
+        user = await to_thread.run_sync(
+            signin_or_link_google, db, sub, email or None, email_verified, name
+        )
     except ValueError as e:
         raise HTTPException(409, str(e))
 

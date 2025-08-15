@@ -6,10 +6,9 @@ for health checks and standardized generation parameters.
 
 from __future__ import annotations
 
-from email.mime import base
 from typing import Any, Dict, Optional
 
-from openai import OpenAI, OpenAIError, api_key, base_url  # type: ignore
+from openai import OpenAI, OpenAIError
 from src.core.config import settings
 from src.core.logging import get_logger
 
