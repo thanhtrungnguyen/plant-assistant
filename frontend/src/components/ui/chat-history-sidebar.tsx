@@ -34,11 +34,11 @@ export function ChatHistorySidebar({ onLoadHistory }: ChatHistorySidebarProps) {
   const loadSessionMessages = (sessionId: number) => {
     if (!serverHistory) return;
 
-    const session = serverHistory.sessions.find(s => s.id === sessionId);
+    const session = serverHistory.sessions.find((s) => s.id === sessionId);
     if (!session) return;
 
     // Convert session messages to local format
-    const messages = session.messages.map(msg => ({
+    const messages = session.messages.map((msg) => ({
       id: msg.id.toString(),
       content: msg.content_text,
       sender: msg.role === "user" ? "user" : "bot",
@@ -50,7 +50,8 @@ export function ChatHistorySidebar({ onLoadHistory }: ChatHistorySidebarProps) {
     // Add welcome message at the beginning
     const welcomeMessage = {
       id: "welcome",
-      content: "Xin chào! Tôi là trợ lý AI chuyên về cây trồng. Bạn có thể gửi hình ảnh cây của mình để tôi phân tích hoặc đặt câu hỏi về chăm sóc cây trồng.",
+      content:
+        "Xin chào! Tôi là trợ lý AI chuyên về cây trồng. Bạn có thể gửi hình ảnh cây của mình để tôi phân tích hoặc đặt câu hỏi về chăm sóc cây trồng.",
       sender: "bot" as const,
       timestamp: new Date(),
       type: "text" as const,
@@ -63,7 +64,7 @@ export function ChatHistorySidebar({ onLoadHistory }: ChatHistorySidebarProps) {
   const getSessionPreview = (session: any) => {
     const firstUserMessage = session.messages.find((msg: any) => msg.role === "user");
     if (firstUserMessage) {
-      return firstUserMessage.content_text.length > 40 
+      return firstUserMessage.content_text.length > 40
         ? firstUserMessage.content_text.substring(0, 40) + "..."
         : firstUserMessage.content_text;
     }
@@ -76,9 +77,7 @@ export function ChatHistorySidebar({ onLoadHistory }: ChatHistorySidebarProps) {
       <div className="bg-gray-50 border-r border-gray-200 p-3 w-80 flex-shrink-0">
         <div className="flex items-center gap-2 text-gray-600 text-sm">
           <MessageCircle className="h-4 w-4" />
-          <span>
-            {isLoadingHistory ? "Đang tải lịch sử..." : "Chưa có lịch sử"}
-          </span>
+          <span>{isLoadingHistory ? "Đang tải lịch sử..." : "Chưa có lịch sử"}</span>
         </div>
       </div>
     );
@@ -94,7 +93,9 @@ export function ChatHistorySidebar({ onLoadHistory }: ChatHistorySidebarProps) {
         >
           <div className="flex items-center gap-2">
             <MessageCircle className="h-4 w-4 text-gray-600" />
-            <span className="font-medium text-gray-900">Lịch sử ({serverHistory.total_sessions})</span>
+            <span className="font-medium text-gray-900">
+              Lịch sử ({serverHistory.total_sessions})
+            </span>
           </div>
           {isExpanded ? (
             <ChevronUp className="h-4 w-4 text-gray-500" />
@@ -115,9 +116,7 @@ export function ChatHistorySidebar({ onLoadHistory }: ChatHistorySidebarProps) {
               }`}
               onClick={() => loadSessionMessages(session.id)}
             >
-              <p className="text-sm font-medium text-gray-900 mb-1">
-                {getSessionPreview(session)}
-              </p>
+              <p className="text-sm font-medium text-gray-900 mb-1">{getSessionPreview(session)}</p>
               <div className="flex items-center gap-3 text-xs text-gray-500">
                 {session.started_at && (
                   <div className="flex items-center gap-1">
@@ -137,9 +136,9 @@ export function ChatHistorySidebar({ onLoadHistory }: ChatHistorySidebarProps) {
 
       {/* Footer */}
       <div className="p-3 border-t border-gray-200">
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => fetchServerHistory()}
           disabled={isLoadingHistory}
           className="w-full"
