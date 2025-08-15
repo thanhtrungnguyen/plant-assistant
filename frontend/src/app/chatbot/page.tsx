@@ -2,8 +2,10 @@
 
 import AppLayout from "@/components/layout/AppLayout";
 import { CameraCapture } from "@/components/ui/camera-capture";
+import { ChatHistoryPanel } from "@/components/ui/chat-history-panel";
+import { DemoHistoryButton } from "@/components/ui/demo-history-sidebar";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { Bot, Camera, Image as ImageIcon, Send, User, X } from "lucide-react";
+import { Bot, Camera, History, Image as ImageIcon, Send, User, X } from "lucide-react";
 import { useRef, useState } from "react";
 
 type Message = {
@@ -28,6 +30,7 @@ export default function ChatbotPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [showMobileHistory, setShowMobileHistory] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
 
@@ -81,6 +84,10 @@ export default function ChatbotPage() {
     setShowCamera(false);
   };
 
+  const handleLoadHistory = (historyMessages: Message[]) => {
+    setMessages(historyMessages);
+  };
+
   const handleImageButtonClick = () => {
     if (isMobile && typeof navigator !== "undefined" && navigator.mediaDevices) {
       setShowCamera(true);
@@ -131,19 +138,37 @@ export default function ChatbotPage() {
 
   return (
     <AppLayout title="Plant Assistant AI" subtitle="Trợ lý AI chăm sóc cây trồng">
-      <div className="max-w-4xl mx-auto h-[calc(100vh-8rem)] lg:h-[calc(100vh-12rem)]">
-        <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
+      <div className="flex h-[calc(100vh-8rem)] lg:h-[calc(100vh-12rem)]">
+        {/* Chat History Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block">
+          <DemoHistoryButton onLoadHistory={handleLoadHistory} />
+        </div>
+
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col bg-white rounded-lg shadow-lg">
           {/* Header - Responsive */}
           <div className="p-3 md:p-6 border-b border-gray-200 flex-shrink-0">
-            <h1 className="text-lg md:text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Bot className="h-5 w-5 md:h-8 md:w-8 text-green-600" />
-              <span className="hidden sm:inline">Plant Care Assistant</span>
-              <span className="sm:hidden">Plant AI</span>
-            </h1>
-            <p className="text-gray-600 mt-1 text-xs md:text-base">
-              <span className="hidden sm:inline">Hỏi tôi bất cứ điều gì về chăm sóc cây, tưới nước, ánh sáng và nhiều hơn nữa!</span>
-              <span className="sm:hidden">Trợ lý AI chăm sóc cây trồng</span>
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-lg md:text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <Bot className="h-5 w-5 md:h-8 md:w-8 text-green-600" />
+                  <span className="hidden sm:inline">Plant Care Assistant</span>
+                  <span className="sm:hidden">Plant AI</span>
+                </h1>
+                <p className="text-gray-600 mt-1 text-xs md:text-base">
+                  <span className="hidden sm:inline">Hỏi tôi bất cứ điều gì về chăm sóc cây, tưới nước, ánh sáng và nhiều hơn nữa!</span>
+                  <span className="sm:hidden">Trợ lý AI chăm sóc cây trồng</span>
+                </p>
+              </div>
+              {/* History button for mobile */}
+              <button
+                onClick={() => setShowMobileHistory(true)}
+                className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Xem lịch sử trò chuyện"
+              >
+                <History className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
           {/* Messages Area - Scrollable */}
@@ -297,6 +322,18 @@ export default function ChatbotPage() {
           <CameraCapture
             onImageCapture={handleCameraCapture}
             onClose={() => setShowCamera(false)}
+          />
+        )}
+
+        {/* Mobile History Panel */}
+        {showMobileHistory && (
+          <ChatHistoryPanel
+            isOpen={showMobileHistory}
+            onClose={() => setShowMobileHistory(false)}
+            onLoadHistory={(messages) => {
+              handleLoadHistory(messages);
+              setShowMobileHistory(false);
+            }}
           />
         )}
       </div>
