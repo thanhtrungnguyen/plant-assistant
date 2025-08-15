@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, MapPin, Mic, MicOff, Play, Square, Trash2, Volume2 } from "lucide-react";
-import useGeneratePostcast from "../../hooks/useGeneratePostcast";
+import useGeneratePodcast from "../../hooks/useGeneratePodcast";
 
 export default function PodcastPage() {
-  const { audioUrl, loading, error, generate, download, cancel, clear } = useGeneratePostcast();
+  const { audioUrl, loading, error, generate, download, cancel, clear } = useGeneratePodcast();
 
   const onGenerate = async () => {
     try {
@@ -152,8 +152,8 @@ export default function PodcastPage() {
                     src={audioUrl}
                     className="w-full h-12 rounded-lg"
                     style={{
-                      backgroundColor: '#f9fafb',
-                      border: '1px solid #e5e7eb'
+                      backgroundColor: "#f9fafb",
+                      border: "1px solid #e5e7eb",
                     }}
                   />
 
@@ -163,12 +163,7 @@ export default function PodcastPage() {
                       variant="outline"
                       className="border-green-300 text-green-700 hover:bg-green-50"
                     >
-                      <a
-                        href={audioUrl}
-                        download="podcast.wav"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
+                      <a href={audioUrl} download="podcast.wav" target="_blank" rel="noreferrer">
                         <Download className="h-4 w-4 mr-2" />
                         Tải xuống file
                       </a>
@@ -194,11 +189,10 @@ export default function PodcastPage() {
           <CardContent className="pt-6">
             <div className="text-center text-sm text-gray-600">
               <p className="mb-2">
-                <strong>Mẹo:</strong> Podcast được tạo dựa trên vị trí hiện tại và thông tin môi trường xung quanh
+                <strong>Mẹo:</strong> Podcast được tạo dựa trên vị trí hiện tại và thông tin môi
+                trường xung quanh
               </p>
-              <p>
-                Đảm bảo bạn đã cấp quyền truy cập vị trí cho trình duyệt để có kết quả tốt nhất
-              </p>
+              <p>Đảm bảo bạn đã cấp quyền truy cập vị trí cho trình duyệt để có kết quả tốt nhất</p>
             </div>
           </CardContent>
         </Card>

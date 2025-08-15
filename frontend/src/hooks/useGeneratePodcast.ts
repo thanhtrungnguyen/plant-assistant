@@ -13,7 +13,7 @@ export type GeneratePodcastInput = {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000";
 
-export async function requestPostcast(input: GeneratePodcastInput): Promise<Blob> {
+export async function requestPodcast(input: GeneratePodcastInput): Promise<Blob> {
   const res = await fetch(`${API_BASE}/podcast/generate_podcast`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -40,7 +40,7 @@ async function getCurrentLatLng(timeoutMs = 5000): Promise<LatLng | null> {
   });
 }
 
-export default function useGeneratePostcast() {
+export default function useGeneratePodcast() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,7 +89,7 @@ export default function useGeneratePostcast() {
           location: loc ?? undefined, // nếu không lấy được thì backend sẽ dùng address mặc định
         };
 
-        const blob = await requestPostcast(payload);
+        const blob = await requestPodcast(payload);
         const url = URL.createObjectURL(blob);
         if (audioUrl) URL.revokeObjectURL(audioUrl);
         setAudioUrl(url);
