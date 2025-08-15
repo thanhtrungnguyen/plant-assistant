@@ -25,7 +25,7 @@ def get_openai_client() -> OpenAI | None:
     if not settings.OPENAI_API_KEY:
         logger.warning("OpenAI not configured: missing OPENAI_API_KEY")
         return None
-    _client = OpenAI(api_key=settings.OPENAI_API_KEY)
+    _client = OpenAI(base_url=settings.OPENAI_BASE_URL, api_key=settings.OPENAI_API_KEY)
     return _client
 
 

@@ -155,12 +155,7 @@ export function CameraCapture({ onImageCapture, onClose }: CameraCaptureProps) {
           </div>
         ) : (
           <>
-            <video
-              ref={videoRef}
-              className="w-full h-full object-cover"
-              playsInline
-              muted
-            />
+            <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
 
             {/* Camera Grid Overlay - Only show when streaming */}
             {isStreaming && (

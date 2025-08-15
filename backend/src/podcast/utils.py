@@ -45,7 +45,7 @@ client = OpenAI(
 
 def generate_podcast(name: str, weather: str, plants: str) -> str:
     prompt = (
-        f"Hãy viết một đoạn podcast ngắn cho {name}, bao gồm:\n"
+        f"Hãy viết một đoạn podcast vòng 1 phút cho người dùng tên là {name}, bao gồm:\n"
         f"- Thời tiết hiện tại: {weather}\n"
         f"- Danh sách cây trồng: {plants}\n"
         f"- Gợi ý việc nên làm trong ngày để chăm sóc cây trồng.\n"
@@ -56,7 +56,7 @@ def generate_podcast(name: str, weather: str, plants: str) -> str:
         messages=[
             {
                 "role": "system",
-                "content": "Bạn là một chuyên gia podcast về chăm sóc cây trồng, hãy tạo một podcast thú vị và hữu ích.",
+                "content": "Bạn là một chuyên gia về chăm sóc cây trồng",
             },
             {"role": "user", "content": prompt},
         ],
@@ -81,7 +81,7 @@ def text_to_wav_bytes(text: str) -> bytes:
 def generate_dummy_data(user_id):
     plant_names = ["Cây vạn niên thanh", "Cây lưỡi hổ", "Cây hạnh phúc"]
     plants_str = ", ".join(plant_names)
-    return UserData(address="Hà Nội", plants=plants_str, userName="Hoa")
+    return UserData(address="Hà Nội", plants=plants_str, userName="Minh")
 
     # def viet_tts_synthesize(text: str) -> bytes:
     seq = np.array([text_to_sequence(text)], dtype=np.int64)  # noqa: F821
