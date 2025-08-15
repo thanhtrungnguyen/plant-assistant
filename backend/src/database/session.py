@@ -9,8 +9,9 @@ from sqlalchemy.orm import sessionmaker, Session
 from src.core.config import settings
 
 # Example URLs:
-# postgresql+psycopg://user:pass@host:5432/dbname
-# For local dev, you can use sqlite+aiosqlite or similar, but keep Postgres in prod.
+# postgresql+psycopg://user:pass@host:5432/dbname (for psycopg 3 - sync mode)
+# postgresql+psycopg2://user:pass@host:5432/dbname (for psycopg2 - if using legacy driver)
+# For local dev, you can use sqlite but keep Postgres in prod.
 
 engine = create_engine(
     settings.DATABASE_URL,
