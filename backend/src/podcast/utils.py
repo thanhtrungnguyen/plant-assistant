@@ -1,4 +1,6 @@
 from openai import OpenAI
+from typing import Optional
+
 import requests
 from ..core.config import settings
 from fastapi.routing import APIRoute
@@ -6,15 +8,9 @@ import torch
 from transformers import VitsModel, AutoTokenizer
 import io
 import torchaudio
-
-# from app.services.viet_tts_utils.text import text_to_sequence
-# from app.services.viet_tts_utils.vocoder import Vocoder
-import numpy as np
-import soundfile as sf
+import edge_tts
 from .schemas import UserData
-
-# am_sess = onnxruntime.InferenceSession("models/am_onnx/am_onnx.onnx")
-# vocoder = Vocoder("models/mb_melgan.onnx")
+from pydub import AudioSegment
 
 model = VitsModel.from_pretrained("facebook/mms-tts-vie")
 tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-vie")
@@ -43,25 +39,35 @@ client = OpenAI(
 )
 
 
-def generate_podcast(name: str, weather: str, plants: str) -> str:
+def generate_podcast(name: str, plants: str, weather: Optional[str] = None) -> str:
+    if weather:
+        weather_part = f"- Thời tiết hôm nay: {weather}\n"
+    else:
+        weather_part = "- Không có thông tin thời tiết. Chỉ tập trung vào lời khuyên chăm sóc cây theo mùa hoặc chung chung.\n"
+
     prompt = (
-        f"Hãy viết một đoạn podcast vòng 1 phút cho người dùng tên là {name}, bao gồm:\n"
-        f"- Thời tiết hiện tại: {weather}\n"
+        f"Hãy viết một đoạn podcast ngắn (khoảng 30 giây) dành cho {name}, bao gồm:\n"
+        f"{weather_part}"
         f"- Danh sách cây trồng: {plants}\n"
-        f"- Gợi ý việc nên làm trong ngày để chăm sóc cây trồng.\n"
-        f"Văn phong truyền cảm hứng, thân thiện, khuyến khích người nghe tương tác với cây cối."
+        f"- Gợi ý những việc nên làm trong ngày để chăm sóc cây.\n"
+        f"Văn phong nên truyền cảm hứng, nhẹ nhàng, gần gũi và khiến người nghe muốn kết nối với thiên nhiên và cây cối."
     )
+
     response = client.chat.completions.create(
         model=settings.OPENAI_MODEL,
         messages=[
             {
                 "role": "system",
-                "content": "Bạn là một chuyên gia về chăm sóc cây trồng",
+                "content": (
+                    "Bạn là một chuyên gia podcast về chăm sóc cây trồng. "
+                    "Hãy tạo ra một đoạn podcast ngắn, truyền cảm hứng và hữu ích cho người yêu cây."
+                ),
             },
             {"role": "user", "content": prompt},
         ],
     )
-    return response.choices[0].message.content  # type: ignore
+
+    return response.choices[0].message.content
 
 
 def text_to_wav_bytes(text: str) -> bytes:
@@ -81,24 +87,23 @@ def text_to_wav_bytes(text: str) -> bytes:
 def generate_dummy_data(user_id):
     plant_names = ["Cây vạn niên thanh", "Cây lưỡi hổ", "Cây hạnh phúc"]
     plants_str = ", ".join(plant_names)
-    return UserData(address="Hà Nội", plants=plants_str, userName="Minh")
+    return UserData(address="Hà Nội", plants=plants_str, userName="Hoa")
 
-    # def viet_tts_synthesize(text: str) -> bytes:
-    seq = np.array([text_to_sequence(text)], dtype=np.int64)  # noqa: F821
-    len_seq = np.array([len(seq[0])], dtype=np.int64)
 
-    # Acoustic model (AM)
-    ort_inputs = {"input_ids": seq, "input_lengths": len_seq}
-    ort_outs = am_sess.run(None, ort_inputs)  # noqa: F821
-    mel = ort_outs[0]
+async def synthesize_edge_tts(text: str, voice: str = "vi-VN-HoaiMyNeural") -> bytes:
+    buffer_mp3 = io.BytesIO()
 
-    # Vocoder
-    wav = vocoder.infer(mel)[0]  # noqa: F821
+    # Gọi TTS và stream vào BytesIO
+    communicate = edge_tts.Communicate(text=text, voice=voice)
+    async for chunk in communicate.stream():
+        if chunk["type"] == "audio":
+            buffer_mp3.write(chunk["data"])
 
-    # Convert to bytes
-    from io import BytesIO
+    # Đọc MP3 từ buffer và chuyển sang WAV
+    buffer_mp3.seek(0)
+    audio = AudioSegment.from_file(buffer_mp3, format="mp3")
 
-    buffer = BytesIO()
-    sf.write(buffer, wav, samplerate=22050, format="WAV")
-    buffer.seek(0)
-    return buffer.read()
+    buffer_wav = io.BytesIO()
+    audio.export(buffer_wav, format="wav")
+    buffer_wav.seek(0)
+    return buffer_wav.read()
