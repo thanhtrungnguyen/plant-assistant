@@ -53,10 +53,10 @@ const navigationItems: NavigationItem[] = [
     description: "AI phân tích",
   },
   {
-    href: "/postcast",
-    label: "Postcast",
+    href: "/podcast",
+    label: "Podcast",
     icon: Bell,
-    description: "Postcast hôm nay",
+    description: "Podcast hôm nay",
   },
 ];
 

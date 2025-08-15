@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, MapPin, Mic, MicOff, Play, Square, Trash2, Volume2 } from "lucide-react";
-import useGeneratePostcast from "../../hooks/useGeneratePostcast";
+import useGeneratePodcast from "../../hooks/useGeneratePodcast";
 
 export default function PodcastPage() {
-  const { audioUrl, loading, error, generate, download, cancel, clear } = useGeneratePostcast();
+  const { audioUrl, loading, error, generate, download, cancel, clear } = useGeneratePodcast();
 
   const onGenerate = async () => {
     try {
