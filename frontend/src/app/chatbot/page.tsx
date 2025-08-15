@@ -148,27 +148,17 @@ export default function ChatbotPage() {
         <div className="flex-1 flex flex-col bg-white rounded-lg shadow-lg">
           {/* Header - Responsive */}
           <div className="p-3 md:p-6 border-b border-gray-200 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-lg md:text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <Bot className="h-5 w-5 md:h-8 md:w-8 text-green-600" />
-                  <span className="hidden sm:inline">Plant Care Assistant</span>
-                  <span className="sm:hidden">Plant AI</span>
-                </h1>
-                <p className="text-gray-600 mt-1 text-xs md:text-base">
-                  <span className="hidden sm:inline">Hỏi tôi bất cứ điều gì về chăm sóc cây, tưới nước, ánh sáng và nhiều hơn nữa!</span>
-                  <span className="sm:hidden">Trợ lý AI chăm sóc cây trồng</span>
-                </p>
-              </div>
-              {/* History button for mobile */}
-              <button
-                onClick={() => setShowMobileHistory(true)}
-                className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Xem lịch sử trò chuyện"
-              >
-                <History className="h-5 w-5" />
-              </button>
-            </div>
+            <h1 className="text-lg md:text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Bot className="h-5 w-5 md:h-8 md:w-8 text-green-600" />
+              <span className="hidden sm:inline">Plant Care Assistant</span>
+              <span className="sm:hidden">Plant AI</span>
+            </h1>
+            <p className="text-gray-600 mt-1 text-xs md:text-base">
+              <span className="hidden sm:inline">
+                Hỏi tôi bất cứ điều gì về chăm sóc cây, tưới nước, ánh sáng và nhiều hơn nữa!
+              </span>
+              <span className="sm:hidden">Trợ lý AI chăm sóc cây trồng</span>
+            </p>
           </div>
 
           {/* Messages Area - Scrollable */}
@@ -245,7 +235,10 @@ export default function ChatbotPage() {
           </div>
 
           {/* Input Form - Fixed at bottom */}
-          <form onSubmit={handleSendMessage} className="p-3 md:p-6 border-t border-gray-200 flex-shrink-0">
+          <form
+            onSubmit={handleSendMessage}
+            className="p-3 md:p-6 border-t border-gray-200 flex-shrink-0"
+          >
             {/* Image Preview */}
             {selectedImage && (
               <div className="mb-3 relative inline-block">
