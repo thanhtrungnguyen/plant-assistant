@@ -52,7 +52,7 @@ def generate_podcast(name: str, weather: str, plants: str) -> str:
         f"Văn phong truyền cảm hứng, thân thiện, khuyến khích người nghe tương tác với cây cối."
     )
     response = client.chat.completions.create(
-        model="GPT-4o",
+        model=settings.OPENAI_MODEL,
         messages=[
             {
                 "role": "system",
