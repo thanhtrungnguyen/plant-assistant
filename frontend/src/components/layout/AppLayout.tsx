@@ -3,18 +3,18 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
-    Bell,
-    Calendar,
-    CheckSquare,
-    ChevronDown,
-    Leaf,
-    LogOut,
-    Menu,
-    MessageSquare,
-    Search,
-    Settings,
-    User,
-    X
+  Bell,
+  Calendar,
+  CheckSquare,
+  ChevronDown,
+  Leaf,
+  LogOut,
+  Menu,
+  MessageSquare,
+  Search,
+  Settings,
+  User,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -51,6 +51,12 @@ const navigationItems: NavigationItem[] = [
     label: "Phân tích ảnh",
     icon: Search,
     description: "AI phân tích",
+  },
+  {
+    href: "/postcast",
+    label: "Postcast",
+    icon: Bell,
+    description: "Postcast hôm nay",
   },
 ];
 

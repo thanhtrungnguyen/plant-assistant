@@ -231,19 +231,25 @@ export function PlantAnalyzer() {
               </div>
 
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">Tình trạng</h4>
+                <h4 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">
+                  Tình trạng
+                </h4>
                 <p className="text-sm md:text-base text-gray-700">{analysisResult.condition}</p>
               </div>
             </div>
 
             <div className="space-y-3 md:space-y-4">
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">Chẩn đoán chi tiết</h4>
+                <h4 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">
+                  Chẩn đoán chi tiết
+                </h4>
                 <p className="text-sm md:text-base text-gray-700">{analysisResult.diagnosis}</p>
               </div>
 
               <div>
-                <h4 className="font-semibold text-gray-900 mb-3 text-sm md:text-base">Kế hoạch chăm sóc</h4>
+                <h4 className="font-semibold text-gray-900 mb-3 text-sm md:text-base">
+                  Kế hoạch chăm sóc
+                </h4>
                 <ul className="space-y-2">
                   {analysisResult.treatments.map((treatment, index) => (
                     <li key={treatment.id} className="flex items-start gap-2">
@@ -256,7 +262,11 @@ export function PlantAnalyzer() {
             </div>
 
             <div className="pt-3 md:pt-4 border-t border-gray-200">
-              <Button onClick={handleReset} variant="outline" className="w-full text-sm md:text-base">
+              <Button
+                onClick={handleReset}
+                variant="outline"
+                className="w-full text-sm md:text-base"
+              >
                 Phân tích ảnh khác
               </Button>
             </div>

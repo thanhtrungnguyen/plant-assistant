@@ -141,7 +141,9 @@ export default function ChatbotPage() {
               <span className="sm:hidden">Plant AI</span>
             </h1>
             <p className="text-gray-600 mt-1 text-xs md:text-base">
-              <span className="hidden sm:inline">Hỏi tôi bất cứ điều gì về chăm sóc cây, tưới nước, ánh sáng và nhiều hơn nữa!</span>
+              <span className="hidden sm:inline">
+                Hỏi tôi bất cứ điều gì về chăm sóc cây, tưới nước, ánh sáng và nhiều hơn nữa!
+              </span>
               <span className="sm:hidden">Trợ lý AI chăm sóc cây trồng</span>
             </p>
           </div>
@@ -220,7 +222,10 @@ export default function ChatbotPage() {
           </div>
 
           {/* Input Form - Fixed at bottom */}
-          <form onSubmit={handleSendMessage} className="p-3 md:p-6 border-t border-gray-200 flex-shrink-0">
+          <form
+            onSubmit={handleSendMessage}
+            className="p-3 md:p-6 border-t border-gray-200 flex-shrink-0"
+          >
             {/* Image Preview */}
             {selectedImage && (
               <div className="mb-3 relative inline-block">
