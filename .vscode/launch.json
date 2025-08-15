@@ -7,10 +7,14 @@
       "request": "launch",
       "program": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
       "args": [
-        "-m", "fastapi", "dev", 
-        "src/app/main.py", 
-        "--host", "0.0.0.0", 
-        "--port", "5000"
+        "-m",
+        "fastapi",
+        "dev",
+        "src/app/main.py",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "5000"
       ],
       "cwd": "${workspaceFolder}/backend",
       "console": "integratedTerminal",
@@ -36,10 +40,7 @@
       "type": "debugpy",
       "request": "launch",
       "module": "pytest",
-      "args": [
-        "tests/",
-        "-v"
-      ],
+      "args": ["tests/", "-v"],
       "cwd": "${workspaceFolder}/backend",
       "console": "integratedTerminal",
       "justMyCode": false,
@@ -76,10 +77,7 @@
   "compounds": [
     {
       "name": "Launch Full Stack",
-      "configurations": [
-        "FastAPI Backend",
-        "Next.js Frontend"
-      ],
+      "configurations": ["FastAPI Backend", "Next.js Frontend"],
       "stopAll": true
     }
   ]

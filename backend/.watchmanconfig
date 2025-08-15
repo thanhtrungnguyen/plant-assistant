@@ -1,9 +1,3 @@
 {
-  "ignore": [
-    "logs/",
-    "*.log",
-    ".venv/",
-    "__pycache__/",
-    "*.pyc"
-  ]
+  "ignore": ["logs/", "*.log", ".venv/", "__pycache__/", "*.pyc"]
 }

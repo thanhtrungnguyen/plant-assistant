@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mcp-postgres-server"],
+      "env": {
+        "PG_HOST": "localhost",
+        "PG_PORT": "5432",
+        "PG_USER": "postgres",
+        "PG_PASSWORD": "password",
+        "PG_DATABASE": "plant_assistant"
+      }
+    }
+  }
+}

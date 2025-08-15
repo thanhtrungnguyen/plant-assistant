@@ -52,20 +52,20 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link href="/dashboard">
+              <Link href="/chatbot">
                 <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white shadow-lg">
                   <Leaf className="w-5 h-5 mr-2" />
                   Bắt đầu ngay
                 </Button>
               </Link>
-              <Link href="/chatbot">
+              <Link href="/analyze">
                 <Button
                   size="lg"
                   variant="outline"
                   className="border-green-500 text-green-600 hover:bg-green-50"
                 >
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  Dùng thử AI Assistant
+                  <Search className="w-5 h-5 mr-2" />
+                  Phân tích ảnh cây
                 </Button>
               </Link>
             </div>

@@ -56,7 +56,15 @@ repos:
       - id: generate-openapi-schema
         name: generate OpenAPI schema
         entry: uv
-        args: ["run", "--directory", "backend/src", "python", "-m", "commands.generate_openapi_schema"]
+        args:
+          [
+            "run",
+            "--directory",
+            "backend/src",
+            "python",
+            "-m",
+            "commands.generate_openapi_schema",
+          ]
         language: system
         # Only run OpenAPI schema generation if schemas.py, main.py or package version have changed:
         files: (main\.py$|schemas\.py$|pyproject\.toml)
