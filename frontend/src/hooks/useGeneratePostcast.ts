@@ -1,14 +1,30 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type LatLng = { latitude: number; longitude: number };
+type LatLng = { 
+  latitude: number; 
+  longitude: number;
+  accuracy: number;
+  altitude?: number | null;
+  altitudeAccuracy?: number | null;
+  heading?: number | null;
+  speed?: number | null;
+  timestamp: number;
+};
 
 export type GeneratePodcastInput = {
   user_id: string;
   location?: {
     latitude: number;
     longitude: number;
+    accuracy: number;
+    altitude?: number | null;
+    altitudeAccuracy?: number | null;
+    heading?: number | null;
+    speed?: number | null;
+    timestamp: number;
   };
+  voice_type?: "female" | "male" | "female_soft" | "female_energetic";
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000";
@@ -33,7 +49,16 @@ async function getCurrentLatLng(timeoutMs = 5000): Promise<LatLng | null> {
   if (typeof navigator === "undefined" || !navigator.geolocation) return null;
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
-      (p) => resolve({ latitude: p.coords.latitude, longitude: p.coords.longitude }),
+      (p) => resolve({ 
+        latitude: p.coords.latitude, 
+        longitude: p.coords.longitude,
+        accuracy: p.coords.accuracy,
+        altitude: p.coords.altitude,
+        altitudeAccuracy: p.coords.altitudeAccuracy,
+        heading: p.coords.heading,
+        speed: p.coords.speed,
+        timestamp: p.timestamp
+      }),
       () => resolve(null),
       { timeout: timeoutMs },
     );
@@ -75,7 +100,7 @@ export default function useGeneratePostcast() {
   );
 
   const generate = useCallback(
-    async (userId: string, geoTimeoutMs = 5000) => {
+    async (userId: string, voiceType: string = "female", geoTimeoutMs = 5000) => {
       try {
         setError(null);
         setLoading(true);
@@ -87,6 +112,7 @@ export default function useGeneratePostcast() {
         const payload: GeneratePodcastInput = {
           user_id: userId,
           location: loc ?? undefined, // nếu không lấy được thì backend sẽ dùng address mặc định
+          voice_type: voiceType as "female" | "male" | "female_soft" | "female_energetic",
         };
 
         const blob = await requestPostcast(payload);
