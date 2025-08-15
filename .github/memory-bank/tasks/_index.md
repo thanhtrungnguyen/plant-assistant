@@ -2,6 +2,7 @@
 
 ## In Progress
 - [TASK002] Implement Plant Diagnosis API - LangGraph multi-agent system for plant health diagnosis
+- [TASK009] Implement LangGraph-Powered Chatbot - Core implementation complete, testing in progress
 
 ## Pending
 - [TASK003] Set up Vector Database Integration - Pinecone database for plant knowledge embeddings

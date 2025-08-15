@@ -9,7 +9,7 @@ from src.auth.routes.auth_oauth import router as auth_oauth
 from src.auth.routes.auth_recovery import router as auth_recovery
 from src.auth.routes.auth_tokens import router as auth_tokens
 from src.care.router import router as care_router
-from src.conversations.router import router as chat_router
+from src.chat.routes import chat_router  # New LangGraph-powered chat
 from src.core.config import settings
 from src.diagnosis.router import router as diagnosis_router
 from src.core.logging import get_logger, setup_logging

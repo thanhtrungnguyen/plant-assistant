@@ -2,9 +2,85 @@
 
 import logging
 
-from src.conversations.schemas import ChatRequest, ChatResponse
+from sqlalchemy.orm import Session
+
+from src.conversations.models import ConversationSession, ChatMessage
+from src.conversations.schemas import (
+    ChatRequest,
+    ChatResponse,
+    ChatHistoryResponse,
+    ConversationSessionResponse,
+    ChatHistoryMessage
+)
 
 logger = logging.getLogger(__name__)
+
+
+class ConversationalService:
+    """Service for handling conversational interactions about plants."""
+
+    def __init__(self):
+        """Initialize the conversational service."""
+        pass
+
+    async def get_chat_history(
+        self, user_id: int, limit: int, offset: int, db: Session
+    ) -> ChatHistoryResponse:
+        """Get chat history for a specific user."""
+        logger.info(f"Retrieving chat history for user {user_id}")
+
+        # Get conversation sessions with pagination
+        sessions_query = (
+            db.query(ConversationSession)
+            .filter(ConversationSession.user_id == user_id)
+            .order_by(ConversationSession.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+        sessions = sessions_query.all()
+
+        # Get total count for pagination
+        total_sessions = (
+            db.query(ConversationSession)
+            .filter(ConversationSession.user_id == user_id)
+            .count()
+        )
+
+        # Build response with messages for each session
+        session_responses = []
+        for session in sessions:
+            # Get messages for this session
+            messages = (
+                db.query(ChatMessage)
+                .filter(ChatMessage.session_id == session.id)
+                .order_by(ChatMessage.created_at.asc())
+                .all()
+            )
+
+            # Convert messages to schema
+            message_responses = [
+                ChatHistoryMessage(
+                    id=msg.id,
+                    role=msg.role,
+                    content_text=msg.content_text,
+                    image_url=msg.image_url,
+                    created_at=msg.created_at,
+                )
+                for msg in messages
+            ]
+
+            session_response = ConversationSessionResponse(
+                id=session.id,
+                started_at=session.started_at,
+                ended_at=session.ended_at,
+                messages=message_responses,
+            )
+            session_responses.append(session_response)
+
+        return ChatHistoryResponse(
+            sessions=session_responses,
+            total_sessions=total_sessions,
+        )
 
 
 class ConversationalService:
