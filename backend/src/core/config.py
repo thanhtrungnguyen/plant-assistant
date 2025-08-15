@@ -11,8 +11,8 @@ class Settings(BaseSettings):
     # OpenAPI docs
     OPENAPI_URL: str = "/openapi.json"
 
-    # Database
-    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost/dbname"
+    # Database - using psycopg (version 3) driver for SQLAlchemy compatibility
+    DATABASE_URL: str = "postgresql+psycopg://user:password@localhost/dbname"
     TEST_DATABASE_URL: str | None = None
     EXPIRE_ON_COMMIT: bool = False
 
@@ -47,6 +47,7 @@ class Settings(BaseSettings):
 
     # Frontend
     FRONTEND_URL: str = "http://localhost:3000"
+    WEB_APP_URL: str = "http://localhost:3000"
 
     # Google OAuth
     GOOGLE_CLIENT_ID: str | None = None

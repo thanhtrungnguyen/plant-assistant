@@ -6,6 +6,10 @@ def get_user_by_email(db: Session, email: str) -> User | None:
     return db.query(User).filter(User.email == email).one_or_none()
 
 
+def get_user_by_id(db: Session, user_id: int) -> User | None:
+    return db.get(User, user_id)
+
+
 def create_user(db: Session, email: str, name: str | None, verified: bool) -> User:
     user = User(email=email, name=name, email_verified=verified, is_active=True)
     db.add(user)

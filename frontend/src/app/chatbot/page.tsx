@@ -6,26 +6,46 @@ import { ChatHistoryPanel } from "@/components/ui/chat-history-panel";
 import { DemoHistoryButton } from "@/components/ui/demo-history-sidebar";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Bot, Camera, History, Image as ImageIcon, Send, User, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type Message = {
+// Client-side timestamp component to prevent hydration mismatch
+function ClientTimestamp({ timestamp, className }: { timestamp: Date; className?: string }) {
+  const [formattedTime, setFormattedTime] = useState<string>("");
+
+  useEffect(() => {
+    setFormattedTime(timestamp.toLocaleTimeString());
+  }, [timestamp]);
+
+  return <span className={className}>{formattedTime}</span>;
+}
+
+interface Message {
   id: string;
   content: string;
   sender: "user" | "bot";
   timestamp: Date;
   imageUrl?: string;
-};
+}
 
 export default function ChatbotPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content:
-        "Xin chào! Tôi là trợ lý AI chăm sóc cây trồng. Bạn có thể hỏi tôi về cách chăm sóc cây hoặc gửi ảnh cây để tôi phân tích.",
-      sender: "bot",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize messages on client side only to avoid hydration mismatch
+  useEffect(() => {
+    if (!isInitialized) {
+      setMessages([
+        {
+          id: "1",
+          content:
+            "Xin chào! Tôi là trợ lý AI chăm sóc cây trồng. Bạn có thể hỏi tôi về cách chăm sóc cây hoặc gửi ảnh cây để tôi phân tích.",
+          sender: "bot",
+          timestamp: new Date(),
+        },
+      ]);
+      setIsInitialized(true);
+    }
+  }, [isInitialized]);
   const [inputMessage, setInputMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -201,13 +221,12 @@ export default function ChatbotPage() {
                     </div>
                   )}
                   <p className="text-xs md:text-sm">{message.content}</p>
-                  <p
+                  <ClientTimestamp
+                    timestamp={message.timestamp}
                     className={`text-xs mt-1 ${
                       message.sender === "user" ? "text-blue-100" : "text-gray-500"
                     }`}
-                  >
-                    {message.timestamp.toLocaleTimeString()}
-                  </p>
+                  />
                 </div>
               </div>
             ))}

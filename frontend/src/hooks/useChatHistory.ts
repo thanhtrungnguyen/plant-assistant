@@ -91,7 +91,7 @@ export function useChatHistory() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -110,19 +110,20 @@ export function useChatHistory() {
   // Convert server history messages to local format
   const convertServerHistoryToLocal = (history: ChatHistory): Message[] => {
     const convertedMessages: Message[] = [];
-    
+
     // Add welcome message first
     convertedMessages.push({
       id: "welcome",
-      content: "Xin chào! Tôi là trợ lý AI chuyên về cây trồng. Bạn có thể gửi hình ảnh cây của mình để tôi phân tích hoặc đặt câu hỏi về chăm sóc cây trồng.",
+      content:
+        "Xin chào! Tôi là trợ lý AI chuyên về cây trồng. Bạn có thể gửi hình ảnh cây của mình để tôi phân tích hoặc đặt câu hỏi về chăm sóc cây trồng.",
       sender: "bot",
       timestamp: new Date(),
       type: "text",
     });
 
     // Convert each session's messages
-    history.sessions.forEach(session => {
-      session.messages.forEach(msg => {
+    history.sessions.forEach((session) => {
+      session.messages.forEach((msg) => {
         convertedMessages.push({
           id: msg.id.toString(),
           content: msg.content_text,

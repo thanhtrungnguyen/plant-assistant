@@ -16,7 +16,8 @@ export function DemoHistoryButton({ onLoadHistory }: DemoHistoryButtonProps) {
       messages: [
         {
           id: "demo-1",
-          content: "Xin chào! Tôi là trợ lý AI chuyên về cây trồng. Bạn có thể gửi hình ảnh cây của mình để tôi phân tích hoặc đặt câu hỏi về chăm sóc cây trồng.",
+          content:
+            "Xin chào! Tôi là trợ lý AI chuyên về cây trồng. Bạn có thể gửi hình ảnh cây của mình để tôi phân tích hoặc đặt câu hỏi về chăm sóc cây trồng.",
           sender: "bot",
           timestamp: new Date(Date.now() - 3600000),
           type: "text",
@@ -30,7 +31,8 @@ export function DemoHistoryButton({ onLoadHistory }: DemoHistoryButtonProps) {
         },
         {
           id: "demo-3",
-          content: "Chào bạn! Tôi rất sẵn lòng giúp bạn với cây Monstera. Bạn có thể mô tả chi tiết vấn đề bạn đang gặp không? Ví dụ như lá có vàng, nâu hay có dấu hiệu bệnh nào khác?",
+          content:
+            "Chào bạn! Tôi rất sẵn lòng giúp bạn với cây Monstera. Bạn có thể mô tả chi tiết vấn đề bạn đang gặp không? Ví dụ như lá có vàng, nâu hay có dấu hiệu bệnh nào khác?",
           sender: "bot",
           timestamp: new Date(Date.now() - 3400000),
           type: "text",
@@ -44,12 +46,13 @@ export function DemoHistoryButton({ onLoadHistory }: DemoHistoryButtonProps) {
         },
         {
           id: "demo-5",
-          content: "Dựa vào mô tả của bạn, có thể cây đang gặp vấn đề về tưới nước. Lá vàng thường là dấu hiệu tưới quá nhiều hoặc thoát nước kém. Bạn có thể kiểm tra độ ẩm của đất và đảm bảo chậu có lỗ thoát nước tốt không?",
+          content:
+            "Dựa vào mô tả của bạn, có thể cây đang gặp vấn đề về tưới nước. Lá vàng thường là dấu hiệu tưới quá nhiều hoặc thoát nước kém. Bạn có thể kiểm tra độ ẩm của đất và đảm bảo chậu có lỗ thoát nước tốt không?",
           sender: "bot",
           timestamp: new Date(Date.now() - 3200000),
           type: "text",
         },
-      ]
+      ],
     },
     {
       id: 2,
@@ -57,7 +60,8 @@ export function DemoHistoryButton({ onLoadHistory }: DemoHistoryButtonProps) {
       messages: [
         {
           id: "demo-6",
-          content: "Xin chào! Tôi là trợ lý AI chuyên về cây trồng. Bạn có thể gửi hình ảnh cây của mình để tôi phân tích hoặc đặt câu hỏi về chăm sóc cây trồng.",
+          content:
+            "Xin chào! Tôi là trợ lý AI chuyên về cây trồng. Bạn có thể gửi hình ảnh cây của mình để tôi phân tích hoặc đặt câu hỏi về chăm sóc cây trồng.",
           sender: "bot",
           timestamp: new Date(Date.now() - 1800000),
           type: "text",
@@ -71,7 +75,8 @@ export function DemoHistoryButton({ onLoadHistory }: DemoHistoryButtonProps) {
         },
         {
           id: "demo-8",
-          content: "Việc bón phân cho cây cảnh trong nhà rất quan trọng! Bạn đang trồng loại cây nào? Thông thường, cây cảnh trong nhà cần bón phân vào mùa xuân và hè (mùa sinh trưởng) với tần suất 2-4 tuần/lần.",
+          content:
+            "Việc bón phân cho cây cảnh trong nhà rất quan trọng! Bạn đang trồng loại cây nào? Thông thường, cây cảnh trong nhà cần bón phân vào mùa xuân và hè (mùa sinh trưởng) với tần suất 2-4 tuần/lần.",
           sender: "bot",
           timestamp: new Date(Date.now() - 1600000),
           type: "text",
@@ -85,12 +90,13 @@ export function DemoHistoryButton({ onLoadHistory }: DemoHistoryButtonProps) {
         },
         {
           id: "demo-10",
-          content: "Cả hai loại cây này đều rất dễ chăm sóc! Pothos thích phân bón cân bằng NPK, bón 1 lần/tháng vào mùa sinh trưởng. Snake plant ít cần phân hơn, có thể bón 2-3 tháng/lần. Nhớ pha loãng phân bón theo hướng dẫn để tránh bỏng rễ nhé!",
+          content:
+            "Cả hai loại cây này đều rất dễ chăm sóc! Pothos thích phân bón cân bằng NPK, bón 1 lần/tháng vào mùa sinh trưởng. Snake plant ít cần phân hơn, có thể bón 2-3 tháng/lần. Nhớ pha loãng phân bón theo hướng dẫn để tránh bỏng rễ nhé!",
           sender: "bot",
           timestamp: new Date(Date.now() - 1400000),
           type: "text",
         },
-      ]
+      ],
     },
     {
       id: 3,
@@ -98,7 +104,8 @@ export function DemoHistoryButton({ onLoadHistory }: DemoHistoryButtonProps) {
       messages: [
         {
           id: "demo-11",
-          content: "Xin chào! Tôi là trợ lý AI chuyên về cây trồng. Bạn có thể gửi hình ảnh cây của mình để tôi phân tích hoặc đặt câu hỏi về chăm sóc cây trồng.",
+          content:
+            "Xin chào! Tôi là trợ lý AI chuyên về cây trồng. Bạn có thể gửi hình ảnh cây của mình để tôi phân tích hoặc đặt câu hỏi về chăm sóc cây trồng.",
           sender: "bot",
           timestamp: new Date(Date.now() - 300000),
           type: "text",
@@ -112,17 +119,18 @@ export function DemoHistoryButton({ onLoadHistory }: DemoHistoryButtonProps) {
         },
         {
           id: "demo-13",
-          content: "Nghe có vẻ như cây của bạn bị rệp xanh (aphids)! Đây là loại côn trùng hút nhựa cây rất phổ biến. Bạn có thể xử lý bằng cách: 1) Xịt nước mạnh để cuốn trôi rệp, 2) Dùng dung dịch xà phòng pha loãng, 3) Hoặc sử dụng dầu neem. Bạn có thể chụp ảnh để tôi xác định chính xác hơn không?",
+          content:
+            "Nghe có vẻ như cây của bạn bị rệp xanh (aphids)! Đây là loại côn trùng hút nhựa cây rất phổ biến. Bạn có thể xử lý bằng cách: 1) Xịt nước mạnh để cuốn trôi rệp, 2) Dùng dung dịch xà phòng pha loãng, 3) Hoặc sử dụng dầu neem. Bạn có thể chụp ảnh để tôi xác định chính xác hơn không?",
           sender: "bot",
           timestamp: new Date(Date.now() - 100000),
           type: "text",
         },
-      ]
-    }
+      ],
+    },
   ]);
 
   const loadDemoSession = (sessionId: number) => {
-    const session = demoSessions.find(s => s.id === sessionId);
+    const session = demoSessions.find((s) => s.id === sessionId);
     if (session) {
       onLoadHistory(session.messages);
     }
@@ -147,9 +155,7 @@ export function DemoHistoryButton({ onLoadHistory }: DemoHistoryButtonProps) {
             className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-white cursor-pointer transition-colors bg-gray-50"
             onClick={() => loadDemoSession(session.id)}
           >
-            <p className="text-sm font-medium text-gray-900 mb-1">
-              {session.title}
-            </p>
+            <p className="text-sm font-medium text-gray-900 mb-1">{session.title}</p>
             <div className="flex items-center gap-3 text-xs text-gray-500">
               <div className="flex items-center gap-1">
                 <MessageCircle className="h-3 w-3" />

@@ -54,7 +54,7 @@ def generate_podcast(name: str, plants: str, weather: Optional[str] = None) -> s
     )
 
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model=settings.OPENAI_MODEL,
         messages=[
             {
                 "role": "system",
