@@ -67,6 +67,15 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: Set[str] = {"http://localhost:3000"}
 
+    # Pinecone / Vector DB
+    PINECONE_API_KEY: str | None = None
+    PINECONE_ENVIRONMENT: str | None = None  # legacy (if needed)
+    PINECONE_HOST: str | None = (
+        None  # optional override for self-hosted / explicit host
+    )
+    PINECONE_DEFAULT_INDEX: str | None = None
+    PINECONE_DEFAULT_NAMESPACE: str | None = None
+
     # AI/OpenAI Configuration
     OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "your-openai-api-key")

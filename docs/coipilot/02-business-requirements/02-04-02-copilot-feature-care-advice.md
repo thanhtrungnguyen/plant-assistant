@@ -2,9 +2,9 @@
 # Plant Assistant Feature: Care Advice for GitHub Copilot
 
 ## Feature Description
-- Gather user inputs: Location (ZIP code for USDA hardiness zone lookup or IP-geolocation fallback via geopy library), environment details (indoor/outdoor radio buttons, light exposure slider: 0-10 hours/day with presets like "Low (shade)", humidity percentage input: 20-80% with meter visualization, temperature range: min/max °F/C toggle), plant type (auto-populated from identification results or searchable dropdown pulling from Chroma embeddings for suggestions), user preferences (checkboxes for organic-only, low-maintenance, pet-safe, eco-friendly, beginner-level explanations).
+- Gather user inputs: Location (ZIP code for USDA hardiness zone lookup or IP-geolocation fallback via geopy library), environment details (indoor/outdoor radio buttons, light exposure slider: 0-10 hours/day with presets like "Low (shade)", humidity percentage input: 20-80% with meter visualization, temperature range: min/max °F/C toggle), plant type (auto-populated from identification results or searchable dropdown pulling from Pinecone embeddings for suggestions), user preferences (checkboxes for organic-only, low-maintenance, pet-safe, eco-friendly, beginner-level explanations).
 - Generate comprehensive, personalized care plans covering: watering (e.g., "Every 5-7 days, 8 oz until drainage; use finger test for top 1-inch dryness; adjust +2 days in winter"), light requirements (e.g., "Medium to bright indirect, 4-6 hours; rotate weekly to prevent legginess; supplement with grow lights if <3 hours natural"), soil type (e.g., "Loamy, pH 6.0-7.5 with perlite for drainage; amend with compost annually; test kit recommendations"), humidity and temperature (optimal ranges with tolerance buffers, e.g., "50-70% humidity—use humidifier if <40%; 65-75°F, protect from drafts with relocation tips"), fertilizing (e.g., "Balanced 10-10-10 NPK every 4 weeks in growing season; switch to organic bone meal for prefs; dilute to half-strength"), repotting (e.g., "Every 1-2 years when root-bound; step-by-step: choose 2-inch larger pot, fresh soil mix, water post-repot"), pruning (e.g., "Pinch tips in spring for bushiness; remove dead/diseased with sterilized shears; timing based on growth cycle").
-- Use LangGraph workflows to chain AI steps: identify plant base data from Chroma → fetch external context (e.g., weather API for location) → personalize with OpenAI (e.g., adjust for user prefs like "Substitute chemical fert with compost tea for eco").
+- Use LangGraph workflows to chain AI steps: identify plant base data from Pinecone → fetch external context (e.g., weather API for location) → personalize with OpenAI (e.g., adjust for user prefs like "Substitute chemical fert with compost tea for eco").
 - Include seasonal adjustments (e.g., "Dormancy in fall: reduce water 50%, no fert") and eco-friendly tips (e.g., "Collect rainwater to minimize tap chemicals; use recycled pots").
 - Disclaimers: "Personalized based on inputs; observe plant responses and adjust; not a substitute for professional advice."
 
@@ -24,13 +24,13 @@
 - **Endpoint**: POST /api/plants/care in routes/plants.py (async, JWT-secured).
 - **Request Schema** (Pydantic): CareRequest(plant_id: Optional[UUID], location: str = Field(..., example="90210"), environment: Dict[str, Any] = Field(..., example={"indoor": True, "light_hours": 5}), preferences: List[str] = []).
 - **Response Schema**: CareResponse(plan: Dict[str, str], seasonal_adjustments: Dict[str, List[str]], eco_tips: List[str], sources: List[str], disclaimer: str).
-- **Service**: plant_service.py with LangGraph graph: 
+- **Service**: plant_service.py with LangGraph graph:
   - Node 1: validate_inputs (Pydantic + custom checks, e.g., zone lookup via cached USDA data).
-  - Node 2: fetch_base (Chroma query: "care_data for {plant_type}", top_k=3).
+  - Node 2: fetch_base (Pinecone query: "care_data for {plant_type}", top_k=3).
   - Node 3: integrate_context (Optional OpenWeather API call for real-time/forecast data).
   - Node 4: personalize (OpenAI gpt-4o prompt: "Adapt {base} for {environment} and {preferences}; structure as JSON").
   - Node 5: store_plan (Postgres upsert to Plant.care_plan JSONB with timestamp/version).
-- **Example Flow**: Request → Validation → Chroma semantic search (threshold 0.85) → Context integration → OpenAI call (~$0.015) → Storage → Response.
+- **Example Flow**: Request → Validation → Pinecone semantic search (threshold 0.85) → Context integration → OpenAI call (~$0.015) → Storage → Response.
 - **Edge Cases**: Invalid ZIP → Fallback to global defaults with warning; conflicting prefs (e.g., low-water but high-humid plant) → Highlight alternatives; no plant_id → Prompt for identification first.
 - **Logging/Monitoring**: Log personalization metrics (e.g., adjustment count); Sentry for API failures; cost tracking for OpenAI/Weather APIs.
 

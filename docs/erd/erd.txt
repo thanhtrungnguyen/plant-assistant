@@ -1,0 +1,243 @@
+@startuml
+hide circle
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor White
+}
+
+entity "users" as users {
+  *id: uuid <<PK>>
+  --
+  email: text <<U>>
+  password_hash: text
+  name: text
+  timezone: text
+  locale: text
+  plan_tier: text  // free, premium
+  consent_photo_storage: boolean
+  created_at: timestamptz
+  deleted_at: timestamptz?
+}
+
+entity "species" as species {
+  *id: uuid <<PK>>
+  scientific_name: text
+  common_name: text
+  synonyms: text[]
+  pet_safe: boolean
+  default_care_json: jsonb
+  created_at: timestamptz
+}
+
+entity "plants" as plants {
+  *id: uuid <<PK>>
+  user_id: uuid <<FK users.id>>
+  species_id: uuid? <<FK species.id>>
+  nickname: text
+  location_text: text
+  light_conditions: text
+  soil_type: text
+  notes: text
+  is_archived: boolean
+  created_at: timestamptz
+  updated_at: timestamptz
+}
+
+entity "plant_shares" as plant_shares {
+  *plant_id: uuid <<FK plants.id>>
+  *user_id: uuid <<FK users.id>>
+  role: text // viewer, editor
+  created_at: timestamptz
+}
+
+entity "plant_photos" as plant_photos {
+  *id: uuid <<PK>>
+  plant_id: uuid <<FK plants.id>>
+  url: text
+  taken_at: timestamptz
+  caption: text
+  ai_metrics_json: jsonb
+  created_at: timestamptz
+}
+
+entity "identification_sessions" as ident_sessions {
+  *id: uuid <<PK>>
+  user_id: uuid <<FK users.id>>
+  plant_id: uuid? <<FK plants.id>>
+  prompt_text: text
+  status: text // queued, done, failed
+  model: text
+  cost_usd: numeric(10,4)
+  latency_ms: int
+  created_at: timestamptz
+}
+
+entity "identification_assets" as ident_assets {
+  *id: uuid <<PK>>
+  session_id: uuid <<FK ident_sessions.id>>
+  url: text
+  width: int
+  height: int
+  exif_json: jsonb
+}
+
+entity "identification_candidates" as ident_candidates {
+  *id: uuid <<PK>>
+  session_id: uuid <<FK ident_sessions.id>>
+  species_id: uuid? <<FK species.id>>
+  label_text: text
+  confidence: numeric(3,2)
+  rationale_text: text
+  rank: int
+}
+
+entity "care_plans" as care_plans {
+  *id: uuid <<PK>>
+  plant_id: uuid <<FK plants.id>>
+  version: int
+  generated_by: text // model/version
+  inputs_json: jsonb // location, prefs
+  plan_markdown: text
+  valid_from: date
+  valid_to: date?
+  generated_at: timestamptz
+}
+
+entity "care_task_templates" as care_tasks {
+  *id: uuid <<PK>>
+  care_plan_id: uuid <<FK care_plans.id>>
+  task_type: text // WATER, FERTILIZE, REPOT, PRUNE, CHECK_PEST
+  cadence_days: int? // or cron
+  cron: text?
+  notes: text
+}
+
+entity "reminders" as reminders {
+  *id: uuid <<PK>>
+  plant_id: uuid <<FK plants.id>>
+  task_type: text
+  channel: text // in_app, email
+  timezone: text
+  schedule_json: jsonb // interval/cron/next_run
+  is_active: boolean
+  created_at: timestamptz
+}
+
+entity "reminder_logs" as reminder_logs {
+  *id: uuid <<PK>>
+  reminder_id: uuid <<FK reminders.id>>
+  sent_at: timestamptz
+  status: text // sent, failed
+  error: text?
+}
+
+entity "diagnosis_sessions" as diag_sessions {
+  *id: uuid <<PK>>
+  user_id: uuid <<FK users.id>>
+  plant_id: uuid <<FK plants.id>>
+  description: text
+  status: text
+  model: text
+  cost_usd: numeric(10,4)
+  latency_ms: int
+  created_at: timestamptz
+}
+
+entity "diagnosis_assets" as diag_assets {
+  *id: uuid <<PK>>
+  session_id: uuid <<FK diag_sessions.id>>
+  url: text
+}
+
+entity "issue_catalog" as issue_catalog {
+  *code: text <<PK>>
+  name: text
+  description: text
+}
+
+entity "diagnosis_candidates" as diag_candidates {
+  *id: uuid <<PK>>
+  session_id: uuid <<FK diag_sessions.id>>
+  issue_code: text? <<FK issue_catalog.code>>
+  label_text: text
+  confidence: numeric(3,2)
+  remedies_markdown: text
+  expected_timeline_days: int?
+  rank: int
+}
+
+entity "conversation_sessions" as convo_sessions {
+  *id: uuid <<PK>>
+  user_id: uuid <<FK users.id>>
+  plant_id: uuid?
+  source: text // web, mobile
+  locale: text
+  started_at: timestamptz
+  ended_at: timestamptz?
+}
+
+entity "chat_messages" as chat_messages {
+  *id: uuid <<PK>>
+  session_id: uuid <<FK convo_sessions.id>>
+  role: text // user, assistant, tool, system
+  content_text: text
+  image_url: text?
+  model: text?
+  token_prompt: int?
+  token_completion: int?
+  created_at: timestamptz
+}
+
+entity "feedback" as feedback {
+  *id: uuid <<PK>>
+  user_id: uuid <<FK users.id>>
+  target_kind: text // identification, care_plan, diagnosis, message
+  target_id: uuid
+  rating: int // 1..5
+  comment: text?
+  created_at: timestamptz
+}
+
+entity "audit_consent_logs" as consent_logs {
+  *id: uuid <<PK>>
+  user_id: uuid <<FK users.id>>
+  consent_type: text // photo_storage, email_notifications
+  granted_at: timestamptz
+  revoked_at: timestamptz?
+}
+
+entity "vector_items" as vector_items {
+  *id: uuid <<PK>>
+  collection: text // knowledge_base, user_notes
+  external_vector_id: text // Pinecone id
+  source_kind: text // species, care_plan, message
+  source_id: uuid?
+  metadata: jsonb
+  created_at: timestamptz
+}
+
+users ||--o{ plants
+users ||--o{ ident_sessions
+users ||--o{ diag_sessions
+users ||--o{ convo_sessions
+users ||--o{ feedback
+users ||--o{ consent_logs
+
+plants ||--o{ plant_photos
+plants ||--o{ care_plans
+plants ||--o{ reminders
+plants ||--o{ diag_sessions
+plants ||--o{ plant_shares
+
+care_plans ||--o{ care_tasks
+reminders ||--o{ reminder_logs
+
+ident_sessions ||--o{ ident_assets
+ident_sessions ||--o{ ident_candidates
+species ||--o{ plants
+species ||--o{ ident_candidates
+
+diag_sessions ||--o{ diag_assets
+issue_catalog ||--o{ diag_candidates
+convo_sessions ||--o{ chat_messages
+@enduml

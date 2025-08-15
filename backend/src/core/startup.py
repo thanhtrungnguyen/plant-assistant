@@ -5,6 +5,8 @@ Startup utilities for application initialization and health checks.
 from src.auth.providers import oauth
 from src.core.config import settings
 from src.core.logging import get_logger
+from src.database.pinecone import ensure_index, get_pinecone
+from src.integrations.openai_api.openai_api import openai_health_check
 
 logger = get_logger(__name__)
 
@@ -72,7 +74,29 @@ def run_startup_checks():
 
     logger.info("Startup checks completed")
 
+    # Pinecone (vector DB) check logged after other components
+    try:
+        pc = get_pinecone()
+        if pc:
+            # Lazy ensure default index if configured
+            created = ensure_index()
+            if created:
+                logger.info(f"[PINECONE] Client ready. Default index: {created}")
+            else:
+                logger.info("[PINECONE] Client ready. No default index configured.")
+        else:
+            logger.warning("[PINECONE] Not configured (skipping)")
+    except Exception as e:
+        logger.error(f"[PINECONE] Initialization failed: {e}")
 
-def log_router_inclusion(router_name: str):
-    """Log when a router is included"""
-    logger.info(f"{router_name} router included")
+    # OpenAI check
+    try:
+        if settings.OPENAI_API_KEY:
+            if openai_health_check():
+                logger.info("[OPENAI] Connectivity OK")
+            else:
+                logger.error("[OPENAI] Health check failed")
+        else:
+            logger.warning("[OPENAI] Not configured (missing OPENAI_API_KEY)")
+    except Exception as e:  # pragma: no cover
+        logger.error(f"[OPENAI] Initialization error: {e}")
