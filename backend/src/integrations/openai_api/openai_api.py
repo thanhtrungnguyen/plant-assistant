@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
-from openai import OpenAI, OpenAIError  # type: ignore
+from openai import OpenAI, OpenAIError
+
 from src.core.config import settings
 from src.core.logging import get_logger
 
@@ -25,7 +26,7 @@ def get_openai_client() -> OpenAI | None:
     if not settings.OPENAI_API_KEY:
         logger.warning("OpenAI not configured: missing OPENAI_API_KEY")
         return None
-    _client = OpenAI(api_key=settings.OPENAI_API_KEY)
+    _client = OpenAI(base_url=settings.OPENAI_BASE_URL, api_key=settings.OPENAI_API_KEY)
     return _client
 
 
@@ -40,10 +41,10 @@ def openai_health_check() -> bool:
     try:
         client.models.list()  # simple permission & connectivity check
         return True
-    except OpenAIError as e:  # pragma: no cover - network path
+    except OpenAIError as e:
         logger.error(f"[OPENAI] Health check failed: {e}")
         return False
-    except Exception as e:  # pragma: no cover
+    except Exception as e:
         logger.error(f"[OPENAI] Unexpected error: {e}")
         return False
 

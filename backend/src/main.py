@@ -10,17 +10,16 @@ from src.auth.routes.auth_tokens import router as auth_tokens
 from src.care.router import router as care_router
 from src.conversations.router import router as chat_router
 from src.core.config import settings
-from src.diagnosis.router import router as diagnosis_router
 from src.core.logging import get_logger, setup_logging
 from src.core.routes.health import router as health_router
 from src.core.startup import run_startup_checks
+from src.diagnosis.router import router as diagnosis_router
 from src.identification.router import router as identification_router
 from src.plants.router import router as plants_router
+from src.podcast.router import router as podcast_router
 from src.reminders.router import router as reminders_router
 from src.shared.utils import simple_generate_unique_route_id
 from src.tracking.router import router as tracking_router
-from src.podcast.router import router as podcast_router
-
 
 # Configure logging
 setup_logging(level="INFO", log_file="logs/app.log")
@@ -82,3 +81,7 @@ app.include_router(chat_router, prefix="/api")  # /api/plants/chat/*
 app.include_router(diagnosis_router)
 
 # Others
+
+
+# OK baby
+logger.info(f"{settings.APP_NAME} ready to rock!")
