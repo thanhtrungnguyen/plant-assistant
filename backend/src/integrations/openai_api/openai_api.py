@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 
 from openai import OpenAI, OpenAIError
+
 from src.core.config import settings
 from src.core.logging import get_logger
 
@@ -40,10 +41,10 @@ def openai_health_check() -> bool:
     try:
         client.models.list()  # simple permission & connectivity check
         return True
-    except OpenAIError as e:  # pragma: no cover - network path
+    except OpenAIError as e:
         logger.error(f"[OPENAI] Health check failed: {e}")
         return False
-    except Exception as e:  # pragma: no cover
+    except Exception as e:
         logger.error(f"[OPENAI] Unexpected error: {e}")
         return False
 

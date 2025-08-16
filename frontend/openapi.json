@@ -49,12 +49,13 @@
           "podcast"
         ],
         "summary": "Generate Podcast",
+        "description": "Generate a personalized podcast using user context from Pinecone.",
         "operationId": "generate_podcast",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GeneratePodcastInput"
+                "$ref": "#/components/schemas/GeneratePodcastRequest"
               }
             }
           },
@@ -76,6 +77,26 @@
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/podcast/user_context": {
+      "get": {
+        "tags": [
+          "podcast"
+        ],
+        "summary": "Get User Context Summary Endpoint",
+        "description": "Get a summary of user context for debugging/validation.",
+        "operationId": "get_user_context_summary_endpoint",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
@@ -1630,14 +1651,14 @@
         }
       }
     },
-    "/api/plants/chat/": {
+    "/api/chat/message": {
       "post": {
         "tags": [
-          "plant-chat"
+          "chat"
         ],
-        "summary": "Chat With Assistant",
-        "description": "Chat with the plant care assistant.",
-        "operationId": "chat_with_assistant",
+        "summary": "Send Message",
+        "description": "Send a message to the plant assistant and get a response.\nCreates a new conversation if conversation_id is not provided.",
+        "operationId": "send_message",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1665,6 +1686,214 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/conversations": {
+      "get": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Get Conversations",
+        "description": "Get all conversations for the current user.",
+        "operationId": "get_conversations",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConversationListResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Chat-Get Conversations"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/conversations/{conversation_id}/messages": {
+      "get": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Get Conversation Messages",
+        "description": "Get messages for a specific conversation.",
+        "operationId": "get_conversation_messages",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MessageResponse"
+                  },
+                  "title": "Response Chat-Get Conversation Messages"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/conversations/{conversation_id}": {
+      "delete": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Delete Conversation",
+        "description": "Delete a conversation and all its messages.",
+        "operationId": "delete_conversation",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Chat-Delete Conversation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/context": {
+      "get": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Get User Context Summary",
+        "description": "Get a summary of user's stored context across all conversations.",
+        "operationId": "get_user_context_summary",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Chat-Get User Context Summary"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Delete User Context",
+        "description": "Delete all stored context for the current user.",
+        "operationId": "delete_user_context",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Chat-Delete User Context"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/context/refresh": {
+      "post": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Refresh User Context",
+        "description": "Refresh user context by reprocessing recent conversations.",
+        "operationId": "refresh_user_context",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Chat-Refresh User Context"
                 }
               }
             }
@@ -1888,11 +2117,9 @@
         "properties": {
           "message": {
             "type": "string",
-            "maxLength": 1000,
-            "title": "Message",
-            "description": "User's message"
+            "title": "Message"
           },
-          "context": {
+          "conversation_id": {
             "anyOf": [
               {
                 "type": "string"
@@ -1901,8 +2128,7 @@
                 "type": "null"
               }
             ],
-            "title": "Context",
-            "description": "Additional context"
+            "title": "Conversation Id"
           },
           "plant_id": {
             "anyOf": [
@@ -1913,8 +2139,18 @@
                 "type": "null"
               }
             ],
-            "title": "Plant Id",
-            "description": "Related plant ID if applicable"
+            "title": "Plant Id"
+          },
+          "image_data": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Data"
           }
         },
         "type": "object",
@@ -1922,46 +2158,118 @@
           "message"
         ],
         "title": "ChatRequest",
-        "description": "Schema for chat request."
+        "description": "Chat message request."
       },
       "ChatResponse": {
         "properties": {
-          "message": {
+          "message_id": {
+            "type": "integer",
+            "title": "Message Id"
+          },
+          "conversation_id": {
             "type": "string",
-            "title": "Message",
-            "description": "Assistant's response"
+            "title": "Conversation Id"
           },
-          "suggestions": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Suggestions",
-            "description": "Follow-up suggestions"
+          "response": {
+            "type": "string",
+            "title": "Response"
           },
-          "related_actions": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Related Actions",
-            "description": "Suggested actions"
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens"
           },
-          "confidence": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Confidence",
-            "description": "Response confidence"
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens"
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
           }
         },
         "type": "object",
         "required": [
-          "message",
-          "confidence"
+          "message_id",
+          "conversation_id",
+          "response",
+          "input_tokens",
+          "output_tokens",
+          "timestamp"
         ],
         "title": "ChatResponse",
-        "description": "Schema for chat response."
+        "description": "Chat message response."
+      },
+      "ConversationListResponse": {
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id"
+          },
+          "plant_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plant Id"
+          },
+          "started_at": {
+            "type": "string",
+            "title": "Started At"
+          },
+          "last_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Message"
+          },
+          "last_message_time": {
+            "type": "string",
+            "title": "Last Message Time"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locale"
+          }
+        },
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "plant_id",
+          "started_at",
+          "last_message",
+          "last_message_time",
+          "source",
+          "locale"
+        ],
+        "title": "ConversationListResponse",
+        "description": "Conversation list item."
       },
       "ForgotIn": {
         "properties": {
@@ -1977,23 +2285,22 @@
         ],
         "title": "ForgotIn"
       },
-      "GeneratePodcastInput": {
+      "GeneratePodcastRequest": {
         "properties": {
-          "user_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "User Id"
-          },
           "location": {
-            "$ref": "#/components/schemas/LocationData"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocationData"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
-        "required": [
-          "user_id",
-          "location"
-        ],
-        "title": "GeneratePodcastInput"
+        "title": "GeneratePodcastRequest",
+        "description": "Request model for generating podcast."
       },
       "HTTPValidationError": {
         "properties": {
@@ -2119,66 +2426,12 @@
           "longitude": {
             "type": "number",
             "title": "Longitude"
-          },
-          "accuracy": {
-            "type": "number",
-            "title": "Accuracy"
-          },
-          "altitude": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Altitude"
-          },
-          "altitudeAccuracy": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Altitudeaccuracy"
-          },
-          "heading": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Heading"
-          },
-          "speed": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Speed"
-          },
-          "timestamp": {
-            "type": "integer",
-            "title": "Timestamp"
           }
         },
         "type": "object",
         "required": [
           "latitude",
-          "longitude",
-          "accuracy",
-          "timestamp"
+          "longitude"
         ],
         "title": "LocationData"
       },
@@ -2200,6 +2453,83 @@
           "password"
         ],
         "title": "LoginIn"
+      },
+      "MessageResponse": {
+        "properties": {
+          "message_id": {
+            "type": "string",
+            "title": "Message Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "token_prompt": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Prompt"
+          },
+          "token_completion": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Completion"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message_id",
+          "role",
+          "content",
+          "timestamp",
+          "model",
+          "token_prompt",
+          "token_completion",
+          "image_url"
+        ],
+        "title": "MessageResponse",
+        "description": "Chat message."
       },
       "PlantCreate": {
         "properties": {

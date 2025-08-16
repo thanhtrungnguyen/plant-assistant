@@ -57,7 +57,7 @@ dev-local: ## Start development servers locally (requires local setup)
 	@echo "Backend: http://localhost:5000"
 	@echo "Frontend: http://localhost:3000"
 	@echo "Press Ctrl+C to stop both servers"
-	@(cd $(BACKEND_DIR) && uv run fastapi dev src/app/main.py --host 0.0.0.0 --port 5000 --reload) & \
+	@(cd $(BACKEND_DIR) && uv run fastapi dev src/main.py --host 0.0.0.0 --port 5000 --reload) & \
 	(cd $(FRONTEND_DIR) && pnpm dev) & \
 	wait
 
