@@ -24,7 +24,7 @@ tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-vie")
 # Initialize OpenAI client
 client = OpenAI(
     api_key=settings.OPENAI_API_KEY,
-    base_url=settings.OPENAI_BASE_URL or "https://api.openai.com/v1"
+    base_url=settings.OPENAI_BASE_URL or "https://api.openai.com/v1",
 )
 
 
@@ -46,7 +46,7 @@ def get_weather(location_str: str) -> str:
 async def generate_contextual_podcast(
     user_context: PodcastUserContext,
     weather_info: Optional[str] = None,
-    seasonal_recommendations: Optional[List[str]] = None
+    seasonal_recommendations: Optional[List[str]] = None,
 ) -> str:
     """
     Generate a personalized podcast script based on user context.
@@ -64,7 +64,7 @@ async def generate_contextual_podcast(
         prompt = _build_contextual_prompt(
             user_context=user_context,
             weather_info=weather_info,
-            seasonal_recommendations=seasonal_recommendations or []
+            seasonal_recommendations=seasonal_recommendations or [],
         )
 
         # Generate podcast using OpenAI
@@ -73,15 +73,18 @@ async def generate_contextual_podcast(
             messages=[
                 {
                     "role": "system",
-                    "content": _get_system_prompt(user_context.experience_level)
+                    "content": _get_system_prompt(user_context.experience_level),
                 },
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
             temperature=0.7,  # Slightly more creative for podcast content
-            max_tokens=500    # Limit for podcast length
+            max_tokens=500,  # Limit for podcast length
         )
 
-        podcast_text = response.choices[0].message.content or "Không thể tạo podcast hôm nay, vui lòng thử lại sau."
+        podcast_text = (
+            response.choices[0].message.content
+            or "Không thể tạo podcast hôm nay, vui lòng thử lại sau."
+        )
 
         logger.info(f"Generated contextual podcast for user {user_context.user_id}")
         return podcast_text
@@ -95,7 +98,7 @@ async def generate_contextual_podcast(
 def _build_contextual_prompt(
     user_context: PodcastUserContext,
     weather_info: Optional[str] = None,
-    seasonal_recommendations: Optional[List[str]] = None
+    seasonal_recommendations: Optional[List[str]] = None,
 ) -> str:
     """Build a personalized prompt based on user context."""
 
@@ -112,7 +115,9 @@ def _build_contextual_prompt(
     if weather_info:
         weather_section = f"- Thời tiết hôm nay: {weather_info}\n"
     else:
-        weather_section = "- Thông tin thời tiết không có sẵn - tập trung vào lời khuyên chung\n"
+        weather_section = (
+            "- Thông tin thời tiết không có sẵn - tập trung vào lời khuyên chung\n"
+        )
 
     # Recent issues and recommendations
     issues_section = ""
@@ -140,7 +145,7 @@ def _build_contextual_prompt(
     # Recent diagnoses
     diagnoses_section = ""
     if user_context.recent_diagnoses:
-        diagnoses_section = f"- Đã có phân tích tình trạng cây gần đây\n"
+        diagnoses_section = "- Đã có phân tích tình trạng cây gần đây\n"
 
     # Build complete prompt
     prompt = (

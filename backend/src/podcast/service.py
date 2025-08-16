@@ -1,7 +1,6 @@
 # backend/src/app/services/podcast_service.py
 
 import logging
-from typing import Optional
 
 from .schemas import GeneratePodcastInput, PodcastUserContext
 from .context_service import PodcastContextService
@@ -43,32 +42,37 @@ async def create_podcast_for_user(input: GeneratePodcastInput) -> bytes:
         user_context = await context_service.retrieve_podcast_context(
             user_id=user_id_int,
             location_context=location_context,
-            top_k=8  # Get more context for richer podcasts
+            top_k=8,  # Get more context for richer podcasts
         )
 
         # Generate seasonal recommendations if we have plant and weather data
         seasonal_recommendations = []
         if user_context.plants_owned and (weather_info or location_context):
-            seasonal_recommendations = await context_service.get_seasonal_recommendations(
-                user_plants=user_context.plants_owned,
-                weather_info=weather_info
+            seasonal_recommendations = (
+                await context_service.get_seasonal_recommendations(
+                    user_plants=user_context.plants_owned, weather_info=weather_info
+                )
             )
 
         # Generate podcast script using rich context
         podcast_text = await generate_contextual_podcast(
             user_context=user_context,
             weather_info=weather_info,
-            seasonal_recommendations=seasonal_recommendations
+            seasonal_recommendations=seasonal_recommendations,
         )
 
         # Convert the podcast script to audio bytes
         audio_bytes = await synthesize_edge_tts(podcast_text)
 
-        logger.info(f"Successfully generated contextual podcast for user {input.user_id}")
+        logger.info(
+            f"Successfully generated contextual podcast for user {input.user_id}"
+        )
         return audio_bytes
 
     except Exception as e:
-        logger.error(f"Failed to create contextual podcast for user {input.user_id}: {e}")
+        logger.error(
+            f"Failed to create contextual podcast for user {input.user_id}: {e}"
+        )
         # Fallback to basic podcast generation if context fails
         return await _create_fallback_podcast(input)
 
@@ -92,14 +96,14 @@ async def _create_fallback_podcast(input: GeneratePodcastInput) -> bytes:
             experience_level="beginner",
             recent_diagnoses=[],
             context_confidence=0.0,
-            last_updated=""
+            last_updated="",
         )
 
         # Generate basic podcast
         podcast_text = await generate_contextual_podcast(
             user_context=fallback_context,
             weather_info=weather_info,
-            seasonal_recommendations=[]
+            seasonal_recommendations=[],
         )
 
         audio_bytes = await synthesize_edge_tts(podcast_text)
@@ -126,7 +130,7 @@ async def get_user_context_summary(user_id: int) -> dict:
             "experience_level": context.experience_level,
             "common_issues": context.common_care_issues,
             "context_confidence": context.context_confidence,
-            "has_recent_diagnoses": len(context.recent_diagnoses) > 0
+            "has_recent_diagnoses": len(context.recent_diagnoses) > 0,
         }
 
     except Exception as e:

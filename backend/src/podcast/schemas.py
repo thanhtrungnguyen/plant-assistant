@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from uuid import UUID
 from typing import List, Dict, Optional
 
 
@@ -10,6 +9,7 @@ class LocationData(BaseModel):
 
 class GeneratePodcastRequest(BaseModel):
     """Request model for generating podcast."""
+
     location: Optional[LocationData] = None
 
 
@@ -26,6 +26,7 @@ class UserData(BaseModel):
 
 class PodcastUserContext(BaseModel):
     """Structured user context specifically for podcast generation."""
+
     user_id: int
     plants_owned: List[str]
     common_care_issues: List[str]

@@ -1,7 +1,6 @@
 # backend/src/app/routes/podcast.py
 
 from fastapi import APIRouter, HTTPException, Depends
-from typing import Optional
 from .schemas import GeneratePodcastInput, GeneratePodcastRequest
 from .service import create_podcast_for_user, get_user_context_summary
 from fastapi import Response
@@ -14,15 +13,14 @@ router = APIRouter()
 
 @router.post("/generate_podcast")
 async def generate_podcast(
-    request_data: GeneratePodcastRequest,
-    current_user: User = Depends(require_user)
+    request_data: GeneratePodcastRequest, current_user: User = Depends(require_user)
 ):
     """Generate a personalized podcast using user context from Pinecone."""
     try:
         # Create input with authenticated user's ID
         input = GeneratePodcastInput(
             user_id=current_user.id,  # Use actual database user ID
-            location=request_data.location
+            location=request_data.location,
         )
 
         audio_bytes = await create_podcast_for_user(input)

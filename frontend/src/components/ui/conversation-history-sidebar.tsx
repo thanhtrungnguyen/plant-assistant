@@ -34,12 +34,7 @@ export function ConversationHistorySidebar({
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-gray-900">Cuộc trò chuyện</h2>
-          <Button
-            size="sm"
-            onClick={onNewConversation}
-            className="h-8 w-8 p-0"
-            variant="outline"
-          >
+          <Button size="sm" onClick={onNewConversation} className="h-8 w-8 p-0" variant="outline">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
@@ -116,9 +111,7 @@ export function ConversationHistorySidebar({
 
       {/* Footer */}
       <div className="p-4 border-t border-gray-200">
-        <p className="text-xs text-gray-500 text-center">
-          {conversations.length} cuộc trò chuyện
-        </p>
+        <p className="text-xs text-gray-500 text-center">{conversations.length} cuộc trò chuyện</p>
       </div>
     </div>
   );

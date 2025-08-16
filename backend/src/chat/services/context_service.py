@@ -1,6 +1,5 @@
 """User context service for conversation summarization and personalization."""
 
-import json
 import logging
 from datetime import datetime
 from typing import List, Dict
@@ -26,18 +25,16 @@ class UserContextService:
         self.llm = ChatOpenAI(
             model=settings.OPENAI_MODEL,
             api_key=SecretStr(settings.OPENAI_API_KEY),
-            temperature=0.1
+            temperature=0.1,
         )
         self.embeddings = OpenAIEmbeddings(
             model=settings.OPENAI_EMBEDDINGS_MODEL,
-            api_key=SecretStr(settings.OPENAI_EMBEDDINGS_API_KEY)
+            api_key=SecretStr(settings.OPENAI_EMBEDDINGS_API_KEY),
         )
         self.context_namespace = "user_context"
 
     async def summarize_conversation(
-        self,
-        conversation_id: str,
-        messages: List[BaseMessage]
+        self, conversation_id: str, messages: List[BaseMessage]
     ) -> Dict[str, str]:
         """
         Summarize a conversation to extract user context.
@@ -82,10 +79,12 @@ class UserContextService:
             Provide a comprehensive summary paragraph that includes image analysis and diagnosis details if present:
             """
 
-            response = await self.llm.ainvoke([{"role": "user", "content": summary_prompt}])
+            response = await self.llm.ainvoke(
+                [{"role": "user", "content": summary_prompt}]
+            )
 
             # Extract the summary text
-            if hasattr(response, 'content') and isinstance(response.content, str):
+            if hasattr(response, "content") and isinstance(response.content, str):
                 summary_text = response.content.strip()
             else:
                 summary_text = str(response).strip()
@@ -98,10 +97,12 @@ class UserContextService:
                 "summary": summary_text,
                 "conversation_id": conversation_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "message_count": len(messages)
+                "message_count": len(messages),
             }
 
-            logger.info(f"Generated comprehensive context summary for conversation {conversation_id}: {summary_text[:100]}...")
+            logger.info(
+                f"Generated comprehensive context summary for conversation {conversation_id}: {summary_text[:100]}..."
+            )
             return context_data
 
         except Exception as e:
@@ -110,21 +111,20 @@ class UserContextService:
                 "summary": "Failed to generate conversation summary",
                 "conversation_id": conversation_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     async def store_user_context(
-        self,
-        user_id: int,
-        context_data: Dict,
-        conversation_id: str
+        self, user_id: int, context_data: Dict, conversation_id: str
     ) -> bool:
         """Store user context in Pinecone for retrieval."""
         try:
             # Create embedding from context summary
             summary_text = context_data.get("summary", "")
             if not summary_text:
-                logger.warning(f"No summary text for user {user_id}, conversation {conversation_id}")
+                logger.warning(
+                    f"No summary text for user {user_id}, conversation {conversation_id}"
+                )
                 return False
 
             embedding = await self.embeddings.aembed_query(summary_text)
@@ -140,21 +140,29 @@ class UserContextService:
                 "summary": summary_text,  # Store the full summary text in metadata too
                 "message_count": context_data.get("message_count", 0),
                 "context_type": "conversation_summary",  # Tag for easy filtering
-                "has_images": context_data.get("has_images", False),  # Whether conversation included images
-                "interaction_type": context_data.get("interaction_type", "general")  # general, diagnosis, identification, care
+                "has_images": context_data.get(
+                    "has_images", False
+                ),  # Whether conversation included images
+                "interaction_type": context_data.get(
+                    "interaction_type", "general"
+                ),  # general, diagnosis, identification, care
             }
 
             # Upsert to Pinecone
             count = pinecone.upsert_vectors(
                 items=[(context_id, embedding, metadata)],
-                namespace=self.context_namespace
+                namespace=self.context_namespace,
             )
 
             if count > 0:
-                logger.info(f"Stored user context for user {user_id}, conversation {conversation_id}")
+                logger.info(
+                    f"Stored user context for user {user_id}, conversation {conversation_id}"
+                )
                 return True
             else:
-                logger.warning(f"Failed to store context in Pinecone for user {user_id}")
+                logger.warning(
+                    f"Failed to store context in Pinecone for user {user_id}"
+                )
                 return False
 
         except Exception as e:
@@ -162,10 +170,7 @@ class UserContextService:
             return False
 
     async def retrieve_user_context(
-        self,
-        user_id: int,
-        current_message: str,
-        top_k: int = 5
+        self, user_id: int, current_message: str, top_k: int = 5
     ) -> List[Dict]:
         """Retrieve relevant user context based on current message."""
         try:
@@ -177,24 +182,34 @@ class UserContextService:
                 embedding=query_embedding,
                 top_k=top_k,
                 filter={"user_id": user_id},
-                namespace=self.context_namespace
+                namespace=self.context_namespace,
             )
 
             # Format results - simplified for conversation summaries
             context_results = []
             for match in matches:
-                if hasattr(match, 'score') and match.score > 0.6:  # Lower threshold for summaries
-                    metadata = getattr(match, 'metadata', {})
-                    context_results.append({
-                        "relevance_score": match.score,
-                        "conversation_id": metadata.get("conversation_id"),
-                        "timestamp": metadata.get("timestamp"),
-                        "summary": metadata.get("summary", ""),  # The key context information
-                        "message_count": metadata.get("message_count", 0),
-                        "context_type": metadata.get("context_type", "conversation_summary")
-                    })
+                if (
+                    hasattr(match, "score") and match.score > 0.6
+                ):  # Lower threshold for summaries
+                    metadata = getattr(match, "metadata", {})
+                    context_results.append(
+                        {
+                            "relevance_score": match.score,
+                            "conversation_id": metadata.get("conversation_id"),
+                            "timestamp": metadata.get("timestamp"),
+                            "summary": metadata.get(
+                                "summary", ""
+                            ),  # The key context information
+                            "message_count": metadata.get("message_count", 0),
+                            "context_type": metadata.get(
+                                "context_type", "conversation_summary"
+                            ),
+                        }
+                    )
 
-            logger.info(f"Retrieved {len(context_results)} context entries for user {user_id}")
+            logger.info(
+                f"Retrieved {len(context_results)} context entries for user {user_id}"
+            )
             return context_results
 
         except Exception as e:
@@ -202,10 +217,7 @@ class UserContextService:
             return []
 
     async def process_conversation_end(
-        self,
-        db: AsyncSession,
-        user_id: int,
-        conversation_id: str
+        self, db: AsyncSession, user_id: int, conversation_id: str
     ) -> bool:
         """Process conversation when it ends to generate and store context."""
         try:
@@ -221,7 +233,9 @@ class UserContextService:
             messages = result.scalars().all()
 
             if len(messages) < 2:  # Need at least user message and assistant response
-                logger.info(f"Too few messages in conversation {conversation_id}, skipping summarization")
+                logger.info(
+                    f"Too few messages in conversation {conversation_id}, skipping summarization"
+                )
                 return True
 
             # Convert to BaseMessage format with image information
@@ -231,23 +245,31 @@ class UserContextService:
 
                 # Add image indicator if image was shared
                 if msg.image_url:
-                    message_content += " [IMAGE SHARED: Plant photo uploaded for analysis]"
+                    message_content += (
+                        " [IMAGE SHARED: Plant photo uploaded for analysis]"
+                    )
 
-                base_messages.append({
-                    "role": msg.role,
-                    "content": message_content,
-                    "timestamp": msg.created_at,
-                    "has_image": bool(msg.image_url)
-                })
+                base_messages.append(
+                    {
+                        "role": msg.role,
+                        "content": message_content,
+                        "timestamp": msg.created_at,
+                        "has_image": bool(msg.image_url),
+                    }
+                )
 
             # Generate context summary
-            context_data = await self.summarize_conversation(conversation_id, base_messages)
+            context_data = await self.summarize_conversation(
+                conversation_id, base_messages
+            )
 
             # Store in Pinecone
             return await self.store_user_context(user_id, context_data, conversation_id)
 
         except Exception as e:
-            logger.error(f"Error processing conversation end for {conversation_id}: {e}")
+            logger.error(
+                f"Error processing conversation end for {conversation_id}: {e}"
+            )
             return False
 
     async def get_user_context_summary(self, user_id: int) -> Dict:
@@ -259,7 +281,7 @@ class UserContextService:
                 embedding=dummy_embedding,
                 top_k=20,
                 filter={"user_id": user_id},
-                namespace=self.context_namespace
+                namespace=self.context_namespace,
             )
 
             if not matches:
@@ -270,23 +292,25 @@ class UserContextService:
             conversation_count = 0
 
             for match in matches:
-                metadata = getattr(match, 'metadata', {})
+                metadata = getattr(match, "metadata", {})
                 if metadata.get("context_type") == "conversation_summary":
                     conversation_count += 1
                     summary_info = {
                         "conversation_id": metadata.get("conversation_id"),
                         "timestamp": metadata.get("timestamp"),
                         "summary": metadata.get("summary", ""),
-                        "message_count": metadata.get("message_count", 0)
+                        "message_count": metadata.get("message_count", 0),
                     }
                     conversation_summaries.append(summary_info)
 
             return {
                 "user_id": user_id,
                 "total_conversations": conversation_count,
-                "conversation_summaries": conversation_summaries[:10],  # Return last 10 summaries
+                "conversation_summaries": conversation_summaries[
+                    :10
+                ],  # Return last 10 summaries
                 "last_updated": datetime.utcnow().isoformat(),
-                "context_type": "user_conversation_history"
+                "context_type": "user_conversation_history",
             }
 
         except Exception as e:
@@ -299,9 +323,9 @@ class UserContextService:
         for msg in messages:
             # Handle dictionary format (from database queries)
             if isinstance(msg, dict):
-                role = msg.get('role', 'UNKNOWN').upper()
-                content = msg.get('content', str(msg))
-                timestamp = msg.get('timestamp', '')
+                role = msg.get("role", "UNKNOWN").upper()
+                content = msg.get("content", str(msg))
+                timestamp = msg.get("timestamp", "")
 
                 # Add timestamp info if available
                 if timestamp:
@@ -310,9 +334,9 @@ class UserContextService:
                     formatted.append(f"{role}: {content}")
 
             # Handle BaseMessage objects
-            elif hasattr(msg, 'type'):
+            elif hasattr(msg, "type"):
                 role = msg.type.upper()
-                content = str(msg.content) if hasattr(msg, 'content') else str(msg)
+                content = str(msg.content) if hasattr(msg, "content") else str(msg)
                 formatted.append(f"{role}: {content}")
 
             # Fallback for other formats

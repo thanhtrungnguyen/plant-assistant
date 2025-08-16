@@ -1,7 +1,11 @@
 """Chat models - aliases for conversation models."""
 
 # Import and alias the existing conversation models
-from src.conversations.models import ConversationSession as BaseConversationSession, ChatMessage as BaseChatMessage
+from src.conversations.models import (
+    ConversationSession as BaseConversationSession,
+    ChatMessage as BaseChatMessage,
+)
+
 
 # Create aliases with adjusted field names for compatibility
 class ConversationSession(BaseConversationSession):
@@ -11,6 +15,7 @@ class ConversationSession(BaseConversationSession):
     def conversation_id(self) -> str:
         """Use ID as conversation_id for compatibility."""
         return str(self.id)
+
 
 class ChatMessage(BaseChatMessage):
     """ChatMessage with adjusted field names for compatibility."""

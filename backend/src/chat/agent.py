@@ -66,12 +66,7 @@ class PlantAssistantAgent:
 
         # Conditional edge from chat: if tools called, go to tools, otherwise save context
         workflow.add_conditional_edges(
-            "chat",
-            self._should_use_tools,
-            {
-                "tools": "tools",
-                "save": "save_context"
-            }
+            "chat", self._should_use_tools, {"tools": "tools", "save": "save_context"}
         )
 
         # After tool execution, go back to chat for response
@@ -95,16 +90,21 @@ class PlantAssistantAgent:
             current_message = ""
 
             # Get the latest user message for context matching
-            human_messages = [msg for msg in state["messages"] if isinstance(msg, HumanMessage)]
+            human_messages = [
+                msg for msg in state["messages"] if isinstance(msg, HumanMessage)
+            ]
             if human_messages:
                 current_message = human_messages[-1].content
 
-            if user_id and current_message and isinstance(user_id, int) and isinstance(current_message, str):
+            if (
+                user_id
+                and current_message
+                and isinstance(user_id, int)
+                and isinstance(current_message, str)
+            ):
                 # Use UserContextService to retrieve relevant context
                 context_data = await self.context_service.retrieve_user_context(
-                    user_id=user_id,
-                    current_message=current_message,
-                    top_k=3
+                    user_id=user_id, current_message=current_message, top_k=3
                 )
 
                 if context_data:
@@ -115,13 +115,15 @@ class PlantAssistantAgent:
                         "preferences": "",
                         "common_issues": "",
                         "environment": "",
-                        "goals": ""
+                        "goals": "",
                     }
 
                     # Aggregate context from multiple entries
                     for ctx in context_data:
                         if ctx.get("plants_discussed"):
-                            user_context["plants_discussed"].extend(ctx["plants_discussed"])
+                            user_context["plants_discussed"].extend(
+                                ctx["plants_discussed"]
+                            )
                         if ctx.get("experience_level"):
                             user_context["experience_level"] = ctx["experience_level"]
                         if ctx.get("preferences"):
@@ -134,7 +136,9 @@ class PlantAssistantAgent:
                             user_context["goals"] = ctx["goals"]
 
                     # Remove duplicates from plants list
-                    user_context["plants_discussed"] = list(set(user_context["plants_discussed"]))
+                    user_context["plants_discussed"] = list(
+                        set(user_context["plants_discussed"])
+                    )
 
                 else:
                     # Default context for new users
@@ -145,14 +149,14 @@ class PlantAssistantAgent:
                         "preferences": "",
                         "common_issues": "",
                         "environment": "",
-                        "goals": ""
+                        "goals": "",
                     }
             else:
                 # Fallback context
                 user_context = {
                     "user_id": user_id,
                     "plants_discussed": [],
-                    "experience_level": "beginner"
+                    "experience_level": "beginner",
                 }
 
             state["user_context"] = user_context
@@ -160,7 +164,10 @@ class PlantAssistantAgent:
 
         except Exception as e:
             logger.error(f"Error loading user context: {e}")
-            state["user_context"] = {"user_id": state.get("user_id"), "experience_level": "beginner"}
+            state["user_context"] = {
+                "user_id": state.get("user_id"),
+                "experience_level": "beginner",
+            }
 
         return state
 
@@ -184,13 +191,16 @@ class PlantAssistantAgent:
                 logger.info("Image data detected, automatically calling diagnosis tool")
 
                 # Call the diagnosis tool directly
-                diagnosis_result = await diagnose_plant_health.ainvoke({
-                    "image_data": image_data,
-                    "user_notes": "User provided an image for analysis"
-                })
+                diagnosis_result = await diagnose_plant_health.ainvoke(
+                    {
+                        "image_data": image_data,
+                        "user_notes": "User provided an image for analysis",
+                    }
+                )
 
                 # Parse the diagnosis result
                 import json
+
                 try:
                     diagnosis_data = json.loads(diagnosis_result)
 
@@ -198,44 +208,76 @@ class PlantAssistantAgent:
                     user_message_content = ""
                     if messages:
                         last_msg = messages[-1]
-                        if hasattr(last_msg, 'content'):
+                        if hasattr(last_msg, "content"):
                             if isinstance(last_msg.content, str):
                                 user_message_content = last_msg.content
-                            elif isinstance(last_msg.content, list) and len(last_msg.content) > 0:
+                            elif (
+                                isinstance(last_msg.content, list)
+                                and len(last_msg.content) > 0
+                            ):
                                 # Handle list content (like multi-part messages)
-                                text_parts = [part for part in last_msg.content if isinstance(part, str)]
-                                user_message_content = " ".join(text_parts) if text_parts else ""
+                                text_parts = [
+                                    part
+                                    for part in last_msg.content
+                                    if isinstance(part, str)
+                                ]
+                                user_message_content = (
+                                    " ".join(text_parts) if text_parts else ""
+                                )
 
                     if diagnosis_data.get("success"):
-                        plant_name = diagnosis_data.get("plant_identification", {}).get("plant_name", "Unknown plant")
-                        condition = diagnosis_data.get("health_assessment", {}).get("condition", "Unknown condition")
-                        diagnosis = diagnosis_data.get("health_assessment", {}).get("diagnosis", "")
+                        plant_name = diagnosis_data.get("plant_identification", {}).get(
+                            "plant_name", "Unknown plant"
+                        )
+                        condition = diagnosis_data.get("health_assessment", {}).get(
+                            "condition", "Unknown condition"
+                        )
+                        diagnosis = diagnosis_data.get("health_assessment", {}).get(
+                            "diagnosis", ""
+                        )
 
                         # Generate direct response based on what the user asked
-                        if "what plant" in user_message_content.lower() or "identify" in user_message_content.lower():
+                        if (
+                            "what plant" in user_message_content.lower()
+                            or "identify" in user_message_content.lower()
+                        ):
                             # For plant identification questions
                             if plant_name != "Unknown plant":
                                 direct_response = f"This is a {plant_name}."
                             else:
                                 direct_response = "I couldn't identify the specific plant species from this image. Could you provide a clearer photo?"
 
-                        elif "healthy" in user_message_content.lower() or "wrong" in user_message_content.lower() or "problem" in user_message_content.lower():
+                        elif (
+                            "healthy" in user_message_content.lower()
+                            or "wrong" in user_message_content.lower()
+                            or "problem" in user_message_content.lower()
+                        ):
                             # For health assessment questions
                             if condition != "Unknown condition" and diagnosis:
                                 direct_response = f"Your {plant_name} shows signs of {condition.lower()}. {diagnosis}"
-                                recommendations = diagnosis_data.get("treatment_recommendations", [])
+                                recommendations = diagnosis_data.get(
+                                    "treatment_recommendations", []
+                                )
                                 if recommendations and len(recommendations) > 0:
-                                    if isinstance(recommendations[0], dict) and "action" in recommendations[0]:
+                                    if (
+                                        isinstance(recommendations[0], dict)
+                                        and "action" in recommendations[0]
+                                    ):
                                         main_treatment = recommendations[0]["action"]
                                     else:
                                         main_treatment = str(recommendations[0])
-                                    direct_response += f" Recommended action: {main_treatment}"
+                                    direct_response += (
+                                        f" Recommended action: {main_treatment}"
+                                    )
                             else:
                                 direct_response = f"I can see this is a {plant_name}, but I need a clearer image to assess its health properly."
                         else:
                             # General response
                             if plant_name != "Unknown plant":
-                                if condition and condition.lower() != "unknown condition":
+                                if (
+                                    condition
+                                    and condition.lower() != "unknown condition"
+                                ):
                                     direct_response = f"I can see this is a {plant_name}. The plant's condition appears to be {condition.lower()}."
                                     if diagnosis:
                                         direct_response += f" {diagnosis}"
@@ -251,13 +293,15 @@ class PlantAssistantAgent:
                         current_context = state.get("user_context", {}) or {}
                         if plant_name != "Unknown plant":
                             # Add the plant to recently discussed plants
-                            plants_discussed = current_context.get("plants_discussed", [])
+                            plants_discussed = current_context.get(
+                                "plants_discussed", []
+                            )
                             plant_info = {
                                 "name": plant_name,
                                 "condition": condition,
                                 "diagnosis": diagnosis,
                                 "timestamp": "recent",
-                                "conversation_id": state.get("conversation_id")
+                                "conversation_id": state.get("conversation_id"),
                             }
 
                             # Add to beginning of list (most recent first) and limit to 3 recent plants
@@ -271,18 +315,25 @@ class PlantAssistantAgent:
                         ai_response = AIMessage(content=direct_response)
                         state["messages"] = messages + [ai_response]
 
-                        logger.info(f"Generated direct response from diagnosis: {direct_response[:100]}...")
+                        logger.info(
+                            f"Generated direct response from diagnosis: {direct_response[:100]}..."
+                        )
                         return state
                     else:
                         # Handle error case
-                        error_msg = diagnosis_data.get("message", "I couldn't analyze the image properly. Please try with a clearer photo.")
+                        error_msg = diagnosis_data.get(
+                            "message",
+                            "I couldn't analyze the image properly. Please try with a clearer photo.",
+                        )
                         ai_response = AIMessage(content=error_msg)
                         state["messages"] = messages + [ai_response]
                         return state
 
                 except json.JSONDecodeError:
                     logger.error("Failed to parse diagnosis result JSON")
-                    error_msg = AIMessage(content="I had trouble analyzing the image. Please try again with a clearer photo.")
+                    error_msg = AIMessage(
+                        content="I had trouble analyzing the image. Please try again with a clearer photo."
+                    )
                     state["messages"] = messages + [error_msg]
                     return state
             else:
@@ -296,7 +347,9 @@ class PlantAssistantAgent:
             logger.error(f"Error in chat node: {e}")
             state["error"] = str(e)
             # Add error message
-            error_msg = AIMessage(content="I apologize, but I encountered an error. Please try again.")
+            error_msg = AIMessage(
+                content="I apologize, but I encountered an error. Please try again."
+            )
             state["messages"] = state["messages"] + [error_msg]
 
         return state
@@ -311,7 +364,7 @@ class PlantAssistantAgent:
 
         # Check if the last message has tool calls
         # Use getattr to safely check for tool_calls attribute
-        tool_calls = getattr(last_message, 'tool_calls', None)
+        tool_calls = getattr(last_message, "tool_calls", None)
         if tool_calls:
             return "tools"
 
@@ -356,7 +409,7 @@ RECENT PLANT CONTEXT:
             plant_names = [p.get("name", "Unknown") for p in plants_discussed[:2]]
             plant_context = f"""
 RECENT PLANT CONTEXT:
-- Recently discussed plants: {', '.join(plant_names)}
+- Recently discussed plants: {", ".join(plant_names)}
 - When the user refers to "the plant" or "my plant", they likely mean one of these
 """
 
@@ -396,7 +449,7 @@ Remember: Use the diagnosis tool for any plant image, then give direct, helpful 
         user_name: Optional[str] = None,
         plant_id: Optional[str] = None,
         image_data: Optional[str] = None,
-        user_context: Optional[Dict[str, Any]] = None
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Process a user message through the LangGraph workflow."""
 
@@ -423,7 +476,7 @@ Remember: Use the diagnosis tool for any plant image, then give direct, helpful 
                 image_data=image_base64,  # Store image data for tool access
                 error=None,
                 input_tokens=0,
-                output_tokens=0
+                output_tokens=0,
             )
         else:
             # Create initial state without image
@@ -438,14 +491,12 @@ Remember: Use the diagnosis tool for any plant image, then give direct, helpful 
                 image_data=None,
                 error=None,
                 input_tokens=0,
-                output_tokens=0
+                output_tokens=0,
             )
 
         # Create config for conversation threading
         config = RunnableConfig(
-            configurable={
-                "thread_id": conversation_id or f"user_{user_id}"
-            }
+            configurable={"thread_id": conversation_id or f"user_{user_id}"}
         )
 
         try:
@@ -463,12 +514,13 @@ Remember: Use the diagnosis tool for any plant image, then give direct, helpful 
                     break
 
             return {
-                "response": ai_response or "I apologize, but I couldn't generate a proper response.",
+                "response": ai_response
+                or "I apologize, but I couldn't generate a proper response.",
                 "conversation_id": final_state.get("conversation_id"),
                 "input_tokens": final_state.get("input_tokens", 0),
                 "output_tokens": final_state.get("output_tokens", 0),
                 "error": final_state.get("error"),
-                "tool_results": final_state.get("tool_results")
+                "tool_results": final_state.get("tool_results"),
             }
 
         except Exception as e:
@@ -477,5 +529,5 @@ Remember: Use the diagnosis tool for any plant image, then give direct, helpful 
                 "response": "I apologize, but I encountered an error processing your message. Please try again.",
                 "error": str(e),
                 "input_tokens": 0,
-                "output_tokens": 0
+                "output_tokens": 0,
             }
