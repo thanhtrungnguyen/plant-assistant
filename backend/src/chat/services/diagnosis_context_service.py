@@ -63,9 +63,7 @@ class PlantDiagnosisContextService:
 
             context_results = []
             for match in search_results:
-                if (
-                    hasattr(match, "score") and match.score > 0.6
-                ):  # Confidence threshold
+                if hasattr(match, "score"):  # Remove confidence threshold to allow all results
                     metadata = getattr(match, "metadata", {})
                     context_data = {
                         "score": match.score,
