@@ -1,6 +1,5 @@
 """LangGraph workflow for plant assistant chatbot."""
 
-import json
 import logging
 from typing import Dict, Any, Optional
 
@@ -178,16 +177,16 @@ class PlantAssistantAgent:
 
         return state
 
-    async def _retrieve_relevant_context(self, state: ConversationState) -> ConversationState:
+    async def _retrieve_relevant_context(
+        self, state: ConversationState
+    ) -> ConversationState:
         """Retrieve relevant context from Pinecone for the current conversation."""
         try:
             user_id = state.get("user_id")
             messages = state["messages"]
 
             # Get the latest user message for context matching
-            human_messages = [
-                msg for msg in messages if isinstance(msg, HumanMessage)
-            ]
+            human_messages = [msg for msg in messages if isinstance(msg, HumanMessage)]
 
             if not human_messages:
                 logger.info("No user messages found for context retrieval")
@@ -197,7 +196,11 @@ class PlantAssistantAgent:
 
             # Extract just text content if it's a complex message structure
             if isinstance(current_message, list):
-                text_parts = [part.get("text", "") for part in current_message if isinstance(part, dict) and "text" in part]
+                text_parts = [
+                    part.get("text", "")
+                    for part in current_message
+                    if isinstance(part, dict) and "text" in part
+                ]
                 current_message = " ".join(text_parts)
             elif not isinstance(current_message, str):
                 current_message = str(current_message)
@@ -213,30 +216,38 @@ class PlantAssistantAgent:
                     logger.warning(f"Could not convert user_id to int: {user_id}")
                     return state
 
-                logger.info(f"🔍 STARTING CONTEXT RETRIEVAL:")
+                logger.info("🔍 STARTING CONTEXT RETRIEVAL:")
                 logger.info(f"  User ID: {user_id_int}")
                 logger.info(f"  Query: '{current_message[:200]}'")
-                logger.info(f"  Requesting top_k: 5 results")
+                logger.info("  Requesting top_k: 5 results")
 
                 # Retrieve relevant context using the context service
                 context_results = await self.context_service.retrieve_user_context(
                     user_id=user_id_int,
                     current_message=current_message,
-                    top_k=5  # Get more context for better decision making
+                    top_k=5,  # Get more context for better decision making
                 )
 
-                logger.info(f"📊 CONTEXT RETRIEVAL COMPLETE:")
-                logger.info(f"  Total results returned: {len(context_results) if context_results else 0}")
+                logger.info("📊 CONTEXT RETRIEVAL COMPLETE:")
+                logger.info(
+                    f"  Total results returned: {len(context_results) if context_results else 0}"
+                )
 
                 if context_results:
                     # Log all context results first
                     logger.info(f"🔍 RETRIEVED {len(context_results)} CONTEXT RESULTS:")
                     for i, ctx in enumerate(context_results):
                         relevance = ctx.get("relevance_score", 0)
-                        summary = ctx.get("summary", "")[:150] + "..." if len(ctx.get("summary", "")) > 150 else ctx.get("summary", "")
+                        summary = (
+                            ctx.get("summary", "")[:150] + "..."
+                            if len(ctx.get("summary", "")) > 150
+                            else ctx.get("summary", "")
+                        )
                         user_context_id = ctx.get("user_id", "N/A")
                         timestamp = ctx.get("timestamp", "N/A")
-                        logger.info(f"  Context {i+1}: [Relevance: {relevance:.3f}] [User: {user_context_id}] [Time: {timestamp}] {summary}")
+                        logger.info(
+                            f"  Context {i + 1}: [Relevance: {relevance:.3f}] [User: {user_context_id}] [Time: {timestamp}] {summary}"
+                        )
 
                     # Create a context summary for the LLM
                     context_summaries = []
@@ -244,7 +255,9 @@ class PlantAssistantAgent:
                         relevance = ctx.get("relevance_score", 0)
                         summary = ctx.get("summary", "")
                         if relevance > 0.3 and summary:  # Only include relevant context
-                            context_summaries.append(f"[Relevance: {relevance:.2f}] {summary}")
+                            context_summaries.append(
+                                f"[Relevance: {relevance:.2f}] {summary}"
+                            )
 
                     if context_summaries:
                         # Add context information to the conversation
@@ -262,20 +275,30 @@ Use this context to inform your responses and tool usage decisions. If the conte
                             messages.insert(-1, context_msg)
                             state["messages"] = messages
 
-                        logger.info(f"📝 CONTEXT INJECTED INTO LLM: Added {len(context_summaries)} relevant entries above threshold (>0.3)")
-                        logger.info(f"📋 CONTEXT MESSAGE CONTENT: {context_message[:300]}...")
+                        logger.info(
+                            f"📝 CONTEXT INJECTED INTO LLM: Added {len(context_summaries)} relevant entries above threshold (>0.3)"
+                        )
+                        logger.info(
+                            f"📋 CONTEXT MESSAGE CONTENT: {context_message[:300]}..."
+                        )
                     else:
-                        logger.info("❌ No relevant context found above threshold (>0.3)")
+                        logger.info(
+                            "❌ No relevant context found above threshold (>0.3)"
+                        )
                 else:
                     logger.warning("⚠️  NO CONTEXT RESULTS FOUND:")
                     logger.warning("  This could mean:")
-                    logger.warning("  1. No previous conversations stored in Pinecone for this user")
+                    logger.warning(
+                        "  1. No previous conversations stored in Pinecone for this user"
+                    )
                     logger.warning("  2. Semantic search found no relevant matches")
                     logger.warning("  3. Pinecone connection/query issue")
                     logger.warning("  4. Context service configuration problem")
             else:
-                logger.warning(f"❌ CONTEXT RETRIEVAL SKIPPED:")
-                logger.warning(f"  Missing requirements - user_id: {user_id}, current_message length: {len(current_message) if current_message else 0}")
+                logger.warning("❌ CONTEXT RETRIEVAL SKIPPED:")
+                logger.warning(
+                    f"  Missing requirements - user_id: {user_id}, current_message length: {len(current_message) if current_message else 0}"
+                )
 
         except Exception as e:
             logger.error(f"Error retrieving relevant context: {e}")
@@ -288,19 +311,25 @@ Use this context to inform your responses and tool usage decisions. If the conte
         try:
             messages = state["messages"]
             user_context = state.get("user_context", {})
-            image_data = state.get("image_data")
 
             # Check if this is a second pass after tool execution
-            tool_messages = [msg for msg in messages if hasattr(msg, 'tool_call_id')]
+            tool_messages = [msg for msg in messages if hasattr(msg, "tool_call_id")]
             if tool_messages:
-                logger.info(f"🔄 SECOND PASS AFTER TOOL EXECUTION - Found {len(tool_messages)} tool response messages")
+                logger.info(
+                    f"🔄 SECOND PASS AFTER TOOL EXECUTION - Found {len(tool_messages)} tool response messages"
+                )
                 for i, tool_msg in enumerate(tool_messages):
-                    if hasattr(tool_msg, 'content'):
-                        content_preview = str(tool_msg.content)[:200] + "..." if len(str(tool_msg.content)) > 200 else str(tool_msg.content)
-                        logger.info(f"  Tool Response {i+1}: {content_preview}")
+                    if hasattr(tool_msg, "content"):
+                        content_preview = (
+                            str(tool_msg.content)[:200] + "..."
+                            if len(str(tool_msg.content)) > 200
+                            else str(tool_msg.content)
+                        )
+                        logger.info(f"  Tool Response {i + 1}: {content_preview}")
 
             # Set the current state in tools so they can access image data
             from .tools import set_current_state
+
             set_current_state(state)
 
             # Add system message with user context if not present
@@ -312,7 +341,7 @@ Use this context to inform your responses and tool usage decisions. If the conte
             response = await self.llm_with_tools.ainvoke(messages)
 
             # Log what the LLM received and decided
-            logger.info(f"🤖 LLM DECISION SUMMARY:")
+            logger.info("🤖 LLM DECISION SUMMARY:")
             logger.info(f"  Total messages sent to LLM: {len(messages)}")
 
             # Count different message types
@@ -326,11 +355,13 @@ Use this context to inform your responses and tool usage decisions. If the conte
             if tool_calls:
                 logger.info(f"🔧 LLM DECIDED TO CALL {len(tool_calls)} TOOL(S):")
                 for i, tool_call in enumerate(tool_calls):
-                    tool_name = tool_call.get('name', 'unknown')
-                    tool_args = tool_call.get('args', {})
-                    logger.info(f"  Tool {i+1}: {tool_name} with args: {list(tool_args.keys())}")
+                    tool_name = tool_call.get("name", "unknown")
+                    tool_args = tool_call.get("args", {})
+                    logger.info(
+                        f"  Tool {i + 1}: {tool_name} with args: {list(tool_args.keys())}"
+                    )
             else:
-                logger.info(f"💭 LLM DECIDED NOT TO CALL ANY TOOLS - Direct response")
+                logger.info("💭 LLM DECIDED NOT TO CALL ANY TOOLS - Direct response")
 
             state["messages"] = messages + [response]
             logger.info(f"LLM response generated for user {state.get('user_id')}")

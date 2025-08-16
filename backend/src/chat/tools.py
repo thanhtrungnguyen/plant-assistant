@@ -11,10 +11,12 @@ logger = logging.getLogger(__name__)
 # Global state holder for accessing image data in tools
 _current_state = None
 
+
 def set_current_state(state):
     """Set the current conversation state for tools to access."""
     global _current_state
     _current_state = state
+
 
 def get_current_state():
     """Get the current conversation state."""
@@ -27,7 +29,7 @@ async def diagnose_plant_from_image(
     image_description: str,
     symptoms: str = "",
     user_id: str = "anonymous",
-    user_preferences: Optional[str] = None
+    user_preferences: Optional[str] = None,
 ) -> str:
     """
     Analyze plant health from an uploaded image using visual AI analysis.
@@ -55,15 +57,23 @@ async def diagnose_plant_from_image(
         from diagnosis.service import get_diagnosis_service
 
         if not image_base64:
-            return json.dumps({
-                "success": False,
-                "analysis_type": "image_error",
-                "error": "No image data provided",
-                "message": "I need an image to perform visual analysis. Please upload a photo of your plant.",
-                "plant_identification": {"plant_name": "Unknown", "confidence": 0.0},
-                "health_assessment": {"condition": "Error", "diagnosis": "No image provided"},
-                "treatment_recommendations": [],
-            })
+            return json.dumps(
+                {
+                    "success": False,
+                    "analysis_type": "image_error",
+                    "error": "No image data provided",
+                    "message": "I need an image to perform visual analysis. Please upload a photo of your plant.",
+                    "plant_identification": {
+                        "plant_name": "Unknown",
+                        "confidence": 0.0,
+                    },
+                    "health_assessment": {
+                        "condition": "Error",
+                        "diagnosis": "No image provided",
+                    },
+                    "treatment_recommendations": [],
+                }
+            )
 
         # Parse user preferences if provided
         preferences = {}
@@ -85,17 +95,21 @@ async def diagnose_plant_from_image(
             "plant_identification": {
                 "plant_name": api_result.get("plant_name", "Unknown"),
                 "confidence": api_result.get("confidence", 0.0),
-                "species": api_result.get("species", api_result.get("plant_name", "Unknown"))
+                "species": api_result.get(
+                    "species", api_result.get("plant_name", "Unknown")
+                ),
             },
             "health_assessment": {
                 "condition": api_result.get("condition", "Unknown"),
-                "diagnosis": api_result.get("diagnosis", api_result.get("analysis", "")),
-                "severity": api_result.get("severity", "Unknown")
+                "diagnosis": api_result.get(
+                    "diagnosis", api_result.get("analysis", "")
+                ),
+                "severity": api_result.get("severity", "Unknown"),
             },
             "treatment_recommendations": api_result.get("recommendations", []),
             "confidence_score": api_result.get("confidence", 0.0),
             "user_notes": symptoms,
-            "api_response": api_result
+            "api_response": api_result,
         }
 
         return json.dumps(response, indent=2)
@@ -119,7 +133,7 @@ async def diagnose_plant_from_text(
     plant_description: str,
     symptoms: str = "",
     user_id: str = "anonymous",
-    user_preferences: Optional[str] = None
+    user_preferences: Optional[str] = None,
 ) -> str:
     """
     Provide plant care advice and diagnosis based on text descriptions using our knowledge database.
@@ -156,29 +170,37 @@ async def diagnose_plant_from_text(
             image_description=plant_description,
             symptoms=symptoms,
             user_id=user_id,
-            top_k=5
+            top_k=5,
         )
 
         if not context_results:
             # Use fallback when no context is available
             fallback_response = await diagnosis_context_service.get_fallback_diagnosis(
-                image_description=plant_description,
-                symptoms=symptoms
+                image_description=plant_description, symptoms=symptoms
             )
-            return json.dumps({
-                "success": False,
-                "analysis_type": "context_fallback",
-                "context_available": False,
-                "message": fallback_response,
-                "plant_identification": {"plant_name": "Unknown", "confidence": 0.0},
-                "health_assessment": {"condition": "Unable to determine", "diagnosis": fallback_response},
-                "treatment_recommendations": [],
-                "context_sources": 0
-            }, indent=2)
+            return json.dumps(
+                {
+                    "success": False,
+                    "analysis_type": "context_fallback",
+                    "context_available": False,
+                    "message": fallback_response,
+                    "plant_identification": {
+                        "plant_name": "Unknown",
+                        "confidence": 0.0,
+                    },
+                    "health_assessment": {
+                        "condition": "Unable to determine",
+                        "diagnosis": fallback_response,
+                    },
+                    "treatment_recommendations": [],
+                    "context_sources": 0,
+                },
+                indent=2,
+            )
 
         # Aggregate context from multiple cases
-        aggregated_context = await diagnosis_context_service.aggregate_diagnosis_context(
-            context_results
+        aggregated_context = (
+            await diagnosis_context_service.aggregate_diagnosis_context(context_results)
         )
 
         # Generate personalized diagnosis response
@@ -186,7 +208,7 @@ async def diagnose_plant_from_text(
             aggregated_context=aggregated_context,
             user_preferences=preferences,
             image_description=plant_description,
-            symptoms=symptoms
+            symptoms=symptoms,
         )
 
         # Format response in expected structure
@@ -198,20 +220,23 @@ async def diagnose_plant_from_text(
             "plant_identification": {
                 "plant_name": aggregated_context.get("plant_name", "Unknown"),
                 "confidence": aggregated_context.get("confidence", 0.0),
-                "species": aggregated_context.get("plant_name", "Unknown")
+                "species": aggregated_context.get("plant_name", "Unknown"),
             },
             "health_assessment": {
                 "condition": aggregated_context.get("condition", "Unknown"),
                 "diagnosis": diagnosis_response,
-                "severity": "Moderate" if aggregated_context.get("condition", "").lower() not in ["healthy", "unknown"] else "None"
+                "severity": "Moderate"
+                if aggregated_context.get("condition", "").lower()
+                not in ["healthy", "unknown"]
+                else "None",
             },
             "treatment_recommendations": [
-                {"id": i+1, "action": treatment}
+                {"id": i + 1, "action": treatment}
                 for i, treatment in enumerate(aggregated_context.get("treatments", []))
             ],
             "context_sources": aggregated_context.get("similar_cases_count", 0),
             "confidence_score": aggregated_context.get("confidence", 0.0),
-            "user_notes": symptoms
+            "user_notes": symptoms,
         }
 
         return json.dumps(response, indent=2)
@@ -226,7 +251,7 @@ async def diagnose_plant_from_text(
             "plant_identification": {"plant_name": "Unknown", "confidence": 0.0},
             "health_assessment": {"condition": "Error", "diagnosis": str(e)},
             "treatment_recommendations": [],
-            "context_sources": 0
+            "context_sources": 0,
         }
         return json.dumps(error_response, indent=2)
 

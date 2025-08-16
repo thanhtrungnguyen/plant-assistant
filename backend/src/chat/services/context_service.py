@@ -200,7 +200,9 @@ class UserContextService:
                 score = getattr(match, "score", 0)
                 match_id = getattr(match, "id", "unknown")
                 metadata = getattr(match, "metadata", {})
-                logger.info(f"    Match {i+1}: ID={match_id}, Score={score:.4f}, Metadata keys={list(metadata.keys())}")
+                logger.info(
+                    f"    Match {i + 1}: ID={match_id}, Score={score:.4f}, Metadata keys={list(metadata.keys())}"
+                )
 
             # Format results - simplified for conversation summaries
             context_results = []
@@ -228,7 +230,9 @@ class UserContextService:
                     )
                     logger.info(f"    ✅ Match included: Score={score:.4f}")
                 else:
-                    logger.info(f"    ❌ Match excluded: Score={score:.4f} < {threshold}")
+                    logger.info(
+                        f"    ❌ Match excluded: Score={score:.4f} < {threshold}"
+                    )
 
             logger.info(
                 f"Retrieved {len(context_results)} context entries for user {user_id}"
@@ -238,6 +242,7 @@ class UserContextService:
         except Exception as e:
             logger.error(f"Error retrieving user context for user {user_id}: {e}")
             import traceback
+
             logger.error(f"Traceback: {traceback.format_exc()}")
             return []
 

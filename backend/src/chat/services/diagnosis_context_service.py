@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from pydantic import SecretStr
@@ -32,11 +32,7 @@ class PlantDiagnosisContextService:
         self.diagnosis_namespace = "diagnosis_context"
 
     async def query_diagnosis_context(
-        self,
-        image_description: str,
-        symptoms: str,
-        user_id: str,
-        top_k: int = 5
+        self, image_description: str, symptoms: str, user_id: str, top_k: int = 5
     ) -> List[Dict[str, Any]]:
         """
         Query Pinecone for similar diagnosis cases.
@@ -62,13 +58,15 @@ class PlantDiagnosisContextService:
                 embedding=query_embedding,
                 top_k=top_k,
                 namespace=self.diagnosis_namespace,
-                filter=None
+                filter=None,
             )
 
             context_results = []
             for match in search_results:
-                if hasattr(match, 'score') and match.score > 0.6:  # Confidence threshold
-                    metadata = getattr(match, 'metadata', {})
+                if (
+                    hasattr(match, "score") and match.score > 0.6
+                ):  # Confidence threshold
+                    metadata = getattr(match, "metadata", {})
                     context_data = {
                         "score": match.score,
                         "plant_name": metadata.get("plant_name", "Unknown"),
@@ -77,11 +75,13 @@ class PlantDiagnosisContextService:
                         "treatment": metadata.get("treatment", []),
                         "confidence": metadata.get("confidence", 0.0),
                         "image_description": metadata.get("image_description", ""),
-                        "similar_cases": metadata.get("similar_cases", 0)
+                        "similar_cases": metadata.get("similar_cases", 0),
                     }
                     context_results.append(context_data)
 
-            logger.info(f"Found {len(context_results)} similar diagnosis cases for user {user_id}")
+            logger.info(
+                f"Found {len(context_results)} similar diagnosis cases for user {user_id}"
+            )
             return context_results
 
         except Exception as e:
@@ -89,8 +89,7 @@ class PlantDiagnosisContextService:
             return []
 
     async def aggregate_diagnosis_context(
-        self,
-        context_results: List[Dict[str, Any]]
+        self, context_results: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """
         Compile diagnosis from multiple Pinecone entries.
@@ -107,7 +106,7 @@ class PlantDiagnosisContextService:
                 "condition": "Unable to determine",
                 "confidence": 0.0,
                 "treatments": [],
-                "similar_cases_count": 0
+                "similar_cases_count": 0,
             }
 
         # Aggregate plant names and find most common
@@ -115,8 +114,14 @@ class PlantDiagnosisContextService:
         most_common_plant = max(set(plant_names), key=plant_names.count)
 
         # Aggregate conditions and find most likely
-        conditions = [ctx.get("condition", "Unknown") for ctx in context_results if ctx.get("condition") != "Unknown"]
-        most_likely_condition = max(set(conditions), key=conditions.count) if conditions else "Healthy"
+        conditions = [
+            ctx.get("condition", "Unknown")
+            for ctx in context_results
+            if ctx.get("condition") != "Unknown"
+        ]
+        most_likely_condition = (
+            max(set(conditions), key=conditions.count) if conditions else "Healthy"
+        )
 
         # Collect unique treatments
         all_treatments = []
@@ -127,11 +132,15 @@ class PlantDiagnosisContextService:
             elif isinstance(treatments, str):
                 all_treatments.append(treatments)
 
-        unique_treatments = list(dict.fromkeys(all_treatments))  # Remove duplicates while preserving order
+        unique_treatments = list(
+            dict.fromkeys(all_treatments)
+        )  # Remove duplicates while preserving order
 
         # Calculate overall confidence based on context scores
         total_confidence = sum(ctx.get("score", 0.0) for ctx in context_results)
-        average_confidence = total_confidence / len(context_results) if context_results else 0.0
+        average_confidence = (
+            total_confidence / len(context_results) if context_results else 0.0
+        )
 
         return {
             "plant_name": most_common_plant,
@@ -139,7 +148,7 @@ class PlantDiagnosisContextService:
             "confidence": average_confidence,
             "treatments": unique_treatments[:5],  # Top 5 treatments
             "similar_cases_count": len(context_results),
-            "context_sources": context_results
+            "context_sources": context_results,
         }
 
     async def generate_context_diagnosis(
@@ -147,7 +156,7 @@ class PlantDiagnosisContextService:
         aggregated_context: Dict[str, Any],
         user_preferences: Dict[str, Any],
         image_description: str = "",
-        symptoms: str = ""
+        symptoms: str = "",
     ) -> str:
         """
         Generate diagnosis response from aggregated context.
@@ -181,7 +190,7 @@ Confidence: {confidence:.2f}
 Image Description: {image_description}
 Symptoms: {symptoms}
 Similar Cases Found: {similar_cases}
-Available Treatments: {', '.join(treatments) if treatments else 'None available'}
+Available Treatments: {", ".join(treatments) if treatments else "None available"}
 
 User Experience Level: {experience_level}
 
@@ -196,8 +205,14 @@ Keep the response conversational, helpful, and appropriately detailed for the us
 """
 
             response = await self.llm.ainvoke(diagnosis_prompt)
-            response_content = response.content if hasattr(response, 'content') else str(response)
-            return response_content.strip() if isinstance(response_content, str) else str(response_content)
+            response_content = (
+                response.content if hasattr(response, "content") else str(response)
+            )
+            return (
+                response_content.strip()
+                if isinstance(response_content, str)
+                else str(response_content)
+            )
 
         except Exception as e:
             logger.error(f"Error generating context diagnosis: {e}")
@@ -212,7 +227,7 @@ Keep the response conversational, helpful, and appropriately detailed for the us
         symptoms: List[str],
         treatment: List[str],
         image_description: str,
-        confidence: float = 0.8
+        confidence: float = 0.8,
     ) -> bool:
         """
         Store new diagnosis context in Pinecone for future reference.
@@ -247,7 +262,7 @@ Keep the response conversational, helpful, and appropriately detailed for the us
                 "confidence": confidence,
                 "image_description": image_description,
                 "timestamp": datetime.now().isoformat(),
-                "similar_cases": 1
+                "similar_cases": 1,
             }
 
             # Generate unique ID
@@ -258,8 +273,7 @@ Keep the response conversational, helpful, and appropriately detailed for the us
 
             # Upsert to Pinecone
             count = upsert_vectors(
-                items=vectors_to_upsert,
-                namespace=self.diagnosis_namespace
+                items=vectors_to_upsert, namespace=self.diagnosis_namespace
             )
 
             logger.info(f"Stored diagnosis context for user {user_id}: {plant_name}")
@@ -270,9 +284,7 @@ Keep the response conversational, helpful, and appropriately detailed for the us
             return False
 
     async def get_fallback_diagnosis(
-        self,
-        image_description: str = "",
-        symptoms: str = ""
+        self, image_description: str = "", symptoms: str = ""
     ) -> str:
         """
         Provide fallback diagnosis when insufficient context is available.
@@ -287,7 +299,9 @@ Keep the response conversational, helpful, and appropriately detailed for the us
         fallback_message = "I don't have enough similar cases in our database to provide a confident diagnosis"
 
         if image_description:
-            fallback_message += f" for a plant with these characteristics: {image_description}"
+            fallback_message += (
+                f" for a plant with these characteristics: {image_description}"
+            )
 
         if symptoms:
             fallback_message += f" showing these symptoms: {symptoms}"
@@ -295,8 +309,12 @@ Keep the response conversational, helpful, and appropriately detailed for the us
         fallback_message += ". To get the best help:\n\n"
         fallback_message += "1. Try uploading a clearer, well-lit image of your plant\n"
         fallback_message += "2. Describe specific symptoms you've noticed (leaf color, spots, wilting, etc.)\n"
-        fallback_message += "3. Tell me about your care routine (watering, light, fertilizing)\n"
-        fallback_message += "4. Mention how long you've had the plant and when symptoms started\n\n"
+        fallback_message += (
+            "3. Tell me about your care routine (watering, light, fertilizing)\n"
+        )
+        fallback_message += (
+            "4. Mention how long you've had the plant and when symptoms started\n\n"
+        )
         fallback_message += "With more information, I can provide better guidance based on similar cases from our community!"
 
         return fallback_message
