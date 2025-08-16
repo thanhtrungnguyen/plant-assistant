@@ -2,13 +2,14 @@ import time
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
 from src.auth.routes.auth_local import router as auth_local
 from src.auth.routes.auth_oauth import router as auth_oauth
 from src.auth.routes.auth_recovery import router as auth_recovery
 from src.auth.routes.auth_tokens import router as auth_tokens
 from src.care.router import router as care_router
-from src.conversations.router import router as chat_router
+from src.chat.routes import chat_router  # New LangGraph-powered chat
 from src.core.config import settings
 from src.core.logging import get_logger, setup_logging
 from src.core.routes.health import router as health_router
@@ -48,6 +49,13 @@ async def log_requests(request: Request, call_next):
 
     return response
 
+
+# Add Session Middleware (required for OAuth)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.ACCESS_SECRET_KEY,
+    max_age=3600,  # 1 hour session
+)
 
 app.add_middleware(
     CORSMiddleware,

@@ -11,8 +11,8 @@ class Settings(BaseSettings):
     # OpenAPI docs
     OPENAPI_URL: str = "/openapi.json"
 
-    # Database
-    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost/dbname"
+    # Database - using psycopg (version 3) driver for SQLAlchemy compatibility
+    DATABASE_URL: str = "postgresql+psycopg://user:password@localhost/dbname"
     TEST_DATABASE_URL: str | None = None
     EXPIRE_ON_COMMIT: bool = False
 
@@ -47,6 +47,7 @@ class Settings(BaseSettings):
 
     # Frontend
     FRONTEND_URL: str = "http://localhost:3000"
+    WEB_APP_URL: str = "http://localhost:3000"
 
     # Google OAuth
     GOOGLE_CLIENT_ID: str | None = None
@@ -73,7 +74,9 @@ class Settings(BaseSettings):
     PINECONE_HOST: str | None = (
         None  # optional override for self-hosted / explicit host
     )
-    PINECONE_DEFAULT_INDEX: str | None = None
+    PINECONE_DEFAULT_INDEX: str = os.getenv(
+        "PINECONE_DEFAULT_INDEX", "plant-assistant-vectors"
+    )
     PINECONE_DEFAULT_NAMESPACE: str | None = None
 
     # AI/OpenAI Configuration
@@ -81,6 +84,12 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o")
     OPENAI_VISION_MODEL: str = os.getenv("OPENAI_VISION_MODEL", "gpt-4o")
+    OPENAI_EMBEDDINGS_MODEL: str = os.getenv(
+        "OPENAI_EMBEDDINGS_MODEL", "text-embedding-3-small"
+    )
+    OPENAI_EMBEDDINGS_API_KEY: str = os.getenv(
+        "OPENAI_EMBEDDINGS_API_KEY", "your-openai-embeddings-api-key"
+    )
     OPENAI_MAX_TOKENS: int = int(os.getenv("OPENAI_MAX_TOKENS", 1500))
     OPENAI_TEMPERATURE: float = float(os.getenv("OPENAI_TEMPERATURE", 0.1))
     WEATHER_API_KEY: str = os.getenv("WEATHER_API_KEY", "your-weather-api-key")

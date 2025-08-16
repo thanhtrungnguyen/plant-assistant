@@ -2,63 +2,60 @@
 
 import AppLayout from "@/components/layout/AppLayout";
 import { CameraCapture } from "@/components/ui/camera-capture";
+import { ConversationHistorySidebar } from "@/components/ui/conversation-history-sidebar";
+import { MobileChatHistoryPanel } from "@/components/ui/mobile-chat-history-panel";
+import { useChat } from "@/hooks/useChat";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { Bot, Camera, Image as ImageIcon, Send, User, X } from "lucide-react";
+import { ChatApiError } from "@/lib/chat-api";
+import { Bot, Camera, History, Image as ImageIcon, Send, User, X } from "lucide-react";
 import { useRef, useState } from "react";
 
-type Message = {
-  id: string;
-  content: string;
-  sender: "user" | "bot";
-  timestamp: Date;
-  imageUrl?: string;
-};
+// Client-side timestamp component to prevent hydration mismatch
+function ClientTimestamp({ timestamp, className }: { timestamp: Date; className?: string }) {
+  return <span className={className}>{timestamp.toLocaleTimeString()}</span>;
+}
 
 export default function ChatbotPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content:
-        "Xin chào! Tôi là trợ lý AI chăm sóc cây trồng. Bạn có thể hỏi tôi về cách chăm sóc cây hoặc gửi ảnh cây để tôi phân tích.",
-      sender: "bot",
-      timestamp: new Date(),
-    },
-  ]);
   const [inputMessage, setInputMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [showMobileHistory, setShowMobileHistory] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
+
+  const {
+    messages,
+    conversations,
+    currentConversationId,
+    isLoading,
+    isLoadingConversations,
+    messagesEndRef,
+    sendMessage,
+    loadConversations,
+    loadConversation,
+    startNewConversation,
+    deleteConversation,
+  } = useChat({
+    onError: (error: ChatApiError) => {
+      if (error.status === 401) {
+        setError("Bạn cần đăng nhập để sử dụng tính năng chat.");
+      } else {
+        setError(error.message);
+      }
+    },
+  });
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!inputMessage.trim() && !selectedImage) || isLoading) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: inputMessage.trim() || (selectedImage ? "Đã gửi ảnh cây trồng" : ""),
-      sender: "user",
-      timestamp: new Date(),
-      imageUrl: selectedImage || undefined,
-    };
+    setError(null); // Clear any previous errors
 
-    setMessages((prev) => [...prev, userMessage]);
+    await sendMessage(inputMessage, selectedImage || undefined);
+
     setInputMessage("");
     setSelectedImage(null);
-    setIsLoading(true);
-
-    // Simulate bot response
-    setTimeout(() => {
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: selectedImage ? getImageAnalysisResponse() : getBotResponse(userMessage.content),
-        sender: "bot",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, botMessage]);
-      setIsLoading(false);
-    }, 1500);
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,6 +78,11 @@ export default function ChatbotPage() {
     setShowCamera(false);
   };
 
+  const handleMobileHistoryClick = () => {
+    loadConversations(); // Load conversations when opening mobile history
+    setShowMobileHistory(true);
+  };
+
   const handleImageButtonClick = () => {
     if (isMobile && typeof navigator !== "undefined" && navigator.mediaDevices) {
       setShowCamera(true);
@@ -89,62 +91,55 @@ export default function ChatbotPage() {
     }
   };
 
-  const getImageAnalysisResponse = (): string => {
-    const responses = [
-      "Tôi thấy đây là một cây Pothos khỏe mạnh! Lá xanh tươi cho thấy cây đang được chăm sóc tốt. Để duy trì, hãy tưới nước khi đất khô và đặt ở nơi có ánh sáng gián tiếp.",
-      "Cây Monstera của bạn có vẻ cần nhiều ánh sáng hơn. Tôi khuyên nên di chuyển cây gần cửa sổ hơn và kiểm tra độ ẩm đất thường xuyên.",
-      "Đây có vẻ là cây Snake Plant. Cây này rất dễ chăm sóc! Chỉ cần tưới nước 1-2 lần/tháng và cây sẽ phát triển tốt ngay cả trong điều kiện ánh sáng thấp.",
-      "Tôi nhận thấy một số dấu hiệu vàng lá. Điều này có thể do tưới nước quá nhiều. Hãy kiểm tra xem đất có bị úng nước không và giảm tần suất tưới nước.",
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
-
-  const getBotResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase();
-
-    if (input.includes("tưới") || input.includes("nước")) {
-      return "Để tưới nước đúng cách, hãy kiểm tra độ ẩm đất bằng cách nhấn ngón tay xuống đất 2-3cm. Hầu hết các cây cần tưới khi lớp đất trên cùng khô. Thông thường tưới 1-2 lần/tuần, tùy thuộc vào loại cây và mùa.";
-    }
-
-    if (input.includes("ánh sáng") || input.includes("nắng")) {
-      return "Yêu cầu ánh sáng khác nhau tùy loại cây. Hầu hết cây trong nhà thích ánh sáng gián tiếp sáng. Tránh ánh nắng trực tiếp có thể làm cháy lá. Nếu lá vàng hoặc cây héo, có thể cây cần nhiều ánh sáng hơn.";
-    }
-
-    if (input.includes("bón phân") || input.includes("dinh dưỡng")) {
-      return "Bón phân cho cây trong mùa sinh trưởng (xuân/hè) bằng phân bón lỏng cân bằng 2-4 tuần/lần. Giảm hoặc ngừng bón phân vào thu/đông khi cây phát triển chậm lại.";
-    }
-
-    if (input.includes("sâu bệnh") || input.includes("côn trùng")) {
-      return "Dấu hiệu sâu bệnh thường là lá vàng, chất dính hoặc thấy côn trùng. Kiểm tra thường xuyên và xử lý bằng xà phòng diệt côn trùng hoặc dầu neem. Cách ly cây bị nhiễm bệnh.";
-    }
-
-    if (input.includes("thay chậu") || input.includes("chậu mới")) {
-      return "Thay chậu khi rễ mọc ra khỏi lỗ thoát nước hoặc đất cạn kiệt nhanh. Chọn chậu lớn hơn 2-3cm, dùng đất trồng mới, tốt nhất là thay chậu vào mùa xuân.";
-    }
-
-    if (input.includes("ảnh") || input.includes("hình")) {
-      return "Bạn có thể gửi ảnh cây trồng cho tôi để phân tích! Tôi sẽ giúp nhận dạng loại cây và đưa ra lời khuyên chăm sóc cụ thể.";
-    }
-
-    return "Tôi có thể giúp bạn về tưới nước, ánh sáng, bón phân, phòng trừ sâu bệnh, thay chậu và phân tích ảnh cây trồng. Bạn muốn hỏi gì cụ thể hơn không?";
-  };
-
   return (
     <AppLayout title="Plant Assistant AI" subtitle="Trợ lý AI chăm sóc cây trồng">
-      <div className="max-w-4xl mx-auto h-[calc(100vh-8rem)] lg:h-[calc(100vh-12rem)]">
-        <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
+      <div className="flex h-[calc(100vh-8rem)] lg:h-[calc(100vh-12rem)]">
+        {/* Conversation History Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block">
+          <ConversationHistorySidebar
+            conversations={conversations}
+            currentConversationId={currentConversationId}
+            isLoading={isLoadingConversations}
+            onLoadConversations={loadConversations}
+            onSelectConversation={loadConversation}
+            onNewConversation={startNewConversation}
+            onDeleteConversation={deleteConversation}
+          />
+        </div>
+
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col bg-white rounded-lg shadow-lg">
           {/* Header - Responsive */}
-          <div className="p-3 md:p-6 border-b border-gray-200 flex-shrink-0">
+          <div className="p-3 md:p-6 border-b border-gray-200 flex-shrink-0 relative">
             <h1 className="text-lg md:text-2xl font-bold text-gray-900 flex items-center gap-2">
               <Bot className="h-5 w-5 md:h-8 md:w-8 text-green-600" />
               <span className="hidden sm:inline">Plant Care Assistant</span>
               <span className="sm:hidden">Plant AI</span>
             </h1>
             <p className="text-gray-600 mt-1 text-xs md:text-base">
-              <span className="hidden sm:inline">Hỏi tôi bất cứ điều gì về chăm sóc cây, tưới nước, ánh sáng và nhiều hơn nữa!</span>
+              <span className="hidden sm:inline">
+                Hỏi tôi bất cứ điều gì về chăm sóc cây, tưới nước, ánh sáng và nhiều hơn nữa!
+              </span>
               <span className="sm:hidden">Trợ lý AI chăm sóc cây trồng</span>
             </p>
+
+            {/* Mobile History Button */}
+            {isMobile && (
+              <button
+                onClick={handleMobileHistoryClick}
+                className="absolute top-3 right-3 p-2 text-gray-500 hover:text-gray-700 lg:hidden"
+              >
+                <History className="h-5 w-5" />
+              </button>
+            )}
           </div>
+
+          {/* Error Display */}
+          {error && (
+            <div className="mx-3 md:mx-6 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
 
           {/* Messages Area - Scrollable */}
           <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-3 md:space-y-4 min-h-0">
@@ -185,42 +180,41 @@ export default function ChatbotPage() {
                       />
                     </div>
                   )}
-                  <p className="text-xs md:text-sm">{message.content}</p>
-                  <p
-                    className={`text-xs mt-1 ${
-                      message.sender === "user" ? "text-blue-100" : "text-gray-500"
-                    }`}
-                  >
-                    {message.timestamp.toLocaleTimeString()}
-                  </p>
+
+                  {message.isLoading ? (
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.1s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-xs md:text-sm">{message.content}</p>
+                      <ClientTimestamp
+                        timestamp={message.timestamp}
+                        className={`text-xs mt-1 ${
+                          message.sender === "user" ? "text-blue-100" : "text-gray-500"
+                        }`}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
             ))}
-
-            {isLoading && (
-              <div className="flex items-start gap-2 md:gap-3">
-                <div className="flex-shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
-                  <Bot className="h-3 w-3 md:h-4 md:w-4" />
-                </div>
-                <div className="bg-gray-100 rounded-lg p-2 md:p-3">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.1s" }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.2s" }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            )}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Input Form - Fixed at bottom */}
-          <form onSubmit={handleSendMessage} className="p-3 md:p-6 border-t border-gray-200 flex-shrink-0">
+          <form
+            onSubmit={handleSendMessage}
+            className="p-3 md:p-6 border-t border-gray-200 flex-shrink-0"
+          >
             {/* Image Preview */}
             {selectedImage && (
               <div className="mb-3 relative inline-block">
@@ -297,6 +291,20 @@ export default function ChatbotPage() {
           <CameraCapture
             onImageCapture={handleCameraCapture}
             onClose={() => setShowCamera(false)}
+          />
+        )}
+
+        {/* Mobile History Panel */}
+        {showMobileHistory && (
+          <MobileChatHistoryPanel
+            isOpen={showMobileHistory}
+            conversations={conversations}
+            currentConversationId={currentConversationId}
+            isLoading={isLoadingConversations}
+            onClose={() => setShowMobileHistory(false)}
+            onSelectConversation={loadConversation}
+            onNewConversation={startNewConversation}
+            onDeleteConversation={deleteConversation}
           />
         )}
       </div>
