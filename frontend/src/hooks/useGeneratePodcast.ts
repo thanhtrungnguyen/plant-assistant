@@ -1,32 +1,30 @@
 "use client";
+import { api } from "@/lib/api";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type LatLng = { latitude: number; longitude: number };
 
 export type GeneratePodcastInput = {
-  user_id: string;
   location?: {
     latitude: number;
     longitude: number;
   };
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000";
-
 export async function requestPodcast(input: GeneratePodcastInput): Promise<Blob> {
-  const res = await fetch(`${API_BASE}/podcast/generate_podcast`, {
+  const response = await api("/podcast/generate_podcast", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
 
-  if (!res.ok) {
-    const t = await res.text().catch(() => "");
-    throw new Error(`Request failed ${res.status}: ${t}`);
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    throw new Error(`Request failed ${response.status}: ${errorText}`);
   }
 
   // Backend trả về bytes WAV
-  return await res.blob();
+  return await response.blob();
 }
 
 async function getCurrentLatLng(timeoutMs = 5000): Promise<LatLng | null> {
@@ -75,7 +73,7 @@ export default function useGeneratePodcast() {
   );
 
   const generate = useCallback(
-    async (userId: string, geoTimeoutMs = 5000) => {
+    async (geoTimeoutMs = 5000) => {
       try {
         setError(null);
         setLoading(true);
@@ -85,7 +83,6 @@ export default function useGeneratePodcast() {
         const loc = await getCurrentLatLng(geoTimeoutMs);
 
         const payload: GeneratePodcastInput = {
-          user_id: userId,
           location: loc ?? undefined, // nếu không lấy được thì backend sẽ dùng address mặc định
         };
 

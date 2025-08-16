@@ -4,21 +4,45 @@ import AppLayout from "@/components/layout/AppLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 import { Download, MapPin, Mic, MicOff, Play, Square, Trash2, Volume2 } from "lucide-react";
 import useGeneratePodcast from "../../hooks/useGeneratePodcast";
 
 export default function PodcastPage() {
   const { audioUrl, loading, error, generate, download, cancel, clear } = useGeneratePodcast();
+  const { user, isAuthenticated } = useAuth();
 
   const onGenerate = async () => {
+    if (!isAuthenticated || !user) {
+      // Handle unauthenticated user
+      console.error("User not authenticated");
+      return;
+    }
+
     try {
-      // TODO: thay 'demo-user-001' bằng userId thực tế của bạn
-      await generate("a3f1d5e7-6a4b-4c39-8a27-f8c7f9d1e123"); // hook sẽ tự lấy geolocation rồi gọi API
+      // The backend will get the user ID from authentication cookies
+      await generate(); // No need to pass user ID anymore
     } catch (err) {
       // error đã được quản lý trong hook (state `error`)
       console.error(err);
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <AppLayout title="Podcast" subtitle="Tạo podcast theo vị trí hiện tại">
+        <div className="max-w-4xl mx-auto p-6 space-y-6">
+          <Card className="bg-red-50 border-red-200">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-red-700">Bạn cần đăng nhập để sử dụng tính năng này</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout title="Podcast" subtitle="Tạo podcast theo vị trí hiện tại">

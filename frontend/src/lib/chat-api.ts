@@ -2,7 +2,7 @@
  * Chat API client for interacting with the plant assistant chatbot
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 export interface ChatMessage {
   message: string;
@@ -32,7 +32,7 @@ export interface Conversation {
 
 export interface Message {
   message_id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   timestamp: string;
   model?: string;
@@ -42,33 +42,33 @@ export interface Message {
 }
 
 class ChatApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
     super(message);
-    this.name = 'ChatApiError';
+    this.name = "ChatApiError";
   }
 }
 
 class ChatApi {
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}/api/chat${endpoint}`;
 
     const response = await fetch(url, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options.headers,
       },
-      credentials: 'include', // Include cookies for authentication
+      credentials: "include", // Include cookies for authentication
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new ChatApiError(
         response.status,
-        errorData.detail || `HTTP ${response.status}: ${response.statusText}`
+        errorData.detail || `HTTP ${response.status}: ${response.statusText}`,
       );
     }
 
@@ -79,8 +79,8 @@ class ChatApi {
    * Send a message to the chatbot
    */
   async sendMessage(messageData: ChatMessage): Promise<ChatResponse> {
-    return this.request<ChatResponse>('/message', {
-      method: 'POST',
+    return this.request<ChatResponse>("/message", {
+      method: "POST",
       body: JSON.stringify(messageData),
     });
   }
@@ -89,7 +89,7 @@ class ChatApi {
    * Get all conversations for the current user
    */
   async getConversations(): Promise<Conversation[]> {
-    return this.request<Conversation[]>('/conversations');
+    return this.request<Conversation[]>("/conversations");
   }
 
   /**
@@ -98,16 +98,14 @@ class ChatApi {
   async getConversationMessages(
     conversationId: string,
     limit = 50,
-    offset = 0
+    offset = 0,
   ): Promise<Message[]> {
     const params = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString(),
     });
 
-    return this.request<Message[]>(
-      `/conversations/${conversationId}/messages?${params}`
-    );
+    return this.request<Message[]>(`/conversations/${conversationId}/messages?${params}`);
   }
 
   /**
@@ -115,7 +113,7 @@ class ChatApi {
    */
   async deleteConversation(conversationId: string): Promise<{ message: string }> {
     return this.request<{ message: string }>(`/conversations/${conversationId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 }

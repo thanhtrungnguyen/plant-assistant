@@ -45,10 +45,7 @@ export function MobileChatHistoryPanel({
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={onClose} />
 
       {/* Panel */}
       <div className="fixed inset-y-0 right-0 w-80 max-w-[90vw] bg-white shadow-lg z-50 flex flex-col">
@@ -63,11 +60,7 @@ export function MobileChatHistoryPanel({
               <X className="h-5 w-5" />
             </button>
           </div>
-          <Button
-            size="sm"
-            onClick={handleNewConversation}
-            className="w-full mb-2"
-          >
+          <Button size="sm" onClick={handleNewConversation} className="w-full mb-2">
             <Plus className="h-4 w-4 mr-2" />
             Cuộc trò chuyện mới
           </Button>

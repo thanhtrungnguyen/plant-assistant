@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from contextlib import contextmanager, asynccontextmanager
+from contextlib import contextmanager
 from typing import Generator, AsyncGenerator
 
 from sqlalchemy import create_engine
@@ -26,7 +26,9 @@ engine = create_engine(
 )
 
 # Async engine for new chat functionality
-async_database_url = settings.DATABASE_URL.replace("postgresql+psycopg://", "postgresql+asyncpg://")
+async_database_url = settings.DATABASE_URL.replace(
+    "postgresql+psycopg://", "postgresql+asyncpg://"
+)
 async_engine = create_async_engine(
     async_database_url,
     pool_pre_ping=True,

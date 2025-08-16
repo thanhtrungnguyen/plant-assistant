@@ -419,7 +419,11 @@ Diagnosis context: {diagnosis}
         """
         try:
             # Check if API key is properly configured
-            if not settings.OPENAI_API_KEY or settings.OPENAI_API_KEY == "your-openai-api-key" or len(settings.OPENAI_API_KEY) < 20:
+            if (
+                not settings.OPENAI_API_KEY
+                or settings.OPENAI_API_KEY == "your-openai-api-key"
+                or len(settings.OPENAI_API_KEY) < 20
+            ):
                 # Return mock data for testing when API key is not configured
                 return {
                     "plant_name": "Monstera Deliciosa",
@@ -428,8 +432,11 @@ Diagnosis context: {diagnosis}
                     "action_plan": [
                         {"id": 1, "action": "Continue current watering schedule"},
                         {"id": 2, "action": "Provide bright, indirect light"},
-                        {"id": 3, "action": "Monitor for any changes in leaf color or growth"}
-                    ]
+                        {
+                            "id": 3,
+                            "action": "Monitor for any changes in leaf color or growth",
+                        },
+                    ],
                 }
 
             # Initialize state
@@ -465,8 +472,8 @@ Diagnosis context: {diagnosis}
                 "action_plan": [
                     {"id": 1, "action": "Ensure proper lighting conditions"},
                     {"id": 2, "action": "Check soil moisture levels"},
-                    {"id": 3, "action": "Provide appropriate watering schedule"}
-                ]
+                    {"id": 3, "action": "Provide appropriate watering schedule"},
+                ],
             }
 
 

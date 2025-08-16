@@ -20,6 +20,7 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 # Request/Response Models
 class ChatRequest(BaseModel):
     """Chat message request."""
+
     message: str
     conversation_id: Optional[str] = None
     plant_id: Optional[int] = None
@@ -28,6 +29,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     """Chat message response."""
+
     message_id: int
     conversation_id: str
     response: str
@@ -38,6 +40,7 @@ class ChatResponse(BaseModel):
 
 class ConversationListResponse(BaseModel):
     """Conversation list item."""
+
     conversation_id: str
     plant_id: Optional[int]
     started_at: str
@@ -49,6 +52,7 @@ class ConversationListResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     """Chat message."""
+
     message_id: str
     role: str
     content: str
@@ -63,7 +67,7 @@ class MessageResponse(BaseModel):
 async def send_message(
     request: ChatRequest,
     current_user: User = Depends(require_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_async_db),
 ) -> ChatResponse:
     """
     Send a message to the plant assistant and get a response.
@@ -77,7 +81,7 @@ async def send_message(
             message=request.message,
             conversation_id=request.conversation_id,
             plant_id=request.plant_id,
-            image_data=request.image_data
+            image_data=request.image_data,
         )
 
         return ChatResponse(
@@ -86,21 +90,20 @@ async def send_message(
             response=result["response"],
             input_tokens=result["input_tokens"],
             output_tokens=result["output_tokens"],
-            timestamp=result["timestamp"].isoformat()
+            timestamp=result["timestamp"].isoformat(),
         )
 
     except Exception as e:
         logger.error(f"Error in send_message endpoint: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to process message"
+            detail="Failed to process message",
         )
 
 
 @router.get("/conversations", response_model=list[ConversationListResponse])
 async def get_conversations(
-    current_user: User = Depends(require_user),
-    db: AsyncSession = Depends(get_async_db)
+    current_user: User = Depends(require_user), db: AsyncSession = Depends(get_async_db)
 ) -> list[ConversationListResponse]:
     """Get all conversations for the current user."""
     try:
@@ -115,7 +118,7 @@ async def get_conversations(
                 last_message=conv["last_message"],
                 last_message_time=conv["last_message_time"].isoformat(),
                 source=conv["source"],
-                locale=conv["locale"]
+                locale=conv["locale"],
             )
             for conv in conversations
         ]
@@ -124,17 +127,19 @@ async def get_conversations(
         logger.error(f"Error in get_conversations endpoint: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve conversations"
+            detail="Failed to retrieve conversations",
         )
 
 
-@router.get("/conversations/{conversation_id}/messages", response_model=list[MessageResponse])
+@router.get(
+    "/conversations/{conversation_id}/messages", response_model=list[MessageResponse]
+)
 async def get_conversation_messages(
     conversation_id: str,
     limit: int = 50,
     offset: int = 0,
     current_user: User = Depends(require_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_async_db),
 ) -> list[MessageResponse]:
     """Get messages for a specific conversation."""
     try:
@@ -143,7 +148,7 @@ async def get_conversation_messages(
             user_id=current_user.id,
             conversation_id=conversation_id,
             limit=limit,
-            offset=offset
+            offset=offset,
         )
 
         return [
@@ -155,21 +160,18 @@ async def get_conversation_messages(
                 model=msg["model"],
                 token_prompt=msg["token_prompt"],
                 token_completion=msg["token_completion"],
-                image_url=msg["image_url"]
+                image_url=msg["image_url"],
             )
             for msg in messages
         ]
 
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logger.error(f"Error in get_conversation_messages endpoint: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve messages"
+            detail="Failed to retrieve messages",
         )
 
 
@@ -177,20 +179,18 @@ async def get_conversation_messages(
 async def delete_conversation(
     conversation_id: str,
     current_user: User = Depends(require_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_async_db),
 ) -> dict:
     """Delete a conversation and all its messages."""
     try:
         chat_service = ChatService(db)
         deleted = await chat_service.delete_conversation(
-            user_id=current_user.id,
-            conversation_id=conversation_id
+            user_id=current_user.id, conversation_id=conversation_id
         )
 
         if not deleted:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Conversation not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found"
             )
 
         return {"message": "Conversation deleted successfully"}
@@ -201,21 +201,22 @@ async def delete_conversation(
         logger.error(f"Error in delete_conversation endpoint: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete conversation"
+            detail="Failed to delete conversation",
         )
 
 
 @router.get("/context", response_model=dict)
 async def get_user_context_summary(
-    current_user: User = Depends(require_user),
-    db: AsyncSession = Depends(get_async_db)
+    current_user: User = Depends(require_user), db: AsyncSession = Depends(get_async_db)
 ) -> dict:
     """Get a summary of user's stored context across all conversations."""
     try:
         from src.chat.services.context_service import UserContextService
 
         context_service = UserContextService()
-        context_summary = await context_service.get_user_context_summary(current_user.id)
+        context_summary = await context_service.get_user_context_summary(
+            current_user.id
+        )
 
         return context_summary
 
@@ -223,14 +224,13 @@ async def get_user_context_summary(
         logger.error(f"Error in get_user_context_summary endpoint: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve user context"
+            detail="Failed to retrieve user context",
         )
 
 
 @router.delete("/context")
 async def delete_user_context(
-    current_user: User = Depends(require_user),
-    db: AsyncSession = Depends(get_async_db)
+    current_user: User = Depends(require_user), db: AsyncSession = Depends(get_async_db)
 ) -> dict:
     """Delete all stored context for the current user."""
     try:
@@ -242,14 +242,13 @@ async def delete_user_context(
         logger.error(f"Error in delete_user_context endpoint: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete user context"
+            detail="Failed to delete user context",
         )
 
 
 @router.post("/context/refresh")
 async def refresh_user_context(
-    current_user: User = Depends(require_user),
-    db: AsyncSession = Depends(get_async_db)
+    current_user: User = Depends(require_user), db: AsyncSession = Depends(get_async_db)
 ) -> dict:
     """Refresh user context by reprocessing recent conversations."""
     try:
@@ -269,17 +268,19 @@ async def refresh_user_context(
                 )
                 processed_count += 1
             except Exception as conv_error:
-                logger.warning(f"Failed to reprocess conversation {conv['conversation_id']}: {conv_error}")
+                logger.warning(
+                    f"Failed to reprocess conversation {conv['conversation_id']}: {conv_error}"
+                )
 
         return {
-            "message": f"Context refresh completed",
+            "message": "Context refresh completed",
             "conversations_processed": processed_count,
-            "total_conversations": len(conversations)
+            "total_conversations": len(conversations),
         }
 
     except Exception as e:
         logger.error(f"Error in refresh_user_context endpoint: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to refresh user context"
+            detail="Failed to refresh user context",
         )
