@@ -174,10 +174,18 @@ class UserContextService:
     ) -> List[Dict]:
         """Retrieve relevant user context based on current message."""
         try:
+            logger.info(f"🔍 CONTEXT SERVICE: Starting retrieval for user {user_id}")
+            logger.info(f"  Query message: '{current_message[:200]}'...")
+            logger.info(f"  Namespace: {self.context_namespace}")
+            logger.info(f"  Filter: user_id = {user_id}")
+            logger.info(f"  Requested top_k: {top_k}")
+
             # Create embedding for current message
             query_embedding = await self.embeddings.aembed_query(current_message)
+            logger.info(f"  Generated embedding vector length: {len(query_embedding)}")
 
             # Query Pinecone for similar context
+            logger.info("  Querying Pinecone...")
             matches = pinecone.query_vector(
                 embedding=query_embedding,
                 top_k=top_k,
@@ -185,16 +193,29 @@ class UserContextService:
                 namespace=self.context_namespace,
             )
 
+            logger.info(f"  Pinecone returned {len(matches)} raw matches")
+
+            # Log all matches with their scores
+            for i, match in enumerate(matches):
+                score = getattr(match, "score", 0)
+                match_id = getattr(match, "id", "unknown")
+                metadata = getattr(match, "metadata", {})
+                logger.info(
+                    f"    Match {i + 1}: ID={match_id}, Score={score:.4f}, Metadata keys={list(metadata.keys())}"
+                )
+
             # Format results - simplified for conversation summaries
             context_results = []
+            threshold = 0.3  # Lowered threshold to capture more relevant context
+            logger.info(f"  Applying relevance threshold: {threshold}")
+
             for match in matches:
-                if (
-                    hasattr(match, "score") and match.score > 0.6
-                ):  # Lower threshold for summaries
+                score = getattr(match, "score", 0)
+                if score > threshold:
                     metadata = getattr(match, "metadata", {})
                     context_results.append(
                         {
-                            "relevance_score": match.score,
+                            "relevance_score": score,
                             "conversation_id": metadata.get("conversation_id"),
                             "timestamp": metadata.get("timestamp"),
                             "summary": metadata.get(
@@ -204,7 +225,13 @@ class UserContextService:
                             "context_type": metadata.get(
                                 "context_type", "conversation_summary"
                             ),
+                            "user_id": metadata.get("user_id"),  # Add for debugging
                         }
+                    )
+                    logger.info(f"    ✅ Match included: Score={score:.4f}")
+                else:
+                    logger.info(
+                        f"    ❌ Match excluded: Score={score:.4f} < {threshold}"
                     )
 
             logger.info(
@@ -214,6 +241,9 @@ class UserContextService:
 
         except Exception as e:
             logger.error(f"Error retrieving user context for user {user_id}: {e}")
+            import traceback
+
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return []
 
     async def process_conversation_end(

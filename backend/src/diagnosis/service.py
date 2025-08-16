@@ -368,7 +368,9 @@ Diagnosis context: {diagnosis}
         try:
             plant_name = state.get("plant_name", "Unknown Plant")
             condition = state.get("condition", "Unknown")
-            detail_diagnosis = state.get("detail_diagnosis", "Unable to provide diagnosis")
+            detail_diagnosis = state.get(
+                "detail_diagnosis", "Unable to provide diagnosis"
+            )
             action_plan = state.get("action_plan", [])
 
             # Translate to Vietnamese using LLM
@@ -404,7 +406,7 @@ Keep the translation natural and professional, suitable for plant care advice in
                 "plant_name": plant_name,
                 "condition": condition,
                 "detail_diagnosis": detail_diagnosis,
-                "action_plan": action_plan
+                "action_plan": action_plan,
             }
 
             human_message = HumanMessage(
@@ -418,7 +420,9 @@ Keep the translation natural and professional, suitable for plant care advice in
             try:
                 # Extract JSON from response if wrapped in markdown
                 if "```json" in translation_text:
-                    translation_text = translation_text.split("```json")[1].split("```")[0].strip()
+                    translation_text = (
+                        translation_text.split("```json")[1].split("```")[0].strip()
+                    )
                 elif "```" in translation_text:
                     translation_text = translation_text.split("```")[1].strip()
 
@@ -428,8 +432,12 @@ Keep the translation natural and professional, suitable for plant care advice in
                 final_output = {
                     "plant_name": vietnamese_content.get("plant_name_vi", plant_name),
                     "condition": vietnamese_content.get("condition_vi", condition),
-                    "detail_diagnosis": vietnamese_content.get("detail_diagnosis_vi", detail_diagnosis),
-                    "action_plan": vietnamese_content.get("action_plan_vi", action_plan),
+                    "detail_diagnosis": vietnamese_content.get(
+                        "detail_diagnosis_vi", detail_diagnosis
+                    ),
+                    "action_plan": vietnamese_content.get(
+                        "action_plan_vi", action_plan
+                    ),
                 }
 
             except json.JSONDecodeError:

@@ -13,8 +13,6 @@ from pydantic import SecretStr
 
 from src.core.config import settings
 from .state import ConversationState
-from .tools import PLANT_TOOLS
-from .services.context_service import UserContextService
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +22,10 @@ class PlantAssistantAgent:
 
     def __init__(self):
         """Initialize the agent with OpenAI LLM and plant tools."""
+        # Import tools and services here to avoid circular import
+        from .tools import PLANT_TOOLS
+        from .services.context_service import UserContextService
+
         # Initialize OpenAI LLM
         self.llm = ChatOpenAI(
             model=settings.OPENAI_MODEL,
@@ -54,6 +56,7 @@ class PlantAssistantAgent:
 
         # Add nodes
         workflow.add_node("load_context", self._load_user_context)
+        workflow.add_node("retrieve_context", self._retrieve_relevant_context)
         workflow.add_node("chat", self._chat_with_tools)
         workflow.add_node("tools", self.tool_node)
         workflow.add_node("save_context", self._save_user_context)
@@ -61,8 +64,11 @@ class PlantAssistantAgent:
         # Set entry point
         workflow.add_edge(START, "load_context")
 
-        # Context loading flows to chat
-        workflow.add_edge("load_context", "chat")
+        # Context loading flows to context retrieval
+        workflow.add_edge("load_context", "retrieve_context")
+
+        # Context retrieval flows to chat
+        workflow.add_edge("retrieve_context", "chat")
 
         # Conditional edge from chat: if tools called, go to tools, otherwise save context
         workflow.add_conditional_edges(
@@ -171,176 +177,193 @@ class PlantAssistantAgent:
 
         return state
 
+    async def _retrieve_relevant_context(
+        self, state: ConversationState
+    ) -> ConversationState:
+        """Retrieve relevant context from Pinecone for the current conversation."""
+        try:
+            user_id = state.get("user_id")
+            messages = state["messages"]
+
+            # Get the latest user message for context matching
+            human_messages = [msg for msg in messages if isinstance(msg, HumanMessage)]
+
+            if not human_messages:
+                logger.info("No user messages found for context retrieval")
+                return state
+
+            current_message = human_messages[-1].content
+
+            # Extract just text content if it's a complex message structure
+            if isinstance(current_message, list):
+                text_parts = [
+                    part.get("text", "")
+                    for part in current_message
+                    if isinstance(part, dict) and "text" in part
+                ]
+                current_message = " ".join(text_parts)
+            elif not isinstance(current_message, str):
+                current_message = str(current_message)
+
+            logger.info(f"Retrieving context for message: {current_message[:100]}...")
+
+            if user_id and current_message:
+                # Convert user_id to int if it's a string
+                user_id_int = None
+                try:
+                    user_id_int = int(user_id) if isinstance(user_id, str) else user_id
+                except (ValueError, TypeError):
+                    logger.warning(f"Could not convert user_id to int: {user_id}")
+                    return state
+
+                logger.info("🔍 STARTING CONTEXT RETRIEVAL:")
+                logger.info(f"  User ID: {user_id_int}")
+                logger.info(f"  Query: '{current_message[:200]}'")
+                logger.info("  Requesting top_k: 5 results")
+
+                # Retrieve relevant context using the context service
+                context_results = await self.context_service.retrieve_user_context(
+                    user_id=user_id_int,
+                    current_message=current_message,
+                    top_k=5,  # Get more context for better decision making
+                )
+
+                logger.info("📊 CONTEXT RETRIEVAL COMPLETE:")
+                logger.info(
+                    f"  Total results returned: {len(context_results) if context_results else 0}"
+                )
+
+                if context_results:
+                    # Log all context results first
+                    logger.info(f"🔍 RETRIEVED {len(context_results)} CONTEXT RESULTS:")
+                    for i, ctx in enumerate(context_results):
+                        relevance = ctx.get("relevance_score", 0)
+                        summary = (
+                            ctx.get("summary", "")[:150] + "..."
+                            if len(ctx.get("summary", "")) > 150
+                            else ctx.get("summary", "")
+                        )
+                        user_context_id = ctx.get("user_id", "N/A")
+                        timestamp = ctx.get("timestamp", "N/A")
+                        logger.info(
+                            f"  Context {i + 1}: [Relevance: {relevance:.3f}] [User: {user_context_id}] [Time: {timestamp}] {summary}"
+                        )
+
+                    # Create a context summary for the LLM
+                    context_summaries = []
+                    for ctx in context_results:
+                        relevance = ctx.get("relevance_score", 0)
+                        summary = ctx.get("summary", "")
+                        if relevance > 0.3 and summary:  # Only include relevant context
+                            context_summaries.append(
+                                f"[Relevance: {relevance:.2f}] {summary}"
+                            )
+
+                    if context_summaries:
+                        # Add context information to the conversation
+                        context_message = f"""
+**RETRIEVED CONTEXT** (Use this information to provide better responses):
+
+{chr(10).join(context_summaries[:3])}
+
+Use this context to inform your responses and tool usage decisions. If the context contains information about plants the user has discussed before, reference it appropriately."""
+
+                        # Insert context message before the user's message for the LLM to see
+                        if len(messages) >= 1:
+                            # Insert context right before the latest user message
+                            context_msg = SystemMessage(content=context_message)
+                            messages.insert(-1, context_msg)
+                            state["messages"] = messages
+
+                        logger.info(
+                            f"📝 CONTEXT INJECTED INTO LLM: Added {len(context_summaries)} relevant entries above threshold (>0.3)"
+                        )
+                        logger.info(
+                            f"📋 CONTEXT MESSAGE CONTENT: {context_message[:300]}..."
+                        )
+                    else:
+                        logger.info(
+                            "❌ No relevant context found above threshold (>0.3)"
+                        )
+                else:
+                    logger.warning("⚠️  NO CONTEXT RESULTS FOUND:")
+                    logger.warning("  This could mean:")
+                    logger.warning(
+                        "  1. No previous conversations stored in Pinecone for this user"
+                    )
+                    logger.warning("  2. Semantic search found no relevant matches")
+                    logger.warning("  3. Pinecone connection/query issue")
+                    logger.warning("  4. Context service configuration problem")
+            else:
+                logger.warning("❌ CONTEXT RETRIEVAL SKIPPED:")
+                logger.warning(
+                    f"  Missing requirements - user_id: {user_id}, current_message length: {len(current_message) if current_message else 0}"
+                )
+
+        except Exception as e:
+            logger.error(f"Error retrieving relevant context: {e}")
+            # Don't fail the workflow if context retrieval fails
+
+        return state
+
     async def _chat_with_tools(self, state: ConversationState) -> ConversationState:
         """Main chat node that can call tools."""
         try:
             messages = state["messages"]
             user_context = state.get("user_context", {})
-            image_data = state.get("image_data")
+
+            # Check if this is a second pass after tool execution
+            tool_messages = [msg for msg in messages if hasattr(msg, "tool_call_id")]
+            if tool_messages:
+                logger.info(
+                    f"🔄 SECOND PASS AFTER TOOL EXECUTION - Found {len(tool_messages)} tool response messages"
+                )
+                for i, tool_msg in enumerate(tool_messages):
+                    if hasattr(tool_msg, "content"):
+                        content_preview = (
+                            str(tool_msg.content)[:200] + "..."
+                            if len(str(tool_msg.content)) > 200
+                            else str(tool_msg.content)
+                        )
+                        logger.info(f"  Tool Response {i + 1}: {content_preview}")
+
+            # Set the current state in tools so they can access image data
+            from .tools import set_current_state
+
+            set_current_state(state)
 
             # Add system message with user context if not present
             if not any(isinstance(msg, SystemMessage) for msg in messages):
                 system_prompt = self._create_system_prompt(user_context or {})
                 messages = [SystemMessage(content=system_prompt)] + messages
 
-            # If we have image data and this is the first time processing the message,
-            # automatically call the diagnosis tool
-            if image_data and len(messages) <= 2:  # System message + user message
-                from .tools import diagnose_plant_health
+            # Always use the LLM with tools - let it decide when to call diagnosis tool
+            response = await self.llm_with_tools.ainvoke(messages)
 
-                logger.info("Image data detected, automatically calling diagnosis tool")
+            # Log what the LLM received and decided
+            logger.info("🤖 LLM DECISION SUMMARY:")
+            logger.info(f"  Total messages sent to LLM: {len(messages)}")
 
-                # Call the diagnosis tool directly
-                diagnosis_result = await diagnose_plant_health.ainvoke(
-                    {
-                        "image_data": image_data,
-                        "user_notes": "User provided an image for analysis",
-                    }
-                )
+            # Count different message types
+            system_msgs = [msg for msg in messages if isinstance(msg, SystemMessage)]
+            human_msgs = [msg for msg in messages if isinstance(msg, HumanMessage)]
+            logger.info(f"  - System messages: {len(system_msgs)}")
+            logger.info(f"  - Human messages: {len(human_msgs)}")
 
-                # Parse the diagnosis result
-                import json
-
-                try:
-                    diagnosis_data = json.loads(diagnosis_result)
-
-                    # Create a more direct response based on the user's original message
-                    user_message_content = ""
-                    if messages:
-                        last_msg = messages[-1]
-                        if hasattr(last_msg, "content"):
-                            if isinstance(last_msg.content, str):
-                                user_message_content = last_msg.content
-                            elif (
-                                isinstance(last_msg.content, list)
-                                and len(last_msg.content) > 0
-                            ):
-                                # Handle list content (like multi-part messages)
-                                text_parts = [
-                                    part
-                                    for part in last_msg.content
-                                    if isinstance(part, str)
-                                ]
-                                user_message_content = (
-                                    " ".join(text_parts) if text_parts else ""
-                                )
-
-                    if diagnosis_data.get("success"):
-                        plant_name = diagnosis_data.get("plant_identification", {}).get(
-                            "plant_name", "Unknown plant"
-                        )
-                        condition = diagnosis_data.get("health_assessment", {}).get(
-                            "condition", "Unknown condition"
-                        )
-                        diagnosis = diagnosis_data.get("health_assessment", {}).get(
-                            "diagnosis", ""
-                        )
-
-                        # Generate direct response based on what the user asked
-                        if (
-                            "what plant" in user_message_content.lower()
-                            or "identify" in user_message_content.lower()
-                        ):
-                            # For plant identification questions
-                            if plant_name != "Unknown plant":
-                                direct_response = f"This is a {plant_name}."
-                            else:
-                                direct_response = "I couldn't identify the specific plant species from this image. Could you provide a clearer photo?"
-
-                        elif (
-                            "healthy" in user_message_content.lower()
-                            or "wrong" in user_message_content.lower()
-                            or "problem" in user_message_content.lower()
-                        ):
-                            # For health assessment questions
-                            if condition != "Unknown condition" and diagnosis:
-                                direct_response = f"Your {plant_name} shows signs of {condition.lower()}. {diagnosis}"
-                                recommendations = diagnosis_data.get(
-                                    "treatment_recommendations", []
-                                )
-                                if recommendations and len(recommendations) > 0:
-                                    if (
-                                        isinstance(recommendations[0], dict)
-                                        and "action" in recommendations[0]
-                                    ):
-                                        main_treatment = recommendations[0]["action"]
-                                    else:
-                                        main_treatment = str(recommendations[0])
-                                    direct_response += (
-                                        f" Recommended action: {main_treatment}"
-                                    )
-                            else:
-                                direct_response = f"I can see this is a {plant_name}, but I need a clearer image to assess its health properly."
-                        else:
-                            # General response
-                            if plant_name != "Unknown plant":
-                                if (
-                                    condition
-                                    and condition.lower() != "unknown condition"
-                                ):
-                                    direct_response = f"I can see this is a {plant_name}. The plant's condition appears to be {condition.lower()}."
-                                    if diagnosis:
-                                        direct_response += f" {diagnosis}"
-                                else:
-                                    direct_response = f"I can see this is a {plant_name}. The plant looks generally healthy."
-                            else:
-                                direct_response = "I'm having trouble identifying this plant from the image. Could you provide a clearer photo or tell me more about it?"
-
-                        # Store diagnosis in tool results AND user context for future reference
-                        state["tool_results"] = diagnosis_data
-
-                        # Update user context with the diagnosed plant information
-                        current_context = state.get("user_context", {}) or {}
-                        if plant_name != "Unknown plant":
-                            # Add the plant to recently discussed plants
-                            plants_discussed = current_context.get(
-                                "plants_discussed", []
-                            )
-                            plant_info = {
-                                "name": plant_name,
-                                "condition": condition,
-                                "diagnosis": diagnosis,
-                                "timestamp": "recent",
-                                "conversation_id": state.get("conversation_id"),
-                            }
-
-                            # Add to beginning of list (most recent first) and limit to 3 recent plants
-                            plants_discussed.insert(0, plant_info)
-                            current_context["plants_discussed"] = plants_discussed[:3]
-                            current_context["most_recent_plant"] = plant_info
-
-                            state["user_context"] = current_context
-
-                        # Create AI response directly
-                        ai_response = AIMessage(content=direct_response)
-                        state["messages"] = messages + [ai_response]
-
-                        logger.info(
-                            f"Generated direct response from diagnosis: {direct_response[:100]}..."
-                        )
-                        return state
-                    else:
-                        # Handle error case
-                        error_msg = diagnosis_data.get(
-                            "message",
-                            "I couldn't analyze the image properly. Please try with a clearer photo.",
-                        )
-                        ai_response = AIMessage(content=error_msg)
-                        state["messages"] = messages + [ai_response]
-                        return state
-
-                except json.JSONDecodeError:
-                    logger.error("Failed to parse diagnosis result JSON")
-                    error_msg = AIMessage(
-                        content="I had trouble analyzing the image. Please try again with a clearer photo."
+            # Check if LLM decided to call tools
+            tool_calls = getattr(response, "tool_calls", None)
+            if tool_calls:
+                logger.info(f"🔧 LLM DECIDED TO CALL {len(tool_calls)} TOOL(S):")
+                for i, tool_call in enumerate(tool_calls):
+                    tool_name = tool_call.get("name", "unknown")
+                    tool_args = tool_call.get("args", {})
+                    logger.info(
+                        f"  Tool {i + 1}: {tool_name} with args: {list(tool_args.keys())}"
                     )
-                    state["messages"] = messages + [error_msg]
-                    return state
             else:
-                # Normal LLM processing without image
-                response = await self.llm_with_tools.ainvoke(messages)
-                state["messages"] = messages + [response]
+                logger.info("💭 LLM DECIDED NOT TO CALL ANY TOOLS - Direct response")
 
+            state["messages"] = messages + [response]
             logger.info(f"LLM response generated for user {state.get('user_id')}")
 
         except Exception as e:
@@ -417,27 +440,56 @@ RECENT PLANT CONTEXT:
 
 {plant_context}
 
-You have access to a plant diagnosis tool that can analyze plant images for health issues, diseases, pests, and plant identification. When a user shares a plant image, ALWAYS use the diagnose_plant_health tool to analyze it.
+**CONTEXT-FIRST DECISION MAKING:**
+Before making any decisions or using tools, ALWAYS review any "RETRIEVED CONTEXT" messages in the conversation. This context contains relevant information from previous conversations and plant care cases that should inform your responses and tool usage.
 
-Key guidelines for responses:
-- Be direct and concise in your answers
-- When asked for specific information (plant name, diagnosis, care tips), provide it directly without long explanations
-- If asked "What plant is this?", respond with just the plant name from the diagnosis
-- If asked about plant health, give a direct assessment based on the diagnosis
-- Use the diagnosis tool results to provide specific, actionable advice
+You have access to two specialized plant analysis tools:
+
+1. **diagnose_plant_from_image** - Use ONLY when user has uploaded a plant image
+   - Performs visual AI analysis of plant photos
+   - Identifies species and assesses health from visual symptoms
+   - Requires image data to function properly
+
+2. **diagnose_plant_from_text** - Use when user describes plants/symptoms in text WITHOUT uploading an image
+   - Searches our comprehensive knowledge database
+   - Provides expert advice based on similar cases
+   - Works with text descriptions of plants and symptoms
+
+**CONTEXT-INFORMED TOOL SELECTION RULES:**
+- **First, check retrieved context** for relevant plant information from previous discussions
+- **User uploaded image** → Use `diagnose_plant_from_image`
+- **User describes plant/symptoms in text only** → Use `diagnose_plant_from_text`
+- **If context shows previous plant discussion** → Reference that context in your tool parameters and response
+- **NEVER use both tools for the same question**
+- **ALWAYS use appropriate tool for plant-related questions** - don't try to answer without calling a tool first
+
+**WHEN TO USE TOOLS:**
+- Plant identification questions ("What plant is this?", "Can you identify this plant?")
+- Health assessment questions ("Is my plant healthy?", "What's wrong with my plant?")
+- Symptom diagnosis ("Why are the leaves turning yellow?", "My plant is wilting")
+- General plant care questions ("How should I care for this plant?", "What does this plant need?")
+
+**Key guidelines for responses:**
+- **FIRST: Review any RETRIEVED CONTEXT messages for relevant information**
+- **ALWAYS use the appropriate diagnosis tool for plant-related questions**
+- **Integrate retrieved context** with tool results for more personalized responses
+- When retrieved context mentions previous plants, reference them appropriately
+- Be direct and concise in your answers after receiving tool results
+- When asked for specific information (plant name, diagnosis, care tips), use the tool results to provide accurate information
+- If asked "What plant is this?" with image → Use image tool → State the plant name from results
+- If asked "What plant is this?" with text description → Use text tool → State the plant name from results
+- If asked about plant health → Use appropriate tool → Give direct assessment based on results
+- Use tool results to provide specific, actionable advice
 - Keep responses conversational but focused
-- For plant identification: Just state the plant name and maybe one key characteristic
-- For health issues: State the problem and the main solution
 - When users ask follow-up questions about "the plant", "it", or "my plant" without context, refer to the most recent plant discussed
 - Ask follow-up questions only when you need more information for diagnosis
 
-Examples of direct responses:
-- Question: "What plant is this?" → Answer: "This is a Monstera Deliciosa."
-- Question: "Is my plant healthy?" → Answer: "Your plant has overwatering issues. Reduce watering frequency to once per week."
-- Question: "What's wrong with the leaves?" → Answer: "The yellowing leaves indicate nutrient deficiency. Use a balanced fertilizer monthly."
-- Question: "How often should I water it?" (after plant diagnosis) → Answer: "Water your [plant name] once a week, allowing soil to dry between waterings."
+Examples of context-informed responses:
+- Context shows previous Monstera discussion + Question: "Is my plant healthy?" → "Based on our previous discussion about your Monstera and current diagnosis, your plant has overwatering issues. Reduce watering frequency to once per week."
+- Context shows multiple plants + Question: "What's wrong with the leaves?" → Use context to determine which plant, then use appropriate tool
+- New question without relevant context → Use tool normally, but still acknowledge any context if relevant
 
-Remember: Use the diagnosis tool for any plant image, then give direct, helpful responses based on the results. For follow-up questions, reference the recent plant context."""
+Remember: ALWAYS check retrieved context first, then use the context-based diagnosis system for plant images and symptoms, and give direct, helpful responses that integrate both context and tool results for the most personalized experience."""
 
         return base_prompt
 

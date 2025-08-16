@@ -166,7 +166,7 @@ export default function PodcastPage() {
                   <audio
                     ref={(el) => {
                       if (el) {
-                        el.playbackRate = 1.00;
+                        el.playbackRate = 1.0;
                       }
                     }}
                     controls
