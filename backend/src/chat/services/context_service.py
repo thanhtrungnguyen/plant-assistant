@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional, Any
 
 from langchain_core.messages import BaseMessage
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -117,7 +117,7 @@ class UserContextService:
     async def store_user_context(
         self, user_id: int, context_data: Dict, conversation_id: str
     ) -> bool:
-        """Store user context in Pinecone for retrieval."""
+        """Store or update user context in Pinecone for retrieval."""
         try:
             # Create embedding from context summary
             summary_text = context_data.get("summary", "")
@@ -129,14 +129,15 @@ class UserContextService:
 
             embedding = await self.embeddings.aembed_query(summary_text)
 
-            # Create unique ID for this context entry
-            context_id = f"user_{user_id}_conv_{conversation_id}_{int(datetime.utcnow().timestamp())}"
+            # Use a consistent ID for the same user + conversation combination
+            # This ensures updates instead of duplicates for the same conversation
+            context_id = f"user_{user_id}_conv_{conversation_id}"
 
             # Prepare simplified metadata focused on the conversation summary
             metadata = {
                 "user_id": user_id,
                 "conversation_id": conversation_id,
-                "timestamp": context_data.get("timestamp"),
+                "timestamp": context_data.get("timestamp", datetime.utcnow().isoformat()),
                 "summary": summary_text,  # Store the full summary text in metadata too
                 "message_count": context_data.get("message_count", 0),
                 "context_type": "conversation_summary",  # Tag for easy filtering
@@ -146,9 +147,34 @@ class UserContextService:
                 "interaction_type": context_data.get(
                     "interaction_type", "general"
                 ),  # general, diagnosis, identification, care
+                "last_updated": datetime.utcnow().isoformat(),  # Track when this was last updated
             }
 
-            # Upsert to Pinecone
+            # Check if context already exists for this user + conversation
+            try:
+                existing_matches = pinecone.query_vector(
+                    embedding=[0.0] * 1536,  # Dummy embedding for filter-only query
+                    top_k=1,
+                    filter={
+                        "user_id": user_id,
+                        "conversation_id": conversation_id,
+                        "context_type": "conversation_summary"
+                    },
+                    namespace=self.context_namespace,
+                )
+
+                if existing_matches:
+                    logger.info(
+                        f"Updating existing context for user {user_id}, conversation {conversation_id}"
+                    )
+                else:
+                    logger.info(
+                        f"Creating new context entry for user {user_id}, conversation {conversation_id}"
+                    )
+            except Exception as e:
+                logger.warning(f"Could not check for existing context: {e}, proceeding with upsert")
+
+            # Upsert to Pinecone (will update if exists, create if not)
             count = pinecone.upsert_vectors(
                 items=[(context_id, embedding, metadata)],
                 namespace=self.context_namespace,
@@ -156,12 +182,12 @@ class UserContextService:
 
             if count > 0:
                 logger.info(
-                    f"Stored user context for user {user_id}, conversation {conversation_id}"
+                    f"Stored/updated user context for user {user_id}, conversation {conversation_id}"
                 )
                 return True
             else:
                 logger.warning(
-                    f"Failed to store context in Pinecone for user {user_id}"
+                    f"Failed to store/update context in Pinecone for user {user_id}"
                 )
                 return False
 
@@ -170,72 +196,90 @@ class UserContextService:
             return False
 
     async def retrieve_user_context(
-        self, user_id: int, current_message: str, top_k: int = 5
+        self, user_id: int, current_message: str, top_k: int = 5, conversation_id: Optional[str] = None
     ) -> List[Dict]:
-        """Retrieve relevant user context based on current message."""
+        """Retrieve user context using direct filtering instead of semantic search."""
         try:
             logger.info(f"🔍 CONTEXT SERVICE: Starting retrieval for user {user_id}")
-            logger.info(f"  Query message: '{current_message[:200]}'...")
+            if conversation_id:
+                logger.info(f"  Filtering for specific conversation: {conversation_id}")
             logger.info(f"  Namespace: {self.context_namespace}")
-            logger.info(f"  Filter: user_id = {user_id}")
             logger.info(f"  Requested top_k: {top_k}")
 
-            # Create embedding for current message
-            query_embedding = await self.embeddings.aembed_query(current_message)
-            logger.info(f"  Generated embedding vector length: {len(query_embedding)}")
+            # Create filter for user_id and optionally conversation_id
+            query_filter: Dict[str, Any] = {"user_id": user_id}
+            if conversation_id:
+                query_filter["conversation_id"] = conversation_id
 
-            # Query Pinecone for similar context
-            logger.info("  Querying Pinecone...")
+            logger.info(f"  Filter: {query_filter}")
+
+            # Use a dummy embedding since we're only using filters
+            # This is more efficient than creating an actual embedding for semantic search
+            dummy_embedding = [0.0] * 1536  # Standard OpenAI embedding dimension
+
+            logger.info("  Querying Pinecone with filter-only approach...")
             matches = pinecone.query_vector(
-                embedding=query_embedding,
+                embedding=dummy_embedding,
                 top_k=top_k,
-                filter={"user_id": user_id},
+                filter=query_filter,
                 namespace=self.context_namespace,
             )
 
             logger.info(f"  Pinecone returned {len(matches)} raw matches")
 
-            # Log all matches with their scores
+            # Log all matches with their metadata
             for i, match in enumerate(matches):
                 score = getattr(match, "score", 0)
                 match_id = getattr(match, "id", "unknown")
                 metadata = getattr(match, "metadata", {})
+                conv_id = metadata.get("conversation_id", "N/A")
+                timestamp = metadata.get("timestamp", "N/A")
                 logger.info(
-                    f"    Match {i + 1}: ID={match_id}, Score={score:.4f}, Metadata keys={list(metadata.keys())}"
+                    f"    Match {i + 1}: ID={match_id}, Conversation={conv_id}, Timestamp={timestamp}"
                 )
 
-            # Format results - simplified for conversation summaries
+            # Format results - return all results without threshold filtering
             context_results = []
-            threshold = 0.3  # Lowered threshold to capture more relevant context
-            logger.info(f"  Applying relevance threshold: {threshold}")
+            logger.info("  Processing all context results without threshold filtering")
 
             for match in matches:
-                score = getattr(match, "score", 0)
-                if score > threshold:
-                    metadata = getattr(match, "metadata", {})
-                    context_results.append(
-                        {
-                            "relevance_score": score,
-                            "conversation_id": metadata.get("conversation_id"),
-                            "timestamp": metadata.get("timestamp"),
-                            "summary": metadata.get(
-                                "summary", ""
-                            ),  # The key context information
-                            "message_count": metadata.get("message_count", 0),
-                            "context_type": metadata.get(
-                                "context_type", "conversation_summary"
-                            ),
-                            "user_id": metadata.get("user_id"),  # Add for debugging
-                        }
-                    )
-                    logger.info(f"    ✅ Match included: Score={score:.4f}")
-                else:
-                    logger.info(
-                        f"    ❌ Match excluded: Score={score:.4f} < {threshold}"
-                    )
+                metadata = getattr(match, "metadata", {})
+                # For filter-based queries, we don't have meaningful relevance scores
+                # Use timestamp-based relevance instead (more recent = more relevant)
+                timestamp_str = metadata.get("timestamp", "")
+                try:
+                    # Calculate recency score (more recent = higher score)
+                    if timestamp_str:
+                        timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                        days_ago = (datetime.now().replace(tzinfo=timestamp.tzinfo) - timestamp).days
+                        # Score decreases with age: 1.0 for today, 0.9 for 1 day ago, etc.
+                        recency_score = max(0.1, 1.0 - (days_ago * 0.1))
+                    else:
+                        recency_score = 0.5  # Default score for missing timestamp
+                except Exception:
+                    recency_score = 0.5
+
+                context_results.append(
+                    {
+                        "relevance_score": recency_score,
+                        "conversation_id": metadata.get("conversation_id"),
+                        "timestamp": metadata.get("timestamp"),
+                        "summary": metadata.get("summary", ""),  # The key context information
+                        "message_count": metadata.get("message_count", 0),
+                        "context_type": metadata.get("context_type", "conversation_summary"),
+                        "user_id": metadata.get("user_id"),  # Add for debugging
+                        "has_images": metadata.get("has_images", False),
+                        "interaction_type": metadata.get("interaction_type", "general"),
+                        "last_updated": metadata.get("last_updated", ""),
+                    }
+                )
+                logger.info(f"    ✅ Match included: Recency Score={recency_score:.3f}")
+
+            # Sort by recency score (most recent first)
+            context_results.sort(key=lambda x: x["relevance_score"], reverse=True)
 
             logger.info(
-                f"Retrieved {len(context_results)} context entries for user {user_id}"
+                f"Retrieved {len(context_results)} context entries for user {user_id} using filter-based approach"
             )
             return context_results
 

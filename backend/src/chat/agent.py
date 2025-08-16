@@ -110,7 +110,10 @@ class PlantAssistantAgent:
             ):
                 # Use UserContextService to retrieve relevant context
                 context_data = await self.context_service.retrieve_user_context(
-                    user_id=user_id, current_message=current_message, top_k=3
+                    user_id=user_id,
+                    current_message=current_message,
+                    top_k=3,
+                    conversation_id=state.get("conversation_id")  # Pass conversation_id for filtering
                 )
 
                 if context_data:
@@ -226,6 +229,7 @@ class PlantAssistantAgent:
                     user_id=user_id_int,
                     current_message=current_message,
                     top_k=5,  # Get more context for better decision making
+                    conversation_id=state.get("conversation_id"),  # Pass conversation_id for filtering
                 )
 
                 logger.info("📊 CONTEXT RETRIEVAL COMPLETE:")
@@ -254,19 +258,22 @@ class PlantAssistantAgent:
                     for ctx in context_results:
                         relevance = ctx.get("relevance_score", 0)
                         summary = ctx.get("summary", "")
-                        if relevance > 0.3 and summary:  # Only include relevant context
+                        if summary:  # Include all context with summaries (no threshold filtering)
                             context_summaries.append(
                                 f"[Relevance: {relevance:.2f}] {summary}"
                             )
 
                     if context_summaries:
                         # Add context information to the conversation
-                        context_message = f"""
-**RETRIEVED CONTEXT** (Use this information to provide better responses):
+                        context_message = f"""🌱 IMPORTANT: RETRIEVED CONTEXT FROM PREVIOUS CONVERSATIONS 🌱
+
+The following context contains information from your previous plant care discussions:
 
 {chr(10).join(context_summaries[:3])}
 
-Use this context to inform your responses and tool usage decisions. If the context contains information about plants the user has discussed before, reference it appropriately."""
+⚠️ CRITICAL: Use this context to inform your response. If this context contains recent information about the same plant the user is asking about, provide a direct response that references and builds upon this previous discussion. Only use diagnosis tools if you need NEW information not already available in this context.
+
+If the user is asking a follow-up question about a plant mentioned in the context above, acknowledge the previous conversation and provide continuity."""
 
                         # Insert context message before the user's message for the LLM to see
                         if len(messages) >= 1:
@@ -276,14 +283,14 @@ Use this context to inform your responses and tool usage decisions. If the conte
                             state["messages"] = messages
 
                         logger.info(
-                            f"📝 CONTEXT INJECTED INTO LLM: Added {len(context_summaries)} relevant entries above threshold (>0.3)"
+                            f"📝 CONTEXT INJECTED INTO LLM: Added {len(context_summaries)} context entries without threshold filtering"
                         )
                         logger.info(
                             f"📋 CONTEXT MESSAGE CONTENT: {context_message[:300]}..."
                         )
                     else:
                         logger.info(
-                            "❌ No relevant context found above threshold (>0.3)"
+                            "❌ No context found with summary content"
                         )
                 else:
                     logger.warning("⚠️  NO CONTEXT RESULTS FOUND:")
@@ -457,39 +464,36 @@ You have access to two specialized plant analysis tools:
 
 **CONTEXT-INFORMED TOOL SELECTION RULES:**
 - **First, check retrieved context** for relevant plant information from previous discussions
-- **User uploaded image** → Use `diagnose_plant_from_image`
-- **User describes plant/symptoms in text only** → Use `diagnose_plant_from_text`
-- **If context shows previous plant discussion** → Reference that context in your tool parameters and response
+- **If context contains sufficient information** to answer the user's question, you can provide a direct response based on that context
+- **User uploaded image** → Use `diagnose_plant_from_image` (unless context already contains recent analysis of the same plant)
+- **User describes plant/symptoms in text only** → Use `diagnose_plant_from_text` (unless context already has relevant information)
+- **If context shows previous plant discussion** → Reference that context and provide updates or follow-up advice directly
 - **NEVER use both tools for the same question**
-- **ALWAYS use appropriate tool for plant-related questions** - don't try to answer without calling a tool first
+- **Use tools when context is insufficient** or when user is asking about a new plant/issue
 
-**WHEN TO USE TOOLS:**
-- Plant identification questions ("What plant is this?", "Can you identify this plant?")
-- Health assessment questions ("Is my plant healthy?", "What's wrong with my plant?")
-- Symptom diagnosis ("Why are the leaves turning yellow?", "My plant is wilting")
-- General plant care questions ("How should I care for this plant?", "What does this plant need?")
+**WHEN TO USE TOOLS vs WHEN TO USE CONTEXT:**
+- **Use Context Directly**: When retrieved context contains recent information about the same plant/issue the user is asking about
+- **Use `diagnose_plant_from_image`**: For new plant images or when user wants fresh analysis
+- **Use `diagnose_plant_from_text`**: For new plant care questions without sufficient context
+- **Follow-up questions**: Use context first, then tools if needed for new information
 
 **Key guidelines for responses:**
 - **FIRST: Review any RETRIEVED CONTEXT messages for relevant information**
-- **ALWAYS use the appropriate diagnosis tool for plant-related questions**
-- **Integrate retrieved context** with tool results for more personalized responses
-- When retrieved context mentions previous plants, reference them appropriately
-- Be direct and concise in your answers after receiving tool results
-- When asked for specific information (plant name, diagnosis, care tips), use the tool results to provide accurate information
-- If asked "What plant is this?" with image → Use image tool → State the plant name from results
-- If asked "What plant is this?" with text description → Use text tool → State the plant name from results
-- If asked about plant health → Use appropriate tool → Give direct assessment based on results
-- Use tool results to provide specific, actionable advice
-- Keep responses conversational but focused
-- When users ask follow-up questions about "the plant", "it", or "my plant" without context, refer to the most recent plant discussed
-- Ask follow-up questions only when you need more information for diagnosis
+- **If context is sufficient**, provide a direct response that references and builds upon the context
+- **If context is insufficient**, use the appropriate diagnosis tool
+- **Integrate retrieved context** with tool results when both are used
+- When retrieved context mentions the same plant the user is asking about, reference it directly
+- For follow-up questions about "the plant", "it", or "my plant", prioritize using context over tools
+- Be direct and acknowledge previous discussions when context is available
+- When context contains a recent diagnosis, provide follow-up advice or updates based on that information
 
 Examples of context-informed responses:
-- Context shows previous Monstera discussion + Question: "Is my plant healthy?" → "Based on our previous discussion about your Monstera and current diagnosis, your plant has overwatering issues. Reduce watering frequency to once per week."
-- Context shows multiple plants + Question: "What's wrong with the leaves?" → Use context to determine which plant, then use appropriate tool
-- New question without relevant context → Use tool normally, but still acknowledge any context if relevant
+- Context shows previous tomato plant discussion + Question: "How is my plant doing?" → "Based on our recent discussion about your tomato plant's internal rot issue, I hope the treatment is working well. How are the fruits looking now? Are you seeing any improvement since we discussed improving drainage and reducing watering?"
+- Context shows Monstera diagnosis + Question: "Is my plant healthy?" → "Looking at our previous discussion about your Monstera's overwatering issues, how has the plant responded to the care adjustments we discussed? Are the leaves still showing yellowing, or have you seen improvement?"
+- Context shows multiple plants + Question: "What's wrong with the leaves?" → Use context to determine which plant, then provide targeted advice or use appropriate tool for new analysis
+- New question without relevant context → Use appropriate tool, but acknowledge any general context if relevant
 
-Remember: ALWAYS check retrieved context first, then use the context-based diagnosis system for plant images and symptoms, and give direct, helpful responses that integrate both context and tool results for the most personalized experience."""
+Remember: PRIORITIZE retrieved context for follow-up questions and ongoing plant care discussions. Use tools when context is insufficient or when analyzing new plants/images. Always acknowledge previous conversations and build upon them for a personalized experience."""
 
         return base_prompt
 

@@ -1,6 +1,6 @@
 # [TASK012] - Separate Diagnosis Tools: Image API + Text Context
 
-**Status:** Completed ✅
+**Status:** Completed ✅ - Threshold Filtering Removed
 **Added:** 2025-08-16
 **Updated:** 2025-08-16
 
@@ -336,3 +336,50 @@ diagnosis_context_schema = {
 2. **Data Seeding**: Ensure sufficient diagnosis context exists in Pinecone
 3. **Quality Validation**: Compare context vs API responses during transition
 4. **User Communication**: Inform users about the new context-based approach
+
+## Progress Log
+
+### 2025-08-16 - LLM CONTEXT ACKNOWLEDGMENT FIX ✅
+- **🎯 CRITICAL ISSUE RESOLVED**: LLM was not acknowledging retrieved context despite successful injection
+- **✅ SYSTEM PROMPT FLEXIBILITY**:
+  - File: `backend/src/chat/agent.py` - `_create_system_prompt` method
+  - Removed rigid "ALWAYS use tools" instruction that was preventing context-based responses
+  - Added intelligent context vs tools decision making rules
+  - LLM can now provide direct responses when context is sufficient
+  - Tools used only when context is insufficient or new analysis needed
+- **✅ ENHANCED CONTEXT MESSAGE**:
+  - Made context injection more prominent with visual indicators (🌱 emojis)
+  - Added explicit instructions for LLM to use context for direct responses
+  - Clear guidance on when to use context vs when to call tools
+  - Stronger language to ensure context acknowledgment
+- **✅ IMPROVED RESPONSE PATTERNS**:
+  - Updated examples to show context-based responses for follow-up questions
+  - Better handling of ongoing plant care discussions
+  - Prioritizes context continuity over tool calls for known plants
+- **🚀 CONFIRMED WORKING**: LLM now properly acknowledges and builds upon previous conversations instead of ignoring context
+- **Status**: **FULLY COMPLETED AND VERIFIED** - Context system working perfectly for personalized plant care conversations
+
+### 2025-08-16 - CONTEXT MANAGEMENT ENHANCEMENT ✅
+- **🎯 MAJOR ENHANCEMENT**: Implemented conversation-specific context management system
+- **✅ UPSERT CONTEXT STORAGE**:
+  - Changed from creating new entries to updating existing ones for same user + conversation_id
+  - File: `backend/src/chat/services/context_service.py` - `store_user_context` method
+  - Context ID format: `user_{user_id}_conv_{conversation_id}` (consistent for updates)
+  - Added existence check and update logging for better debugging
+  - Metadata now includes `last_updated` timestamp for tracking updates
+- **✅ FILTER-BASED CONTEXT RETRIEVAL**:
+  - Replaced semantic search with direct filtering by user_id and conversation_id
+  - File: `backend/src/chat/services/context_service.py` - `retrieve_user_context` method
+  - Uses dummy embedding + filter-only query for better performance
+  - Implements recency-based scoring instead of semantic similarity
+  - More precise context retrieval for specific conversations
+- **✅ AGENT INTEGRATION UPDATES**:
+  - File: `backend/src/chat/agent.py` - Updated to pass conversation_id to context service
+  - Removed final threshold filtering in agent context processing
+  - Enhanced logging to reflect filter-based approach
+- **� KEY BENEFITS**:
+  - **No Duplicate Context**: Same conversation gets updated, not duplicated
+  - **Precise Context Retrieval**: Get exact conversation context, not semantically similar
+  - **Better Performance**: Filter queries are faster than semantic search
+  - **Conversation Continuity**: Perfect context for ongoing conversations
+- **Status**: **FULLY ENHANCED** - Context system now optimized for conversation-specific management
