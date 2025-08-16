@@ -364,16 +364,82 @@ Diagnosis context: {diagnosis}
             return state
 
     async def _output_formatter(self, state: DiagnosisState) -> DiagnosisState:
-        """Agent 5: Formats the final JSON output"""
+        """Agent 5: Formats the final JSON output and translates to Vietnamese"""
         try:
-            final_output = {
-                "plant_name": state.get("plant_name", "Unknown Plant"),
-                "condition": state.get("condition", "Unknown"),
-                "detail_diagnosis": state.get(
-                    "detail_diagnosis", "Unable to provide diagnosis"
-                ),
-                "action_plan": state.get("action_plan", []),
+            plant_name = state.get("plant_name", "Unknown Plant")
+            condition = state.get("condition", "Unknown")
+            detail_diagnosis = state.get("detail_diagnosis", "Unable to provide diagnosis")
+            action_plan = state.get("action_plan", [])
+
+            # Translate to Vietnamese using LLM
+            translation_prompt = SystemMessage(
+                content="""
+You are a professional translator specializing in plant care and botanical terminology.
+Translate the following plant diagnosis information from English to Vietnamese.
+Maintain technical accuracy and use appropriate botanical terms in Vietnamese.
+
+For the JSON response, translate these fields:
+1. plant_name: Translate to Vietnamese common name if available, otherwise keep scientific/English name
+2. condition: Translate the condition to Vietnamese
+3. detail_diagnosis: Translate the detailed diagnosis to Vietnamese
+4. action_plan: Translate each action step to Vietnamese
+
+Respond with a JSON object in exactly this format:
+{
+  "plant_name_vi": "Vietnamese plant name",
+  "condition_vi": "Vietnamese condition",
+  "detail_diagnosis_vi": "Vietnamese detailed diagnosis",
+  "action_plan_vi": [
+    {"id": 1, "action": "Vietnamese action 1"},
+    {"id": 2, "action": "Vietnamese action 2"}
+  ]
+}
+
+Keep the translation natural and professional, suitable for plant care advice in Vietnamese.
+"""
+            )
+
+            # Prepare content for translation
+            content_to_translate = {
+                "plant_name": plant_name,
+                "condition": condition,
+                "detail_diagnosis": detail_diagnosis,
+                "action_plan": action_plan
             }
+
+            human_message = HumanMessage(
+                content=f"Please translate this plant diagnosis to Vietnamese: {json.dumps(content_to_translate, ensure_ascii=False)}"
+            )
+
+            response = await self.llm.ainvoke([translation_prompt, human_message])
+            translation_text = response.content.strip()
+
+            # Parse Vietnamese translation
+            try:
+                # Extract JSON from response if wrapped in markdown
+                if "```json" in translation_text:
+                    translation_text = translation_text.split("```json")[1].split("```")[0].strip()
+                elif "```" in translation_text:
+                    translation_text = translation_text.split("```")[1].strip()
+
+                vietnamese_content = json.loads(translation_text)
+
+                # Create final output with only Vietnamese content
+                final_output = {
+                    "plant_name": vietnamese_content.get("plant_name_vi", plant_name),
+                    "condition": vietnamese_content.get("condition_vi", condition),
+                    "detail_diagnosis": vietnamese_content.get("detail_diagnosis_vi", detail_diagnosis),
+                    "action_plan": vietnamese_content.get("action_plan_vi", action_plan),
+                }
+
+            except json.JSONDecodeError:
+                # Fallback: use original content (will be in English if translation fails)
+                final_output = {
+                    "plant_name": plant_name,
+                    "condition": condition,
+                    "detail_diagnosis": detail_diagnosis,
+                    "action_plan": action_plan,
+                }
 
             state["final_output"] = final_output
             return state
@@ -426,15 +492,15 @@ Diagnosis context: {diagnosis}
             ):
                 # Return mock data for testing when API key is not configured
                 return {
-                    "plant_name": "Monstera Deliciosa",
-                    "condition": "Healthy",
-                    "detail_diagnosis": "The plant appears to be in good condition with vibrant green leaves and proper growth patterns.",
+                    "plant_name": "Cây Monstera Deliciosa",
+                    "condition": "Khỏe mạnh",
+                    "detail_diagnosis": "Cây có vẻ trong tình trạng tốt với lá xanh tươi và mô hình phát triển bình thường.",
                     "action_plan": [
-                        {"id": 1, "action": "Continue current watering schedule"},
-                        {"id": 2, "action": "Provide bright, indirect light"},
+                        {"id": 1, "action": "Tiếp tục lịch tưới nước hiện tại"},
+                        {"id": 2, "action": "Cung cấp ánh sáng gián tiếp tươi sáng"},
                         {
                             "id": 3,
-                            "action": "Monitor for any changes in leaf color or growth",
+                            "action": "Theo dõi mọi thay đổi về màu lá hoặc sự phát triển",
                         },
                     ],
                 }
@@ -466,13 +532,13 @@ Diagnosis context: {diagnosis}
         except Exception as e:
             # Fallback to mock data when service fails
             return {
-                "plant_name": "Common Houseplant",
-                "condition": "Needs Assessment",
-                "detail_diagnosis": f"Unable to complete full analysis due to service error: {str(e)}. Please ensure the image shows a clear view of the plant.",
+                "plant_name": "Cây trồng trong nhà thông thường",
+                "condition": "Cần đánh giá",
+                "detail_diagnosis": f"Không thể hoàn thành phân tích đầy đủ do lỗi dịch vụ: {str(e)}. Vui lòng đảm bảo hình ảnh cho thấy cây rõ ràng.",
                 "action_plan": [
-                    {"id": 1, "action": "Ensure proper lighting conditions"},
-                    {"id": 2, "action": "Check soil moisture levels"},
-                    {"id": 3, "action": "Provide appropriate watering schedule"},
+                    {"id": 1, "action": "Đảm bảo điều kiện ánh sáng phù hợp"},
+                    {"id": 2, "action": "Kiểm tra độ ẩm của đất"},
+                    {"id": 3, "action": "Cung cấp lịch tưới nước phù hợp"},
                 ],
             }
 

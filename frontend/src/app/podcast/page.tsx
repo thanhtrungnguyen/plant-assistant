@@ -160,16 +160,13 @@ export default function PodcastPage() {
                     <Badge variant="secondary" className="bg-green-100 text-green-800">
                       Audio chất lượng cao
                     </Badge>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                      Tốc độ 1.25x
-                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <audio
                     ref={(el) => {
                       if (el) {
-                        el.playbackRate = 1.25;
+                        el.playbackRate = 1.00;
                       }
                     }}
                     controls
