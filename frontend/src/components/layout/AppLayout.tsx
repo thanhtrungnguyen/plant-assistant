@@ -69,10 +69,9 @@ interface User {
 
 // Mock user data - replace with real user data
 const mockUser: User = {
-  name: "Nguyễn Văn A",
-  email: "nguyenvana@example.com",
+  name: "Minh Ngo",
+  email: "minhnx.dev@gmail.com",
   avatar: undefined,
-  plantsCount: 15,
 };
 
 interface AppLayoutProps {
